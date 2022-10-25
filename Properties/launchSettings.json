@@ -1,0 +1,22 @@
+{
+  "profiles": {
+    "File 50080 stop": {
+      "commandName": "Project",
+      "commandLineArgs": "/f \"C:\\Code\\Nodes\\PipeMania\\PipeMania\\Resources\" /p 50080 /s",
+      "hotReloadEnabled": false
+    },
+    "File 50080": {
+      "commandName": "Project",
+      "commandLineArgs": "/f C:\\Code\\Nodes\\PipeMania\\PipeMania\\Resources /p 50080",
+      "hotReloadEnabled": false
+    },
+    "Resource 50080": {
+      "commandName": "Project",
+      "commandLineArgs": "/r PipeMania /p 50080"
+    },
+    "File wrong": {
+      "commandName": "Project",
+      "commandLineArgs": "/f C:\\Code\\Nodes\\PipeMania\\PipeMania\\Resources1 /p 50080"
+    }
+  }
+}
