@@ -305,13 +305,13 @@
 			// 
 			this.tbCertificate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.tbCertificate.Enabled = false;
 			this.tbCertificate.Location = new System.Drawing.Point(12, 30);
 			this.tbCertificate.Margin = new System.Windows.Forms.Padding(0);
 			this.tbCertificate.Name = "tbCertificate";
 			this.tbCertificate.Size = new System.Drawing.Size(408, 27);
 			this.tbCertificate.TabIndex = 0;
 			this.tbCertificate.Text = "C:\\Code\\localhost2.pfx";
+			this.tbCertificate.TextChanged += new System.EventHandler(this.tbCertificate_TextChanged);
 			// 
 			// openAssemblyDialog
 			// 

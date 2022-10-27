@@ -261,8 +261,7 @@
 			// 
 			// closePropertiesButton
 			// 
-			this.closePropertiesButton.BackColor = System.Drawing.SystemColors.Window;
-			this.closePropertiesButton.BackgroundImage = global::SimpleHttp.Properties.Resources.closeRightButton;
+			this.closePropertiesButton.BackgroundImage = global::SimpleHttp.Properties.Resources.rightRewind;
 			this.closePropertiesButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
 			this.closePropertiesButton.FlatAppearance.BorderSize = 0;
 			this.closePropertiesButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
@@ -281,9 +280,9 @@
 			this.statusLabel.Location = new System.Drawing.Point(8, 8);
 			this.statusLabel.Name = "statusLabel";
 			this.statusLabel.Padding = new System.Windows.Forms.Padding(4);
-			this.statusLabel.Size = new System.Drawing.Size(24, 23);
+			this.statusLabel.Size = new System.Drawing.Size(70, 23);
 			this.statusLabel.TabIndex = 4;
-			this.statusLabel.Text = "...";
+			this.statusLabel.Text = "No started";
 			// 
 			// notifyIcon
 			// 

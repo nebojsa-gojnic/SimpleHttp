@@ -10,4 +10,8 @@
 /obj/*
 /.vs
 /.vs/*
+*.vsidx
 
+*.cache
+*.pdb
+*.resources

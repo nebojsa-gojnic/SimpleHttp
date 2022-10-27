@@ -204,7 +204,7 @@ namespace SimpleHttp
 				cmdStartOnResources.BackColor = SystemColors.ButtonFace ;
 				gbAssemblies.Visible = false ;
 				gbFilePath.Visible = true ;
-				checkFolderSelection ( false ) ;
+				checkFolderSelection ( false , false ) ;
 			}
 			else
 			{
@@ -262,23 +262,26 @@ namespace SimpleHttp
 		{
 			checkPort ( false ) ;
 		}
-		private void checkPort ( bool raiseEvents )
+		private bool checkPort ( bool raiseEvents )
 		{
 			int i ;
 			if ( int.TryParse ( tbPort.Text.Trim() , out i ) )
 				if ( ( i < 0 ) || ( i > 65535 ) )
 				{
-					cmdStart.Enabled = false ;
 					tbPort.BackColor = Color.MistyRose ;
 					if ( raiseEvents ) _invalidPortNumber?.Invoke ( this , new ErrorEventArgs ( new ApplicationException ( "Invalid port number value(" + i.ToString() + "), allowed range is 1-65535" ) ) ) ;
 				}
-				else tbPort.BackColor = SystemColors.Window ;
+				else 
+				{
+					tbPort.BackColor = SystemColors.Window ;
+					return true ;
+				}
 			else 
 			{
-				cmdStart.Enabled = false ;
 				tbPort.BackColor = Color.MistyRose ;
 				if ( raiseEvents )  _invalidPortNumber?.Invoke ( this , new ErrorEventArgs ( new ApplicationException ( "Invalid text for port number, \"" + tbPort.Text.Trim() + "\" cannot be converted to number" ) ) ) ;
 			}
+			return false ;
 		}
 		private void cmdSelectPath_Click ( object sender, EventArgs e )
         {
@@ -384,11 +387,14 @@ namespace SimpleHttp
 		public CerrtificateState getCerrtificateState ()
 		{
 			if ( cbNoCertificate.Checked ) return CerrtificateState.none ;
+			if ( _certificateFilePath != tbCertificate.Text ) return CerrtificateState.notTested ;
 			if ( ( _certificateLoadError != null ) || 
 				 ( _certificateClientError != null ) ||
 				 ( _certificateServerError != null ) ) return CerrtificateState.error ;
-			return _certificate == null ? _loadedCertificate == null ? 
-				CerrtificateState.notTested : CerrtificateState.loaded : CerrtificateState.valid ;
+			return _certificate == null ? 
+					 _loadedCertificate == null ? 
+						CerrtificateState.notTested : CerrtificateState.loaded :
+					 CerrtificateState.valid ;
 		}
 		/// <summary>
 		/// Returns true if certificate is existing and valid
@@ -397,19 +403,22 @@ namespace SimpleHttp
 		{
 			get => getCertficateIsValid () ;
 		}
-		protected void validateValues ( bool raiseEvents )
+		protected bool checkCertifiacte ( bool raiseEvents , bool focusErrorControl )
 		{
 			if ( !cbNoCertificate.Checked )
 				switch ( getCerrtificateState () )
 				{
 					case CerrtificateState.notTested :
-						cmdStart.Enabled = false ;
 						tbCertificate.BackColor = Color.MistyRose ;
-						if ( raiseEvents ) showCertificatePassword () ;
-					return ;
+						if ( focusErrorControl ) tbCertificate.Focus () ;
+						if ( raiseEvents ) 
+							if ( File.Exists ( tbCertificate.Text ) )
+								showCertificatePassword () ;
+							else _certificateLoadFailure?.Invoke ( this , new ErrorEventArgs ( _certificateLoadError = new IOException ( "File not found:\r\n" + tbCertificate.Text  ) ) ) ;
+					return false ;
 					case CerrtificateState.error :
-						cmdStart.Enabled = false ;
 						tbCertificate.BackColor = Color.MistyRose ;
+						if ( focusErrorControl ) tbCertificate.Focus () ;
 						if ( raiseEvents )
 						{
 							showCertificatePassword () ;
@@ -423,21 +432,21 @@ namespace SimpleHttp
 							else 
 								_certificateLoadFailure?.Invoke ( this , new ErrorEventArgs ( _certificateLoadError ) ) ;
 						}
-					return ;
+					return false ;
 				}
-			cmdStart.Enabled = true ;
+			return true ;
+		}
+		protected bool validateValues ( bool raiseEvents , bool focusErrorControl )
+		{
+			if ( !checkCertifiacte ( true , true ) ) return false ;
 			if ( mode == StartServerMode.fileServer )
-				checkFolderSelection ( raiseEvents ) ;
-			if ( cmdStart.Enabled )
-			{
-				checkPort ( raiseEvents ) ;
-			}
+				if ( !checkFolderSelection ( raiseEvents , focusErrorControl ) ) return false ;
+			return checkPort ( raiseEvents ) ;
 		}
 		private void cmdStart_Click ( object sender , EventArgs e )
 		{
-			validateValues ( true ) ;
-			if ( cmdStart.Enabled )
-			( mode == StartServerMode.fileServer ? _fileServerChoosen : _resourceServerChoosen )? .Invoke ( this , e ) ;
+			if ( validateValues ( true , true ) )
+				( mode == StartServerMode.fileServer ? _fileServerChoosen : _resourceServerChoosen )?.Invoke ( this , e ) ;
 		}
 		private void cbAssemblies_KeyDown ( object sender , KeyEventArgs e )
 		{
@@ -607,6 +616,7 @@ namespace SimpleHttp
 				TcpClient tcpClient = tcpListener.EndAcceptTcpClient ( ar ) ;
 				sslStream = new SslStream ( tcpClient.GetStream() ) ;
 				sslStream.AuthenticateAsServer ( state.certificate , false , sslProtocol , false ) ;
+				sslStream.Write ( Encoding.ASCII.GetBytes ( "Hello" ) ) ;
 				BeginInvoke ( tryAcceptCertificate , new object [ 2 ] { state.certificate , state.certificateFilePath } ) ;
 			}
 			catch ( Exception x )
@@ -767,8 +777,10 @@ namespace SimpleHttp
 
 		private void cmdAcceptPassword_Click ( object sender, EventArgs e )
 		{
-			_certificateLoadError = null ;
 			_loadedCertificate = null ;
+			_certificateLoadError = null ;
+			_certificateClientError = null ;
+			_certificateServerError = null ;
 			try
 			{ 
 				_loadedCertificate = new X509Certificate2 ( tbCertificate.Text , tbPassword.Text ) ;
@@ -784,7 +796,7 @@ namespace SimpleHttp
 				if ( certificate != null ) certificate.Dispose () ;
 			}
 			passwordPanel.Visible = false ;
-			validateValues ( true ) ;
+			validateValues ( true , true ) ;
 		}
 		private void cmdCancelSslTest_Click ( object sender, EventArgs e )
 		{
@@ -794,6 +806,51 @@ namespace SimpleHttp
 		/// This method tries to load certificate and connect over SSL with it.
 		/// </summary>
 		private void checkSslCertificate ( X509Certificate2 certificate , string certificateFilePath )
+		{
+			ErrorEventArgs errorEventArgs = null ;
+			
+			_certificateServerError = null ;
+			_certificateClientError = null ;
+			tbCertificate.BackColor = SystemColors.Window ;
+			HttpClient httpClient = null ;
+			try
+			{
+				tcpListener = new TcpListener ( IPAddress.Any , 50080 ) ;
+				tcpListener.Start () ;
+				tcpListener.BeginAcceptTcpClient ( OnAcceptTcpClient , new AcceptTcpClienState ( tcpListener , certificate , certificateFilePath ) ) ;
+				httpClient = new HttpClient () ;
+				//httpClient.BaseAddress = new Uri ( "https:50080//localhost/" ) ;
+				httpClient.GetStringAsync ( "https://localhost:50080/PipeMania.html?uja=muja" ).ContinueWith ( onHttpClient ) ;
+				//_certificate = GenerateSelfSignedCertificate () ;
+			}
+			catch ( Exception x )
+			{ 
+				errorEventArgs = new ErrorEventArgs ( x ) ;
+				tbCertificate.BackColor = Color.MistyRose ; 
+			}
+			if ( errorEventArgs != null ) onOpenTcpTestFailed ( errorEventArgs ) ;
+		}
+		protected void onHttpClient ( Task<string> task )
+		{
+			_certificateClientError = null ;
+			try
+			{
+				string result = task.Result ;
+			}
+			catch ( Exception x )
+			{
+				_certificateClientError = x.InnerException == null ? x : x.InnerException ;
+			}
+			if ( _certificateClientError != null ) 
+				BeginInvoke ( () =>
+				{
+					onCertificateFailedOnClient ( new ErrorEventArgs ( _certificateClientError ) ) ;
+				} ) ;
+		}
+		/// <summary>
+		/// This method tries to load certificate and connect over SSL with it.
+		/// </summary>
+		private void checkSslCertificate0 ( X509Certificate2 certificate , string certificateFilePath )
 		{
 			ErrorEventArgs errorEventArgs = null ;
 			
@@ -813,15 +870,6 @@ namespace SimpleHttp
 				errorEventArgs = new ErrorEventArgs ( x ) ;
 				tbCertificate.BackColor = Color.MistyRose ; 
 			}
-			//try
-			//{
-			//	if ( certificate != null ) certificate.Dispose () ;
-			//}
-			//catch { }
-			//try
-			//{
-			//	if ( sslClientSteam != null ) sslClientSteam.Dispose () ;
-			//}
 			if ( errorEventArgs != null ) onOpenTcpTestFailed ( errorEventArgs ) ;
 		}
 		protected void makeClientTestRequest ( int port )
@@ -863,18 +911,19 @@ namespace SimpleHttp
 		/// and set(enables/disables) cmdStart button if raiseEvent flag us up
 		/// </summary>
 		/// <param name="raiseEvent">When this is true and webroot folder is bad, invalidWebrootFolder event is triggered </param>
-		private void checkFolderSelection ( bool raiseEvent )
+		private bool checkFolderSelection ( bool raiseEvent , bool focusOnError )
 		{
 			if ( Directory.Exists ( tbWebroot.Text ) )
 			{
-				cmdStart.Enabled = true ;
 				tbWebroot.BackColor = SystemColors.Window ;
+				return true ;
 			}
 			else 
 			{
-				cmdStart.Enabled = true ;
-				if ( raiseEvent ) invalidWebrootFolder?.Invoke ( this , tbWebroot.Text ); ;
 				tbWebroot.BackColor = Color.MistyRose ; 
+				if ( focusOnError ) tbWebroot.Focus () ;
+				if ( raiseEvent ) invalidWebrootFolder?.Invoke ( this , tbWebroot.Text ); ;
+				return false ;
 			}
 		}
 		
@@ -1129,10 +1178,9 @@ namespace SimpleHttp
 		private void cbNoCertificate_CheckedChanged ( object sender , EventArgs e )
 		{
 			if ( ignorebNoCertificateCheck ) return ;
-			tbCertificate.Enabled = !cbNoCertificate.Checked ;
-			validateValues ( false ) ;
+			//tbCertificate.Enabled = !cbNoCertificate.Checked ;
+			validateValues ( false , false ) ;
 		}
-
 		private void tbPassword_KeyDown ( object sender , KeyEventArgs e )
 		{
 			if ( e.Control )
@@ -1160,5 +1208,55 @@ namespace SimpleHttp
 					break ;
 				}
 		}
+
+		private void tbCertificate_TextChanged ( object sender , EventArgs e )
+		{
+			_certificateLoadError = null ;
+			_certificateFailedOnClient = null ;
+			_certificateFailedOnServer = null ;
+			_certificate = null ;
+		}
+		//public class CertifiacteItem
+		//{
+		//	public X509Certificate2 certificate 
+		//	{
+		//		get ;
+		//		protected set ;
+		//	}
+		//	public string fileName
+		//	{
+		//		get ;
+		//		protected set ;
+		//	}
+		//	/// <summary>
+		//	/// Certificate error on client ssl authentification or null
+		//	/// </summary>
+		//	public Exception certificateClientError 
+		//	{
+		//		get ;
+		//		protected set ;
+		//	}
+		//	/// <summary>
+		//	/// Certificate error on server ssl authentification or null
+		//	/// </summary>
+		//	public Exception certificateServerError 
+		//	{
+		//		get ;
+		//		protected set ;
+		//	}
+		//	/// <summary>
+		//	/// Auxiliary variable for the certificateLoadError property
+		//	/// </summary>
+		//	protected Exception _certificateLoadError ;
+		//	/// <summary>
+		//	/// Certificate  (file) load error 
+		//	/// </summary>
+		//	public Exception certificateLoadError 
+		//	{
+		//		get => _certificateLoadError ;
+		//	}
+
+		//}
+
 	}
 }
