@@ -269,6 +269,7 @@
 			this.closePropertiesButton.Name = "closePropertiesButton";
 			this.closePropertiesButton.Size = new System.Drawing.Size(48, 28);
 			this.closePropertiesButton.TabIndex = 3;
+			this.closePropertiesButton.TabStop = false;
 			this.closePropertiesButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this.closePropertiesButton.UseVisualStyleBackColor = false;
 			this.closePropertiesButton.Click += new System.EventHandler(this.closePropertiesButton_Click);
@@ -356,6 +357,7 @@
 			this.stopButton.Name = "stopButton";
 			this.stopButton.Size = new System.Drawing.Size(48, 28);
 			this.stopButton.TabIndex = 5;
+			this.stopButton.TabStop = false;
 			this.stopButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
 			this.stopButton.UseVisualStyleBackColor = false;
 			this.stopButton.MouseDown += new System.Windows.Forms.MouseEventHandler(this.stopButton_MouseDown);

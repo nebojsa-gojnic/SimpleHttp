@@ -6,8 +6,8 @@ using System.Security.AccessControl ;
 using System.Security.Cryptography.X509Certificates ;
 using System.Net ;
 using WebSockets ;
-using System.Security.Cryptography;
-
+using System.Security.Cryptography ;
+using System.Security.Authentication ;
 namespace SimpleHttp
 {
 	public partial class MonitorForm : Form
@@ -63,7 +63,7 @@ namespace SimpleHttp
 			this.autoStart = autoStart ;
 			if ( mode == StartServerMode.resourceServer )
 			{
-				foreach ( Assembly assembly in StartServerForm.GetAllAssemblies () )
+				foreach ( Assembly assembly in AppDomain.CurrentDomain.GetAssemblies () )
 					if ( assembly.GetName().Name == source ) 
 					{
 						resourceAssembly = assembly ;
@@ -95,8 +95,8 @@ namespace SimpleHttp
 				if ( autoStart )
 				{
 					if ( mode == StartServerMode.fileServer )
-						autoStarted = startFileServer ( port , webroot , null ) ;
-					else autoStarted = startResourceServer ( port , resourceAssembly , null ) ;
+						autoStarted = startFileServer ( port , webroot , null , SslProtocols.None ) ;
+					else autoStarted = startResourceServer ( port , resourceAssembly , null , SslProtocols.None ) ;
 					if ( autoStarted ) Visible = false ;
 				}
 			}
@@ -193,6 +193,7 @@ namespace SimpleHttp
 				startServerForm = new StartServerForm ( ) ;
 				startServerForm.Owner = this ;
 				startServerForm.Show () ;
+				startServerForm.FormClosing += startServerForm_FormClosing ;	
 				startServerForm.FormClosed += startServerForm_FormClosed ;
 				startServerForm.resourceServerChoosen += startServerForm_resourceServerChoosen ;
 				startServerForm.fileServerChoosen += startServerForm_fileServerChoosen ;
@@ -202,11 +203,14 @@ namespace SimpleHttp
 				startServerForm.certificateFailedOnServer += startServerForm_certificateFailedOnServer ;
 				startServerForm.invalidPortNumber += startServerForm_invalidPortNumber ;
 				startServerForm.certificateLoadFailure += startServerForm_certificateLoadFailure ;
+				startServerForm.certificateAccepted += startServerForm_certificateAccepted ;
 				startServerForm.openTcpTestFailed += startServerForm_openTcpTestFailed ;
+				//startServerForm.FormClosing += startServerForm_FormClosing ;
 				startServerForm.Disposed += startServerForm_Disposed ;
 			}
 			else 
 			{
+				startServerForm.Visible = true ;
 				startServerForm.BringToFront () ;
 				startServerForm.Select () ;
 			}
@@ -227,8 +231,21 @@ namespace SimpleHttp
 				}
 			}
 		}
+		private void startServerForm_FormClosing ( object? sender, FormClosingEventArgs e )
+		{
+			if ( e.CloseReason == CloseReason.UserClosing )
+			{
+				e.Cancel = true ;
+				startServerForm.Hide () ;
+			}
+		}
 
-	
+		private void startServerForm_certificateAccepted ( object? sender , X509Certificate2 e )
+		{
+			ShowMessage ( SimpleHttp.Properties.Resources.greenCheck , "Certificate accepted" , 
+					"Client server comunication commited, certificate accepted." , "    OK    " , "" , "" ) ;
+		}
+
 		private void startServerForm_invalidPortNumber ( object? sender , ErrorEventArgs e )
 		{
 			InvokeShowErrorMessage ( "Invalid port number" , e.GetException() ) ;
@@ -257,16 +274,16 @@ namespace SimpleHttp
 			spliterLayout.Enabled = true ;
 			StartServerForm? startServerForm = ( StartServerForm? ) sender ;
 			autoStarted = false ;
-			startFileServer ( startServerForm.port , startServerForm.webroot , startServerForm.certificate ) ;
-			startServerForm.Dispose () ;
+			startFileServer ( startServerForm.port , startServerForm.webroot , startServerForm.certificate , startServerForm.sslProtocol ) ;
+			startServerForm.Hide () ;
 			restoreForm () ;
 		}
 		
 		private void startServerForm_resourceServerChoosen ( object sender , EventArgs e )
 		{
 			autoStarted = false ;
-			startResourceServer ( startServerForm.port , startServerForm.selectedAssembly , startServerForm.certificate ) ;
-			startServerForm.Dispose () ;
+			startResourceServer ( startServerForm.port , startServerForm.selectedAssembly , startServerForm.certificate , startServerForm.sslProtocol ) ;
+			startServerForm.Hide () ;
 			restoreForm () ;
 		}
 		
@@ -313,7 +330,7 @@ namespace SimpleHttp
 				ShowErrorMessage ( "Certificate failed on client side" , e.GetException() ) ;
 			} ) ;
 		}
-		private bool startFileServer ( int port , string webroot , X509Certificate2 certificate )
+		private bool startFileServer ( int port , string webroot , X509Certificate2 certificate , SslProtocols sslProtocol )
 		{
 			try
 			{
@@ -324,10 +341,11 @@ namespace SimpleHttp
 					webServer = new WebServer ( new HttpServiceFactory ( webroot , null ) , 
 												webServer_clientConnected , webServer_serverResponded ,
 												webServer_sarted , webServer_stoped , 
-												webServer_errorRaised , webServer_disposed ) ;
+												webServer_connectionErrorRaised , 
+												webServer_criticalErrorRaised , webServer_disposed ) ;
 					//X509Certificate2 cert = StartServerForm.GenerateSelfSignedCertificate () ; // new  X509Certificate2 ( "C:\\Code\\localhost.pfx" ) ;
 
-					webServer.Listen ( port , certificate ) ;
+					webServer.Listen ( port , certificate , sslProtocol ) ;
 					//webServer.Listen ( port ) ;
 					spliterLayout.Enabled = true ;
 					return true ;
@@ -342,7 +360,7 @@ namespace SimpleHttp
 			return false ;
 		}
 
-		private bool startResourceServer ( int port , Assembly resourceAssembly , X509Certificate2 certificate )
+		private bool startResourceServer ( int port , Assembly resourceAssembly , X509Certificate2 certificate , SslProtocols sslProtocol )
 		{
 			mode = StartServerMode.resourceServer ;
 			this.resourceAssembly = resourceAssembly ;
@@ -355,9 +373,9 @@ namespace SimpleHttp
 				{
 					webServer = new WebServer ( new HttpServiceFactory ( resourceAssembly , null ) , 
 											webServer_clientConnected , webServer_serverResponded ,
-											webServer_sarted , webServer_stoped , webServer_errorRaised ,  webServer_disposed ) ;
+											webServer_sarted , webServer_stoped , webServer_connectionErrorRaised , webServer_criticalErrorRaised , webServer_disposed ) ;
 
-					webServer.Listen ( port , certificate ) ;
+					webServer.Listen ( port , certificate , sslProtocol ) ;
 					spliterLayout.Enabled = true ;
 					return true ;
 				}
@@ -439,7 +457,20 @@ namespace SimpleHttp
 				}
 			} ) ;
 		}
-		protected void webServer_errorRaised ( object sender , HttpConnectionDetails e )
+		
+		protected void webServer_criticalErrorRaised ( object sender , ErrorEventArgs e )
+		{
+			Exception ex = e.GetException() ;
+			webServer_connectionErrorRaised ( sender , new HttpConnectionDetails ( ex ) ) ;
+			BeginInvoke ( ()=>
+			{
+				string s = ex.InnerException == null ? ex.Message : ex.InnerException.Message ;
+				statusLabel.Text = "Error: " + s ;
+				notifyIcon.Text = "Http server is down,\r\n" + s ;
+				notifyIcon.Icon = SimpleHttp.Properties.Resources.stoped ;
+			} ) ;
+		}
+		protected void webServer_connectionErrorRaised ( object sender , HttpConnectionDetails e )
 		{
 			if ( IsDisposed ) return ;
 			if ( webServer == null ) return ;
@@ -517,15 +548,15 @@ namespace SimpleHttp
 			responseGrid.Rows.Clear () ;
 			if ( logList.SelectedIndex == -1 ) return ;
 			HttpConnectionDetails connectionDetails = ( HttpConnectionDetails ) logList.Items [ logList.SelectedIndex ] ;
-			if ( connectionDetails.codeError == null )
+			if ( connectionDetails.error == null )
 			{
 				lbError.Text = "" ;
 				lbError.Visible = false ;
 			}
 			else 
 			{
-				lbError.Text = connectionDetails.codeError.Message ;
-				lbError.Visible = false ;
+				lbError.Text = connectionDetails.error.InnerException == null ? connectionDetails.error.Message : connectionDetails.error.InnerException.Message ;
+				lbError.Visible = true ;
 			}
 			originLabel.Text = "Origin: " + ( connectionDetails.origin == null ? "?" : connectionDetails.origin.ToString() ) ;
 			int i ;
@@ -737,9 +768,7 @@ namespace SimpleHttp
 		{
 			try
 			{
-				if ( webServer != null )
-					if ( !webServer.isDisposed )
-						return true ;
+				return webServer == null ? false : webServer.isActive ;
 			}
 			catch { }
 			return false ;
@@ -785,7 +814,7 @@ namespace SimpleHttp
 		}
 		private void iconMenu_Opening ( object sender , System.ComponentModel.CancelEventArgs e )
 		{
-			bool showStartDialogMenuItemVisible = showStartDialogMenuItem.Visible = !serverStarted && ( startServerForm == null ) ;
+			bool showStartDialogMenuItemVisible = showStartDialogMenuItem.Visible = !serverStarted ;
 			//jebo im pas mater
 			showMonitorMenuItem.Visible = !Visible ;
 			stopServerMenuItem.Visible = serverStarted ;

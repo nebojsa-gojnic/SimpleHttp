@@ -7,18 +7,7 @@
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
 
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing && (components != null))
-			{
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
+		
 
 		#region Windows Form Designer generated code
 
@@ -29,8 +18,8 @@
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(StartServerForm));
-			this.cmdStartOnResources = new System.Windows.Forms.Button();
-			this.cmdStartOnFiles = new System.Windows.Forms.Button();
+			this.cmdResourceMode = new System.Windows.Forms.Button();
+			this.cmdFileMode = new System.Windows.Forms.Button();
 			this.gbFilePath = new System.Windows.Forms.GroupBox();
 			this.cmdSelectPath = new System.Windows.Forms.Button();
 			this.tbWebroot = new System.Windows.Forms.TextBox();
@@ -44,9 +33,11 @@
 			this.startPanel = new System.Windows.Forms.Panel();
 			this.cmdStart = new System.Windows.Forms.Button();
 			this.mainLayout = new System.Windows.Forms.FlowLayoutPanel();
+			this.gbProtocol = new System.Windows.Forms.GroupBox();
+			this.button1 = new System.Windows.Forms.Button();
+			this.cbProtocol = new System.Windows.Forms.ComboBox();
 			this.gbCertificate = new System.Windows.Forms.GroupBox();
 			this.cmdSelectCertificate = new System.Windows.Forms.Button();
-			this.cbNoCertificate = new System.Windows.Forms.CheckBox();
 			this.tbCertificate = new System.Windows.Forms.TextBox();
 			this.openAssemblyDialog = new System.Windows.Forms.OpenFileDialog();
 			this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
@@ -54,8 +45,17 @@
 			this.openFileDialog3 = new System.Windows.Forms.OpenFileDialog();
 			this.openCertificateDialog = new System.Windows.Forms.OpenFileDialog();
 			this.passwordPanel = new System.Windows.Forms.Panel();
-			this.gbPassword = new System.Windows.Forms.GroupBox();
+			this.gbSiteName = new System.Windows.Forms.GroupBox();
+			this.clientTargetPanel = new System.Windows.Forms.FlowLayoutPanel();
+			this.clientTaragetLabel = new System.Windows.Forms.Label();
+			this.clientTaragetText = new System.Windows.Forms.Label();
 			this.cmdCancelSslTest = new System.Windows.Forms.Button();
+			this.cmdStartCertificateTest = new System.Windows.Forms.Button();
+			this.button2 = new System.Windows.Forms.Button();
+			this.button3 = new System.Windows.Forms.Button();
+			this.tbSiteName = new System.Windows.Forms.TextBox();
+			this.gbPassword = new System.Windows.Forms.GroupBox();
+			this.cmdClosePasswordPanel = new System.Windows.Forms.Button();
 			this.cmdAcceptPassword = new System.Windows.Forms.Button();
 			this.tbPassword = new System.Windows.Forms.TextBox();
 			this.gbFilePath.SuspendLayout();
@@ -64,34 +64,38 @@
 			this.buttonLayout.SuspendLayout();
 			this.startPanel.SuspendLayout();
 			this.mainLayout.SuspendLayout();
+			this.gbProtocol.SuspendLayout();
 			this.gbCertificate.SuspendLayout();
 			this.passwordPanel.SuspendLayout();
+			this.gbSiteName.SuspendLayout();
+			this.clientTargetPanel.SuspendLayout();
 			this.gbPassword.SuspendLayout();
 			this.SuspendLayout();
 			// 
-			// cmdStartOnResources
+			// cmdResourceMode
 			// 
-			this.cmdStartOnResources.Location = new System.Drawing.Point(217, 4);
-			this.cmdStartOnResources.Margin = new System.Windows.Forms.Padding(3, 4, 0, 4);
-			this.cmdStartOnResources.Name = "cmdStartOnResources";
-			this.cmdStartOnResources.Size = new System.Drawing.Size(211, 73);
-			this.cmdStartOnResources.TabIndex = 0;
-			this.cmdStartOnResources.TabStop = false;
-			this.cmdStartOnResources.Text = "&Resource based server";
-			this.cmdStartOnResources.UseVisualStyleBackColor = true;
-			this.cmdStartOnResources.Click += new System.EventHandler(this.cmdStartOnResources_Click);
+			this.cmdResourceMode.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(52)))), ((int)(((byte)(52)))));
+			this.cmdResourceMode.Location = new System.Drawing.Point(217, 4);
+			this.cmdResourceMode.Margin = new System.Windows.Forms.Padding(3, 4, 0, 4);
+			this.cmdResourceMode.Name = "cmdResourceMode";
+			this.cmdResourceMode.Size = new System.Drawing.Size(211, 73);
+			this.cmdResourceMode.TabIndex = 0;
+			this.cmdResourceMode.TabStop = false;
+			this.cmdResourceMode.Text = "&Resource based server";
+			this.cmdResourceMode.UseVisualStyleBackColor = true;
+			this.cmdResourceMode.Click += new System.EventHandler(this.cmdResourceMode_Click);
 			// 
-			// cmdStartOnFiles
+			// cmdFileMode
 			// 
-			this.cmdStartOnFiles.Location = new System.Drawing.Point(0, 4);
-			this.cmdStartOnFiles.Margin = new System.Windows.Forms.Padding(0, 4, 3, 4);
-			this.cmdStartOnFiles.Name = "cmdStartOnFiles";
-			this.cmdStartOnFiles.Size = new System.Drawing.Size(211, 73);
-			this.cmdStartOnFiles.TabIndex = 1;
-			this.cmdStartOnFiles.TabStop = false;
-			this.cmdStartOnFiles.Text = "&File based server";
-			this.cmdStartOnFiles.UseVisualStyleBackColor = true;
-			this.cmdStartOnFiles.Click += new System.EventHandler(this.cmdStartOnFiles_Click);
+			this.cmdFileMode.Location = new System.Drawing.Point(0, 4);
+			this.cmdFileMode.Margin = new System.Windows.Forms.Padding(0, 4, 3, 4);
+			this.cmdFileMode.Name = "cmdFileMode";
+			this.cmdFileMode.Size = new System.Drawing.Size(211, 73);
+			this.cmdFileMode.TabIndex = 1;
+			this.cmdFileMode.TabStop = false;
+			this.cmdFileMode.Text = "&File based server";
+			this.cmdFileMode.UseVisualStyleBackColor = true;
+			this.cmdFileMode.Click += new System.EventHandler(this.cmdFileMode_Click);
 			// 
 			// gbFilePath
 			// 
@@ -124,12 +128,15 @@
 			// 
 			this.tbWebroot.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+			this.tbWebroot.BackColor = System.Drawing.SystemColors.ControlLight;
 			this.tbWebroot.Location = new System.Drawing.Point(12, 30);
 			this.tbWebroot.Margin = new System.Windows.Forms.Padding(0);
 			this.tbWebroot.Name = "tbWebroot";
 			this.tbWebroot.Size = new System.Drawing.Size(373, 27);
 			this.tbWebroot.TabIndex = 0;
 			this.tbWebroot.Text = "C:\\Code\\Nodes\\PipeMania\\PipeMania\\Resources";
+			this.tbWebroot.Enter += new System.EventHandler(this.tbWebroot_Enter);
+			this.tbWebroot.Leave += new System.EventHandler(this.tbWebroot_Leave);
 			// 
 			// gpPort
 			// 
@@ -147,6 +154,7 @@
 			// 
 			this.tbPort.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+			this.tbPort.BackColor = System.Drawing.SystemColors.ControlLight;
 			this.tbPort.Location = new System.Drawing.Point(12, 32);
 			this.tbPort.Margin = new System.Windows.Forms.Padding(0);
 			this.tbPort.MaxLength = 5;
@@ -157,7 +165,9 @@
 			this.tbPort.Text = "50080";
 			this.tbPort.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 			this.tbPort.TextChanged += new System.EventHandler(this.tbPort_TextChanged);
+			this.tbPort.Enter += new System.EventHandler(this.tbPort_Enter);
 			this.tbPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.tbPort_KeyPress);
+			this.tbPort.Leave += new System.EventHandler(this.tbPort_Leave);
 			// 
 			// folders
 			// 
@@ -195,6 +205,7 @@
 			// 
 			this.cbAssemblies.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+			this.cbAssemblies.BackColor = System.Drawing.SystemColors.ControlLight;
 			this.cbAssemblies.IntegralHeight = false;
 			this.cbAssemblies.Location = new System.Drawing.Point(12, 30);
 			this.cbAssemblies.Margin = new System.Windows.Forms.Padding(0);
@@ -205,15 +216,17 @@
 			this.cbAssemblies.DropDown += new System.EventHandler(this.cbAssemblies_DropDown);
 			this.cbAssemblies.SelectedIndexChanged += new System.EventHandler(this.cbAssemblies_SelectedIndexChanged);
 			this.cbAssemblies.DropDownClosed += new System.EventHandler(this.cbAssemblies_DropDownClosed);
+			this.cbAssemblies.Enter += new System.EventHandler(this.cbAssemblies_Enter);
 			this.cbAssemblies.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbAssemblies_KeyDown);
 			this.cbAssemblies.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.cbAssemblies_KeyPress);
+			this.cbAssemblies.Leave += new System.EventHandler(this.cbAssemblies_Leave);
 			// 
 			// buttonLayout
 			// 
 			this.buttonLayout.AutoSize = true;
 			this.buttonLayout.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.buttonLayout.Controls.Add(this.cmdStartOnFiles);
-			this.buttonLayout.Controls.Add(this.cmdStartOnResources);
+			this.buttonLayout.Controls.Add(this.cmdFileMode);
+			this.buttonLayout.Controls.Add(this.cmdResourceMode);
 			this.buttonLayout.Location = new System.Drawing.Point(11, 11);
 			this.buttonLayout.Name = "buttonLayout";
 			this.buttonLayout.Size = new System.Drawing.Size(428, 81);
@@ -225,7 +238,7 @@
 			this.startPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this.startPanel.Controls.Add(this.gpPort);
 			this.startPanel.Controls.Add(this.cmdStart);
-			this.startPanel.Location = new System.Drawing.Point(11, 363);
+			this.startPanel.Location = new System.Drawing.Point(11, 422);
 			this.startPanel.Name = "startPanel";
 			this.startPanel.Size = new System.Drawing.Size(429, 74);
 			this.startPanel.TabIndex = 6;
@@ -249,6 +262,7 @@
 			this.mainLayout.Controls.Add(this.buttonLayout);
 			this.mainLayout.Controls.Add(this.gbFilePath);
 			this.mainLayout.Controls.Add(this.gbAssemblies);
+			this.mainLayout.Controls.Add(this.gbProtocol);
 			this.mainLayout.Controls.Add(this.gbCertificate);
 			this.mainLayout.Controls.Add(this.startPanel);
 			this.mainLayout.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
@@ -256,20 +270,64 @@
 			this.mainLayout.Margin = new System.Windows.Forms.Padding(0);
 			this.mainLayout.Name = "mainLayout";
 			this.mainLayout.Padding = new System.Windows.Forms.Padding(8);
-			this.mainLayout.Size = new System.Drawing.Size(451, 448);
+			this.mainLayout.Size = new System.Drawing.Size(451, 507);
 			this.mainLayout.TabIndex = 7;
 			this.mainLayout.WrapContents = false;
+			// 
+			// gbProtocol
+			// 
+			this.gbProtocol.Controls.Add(this.button1);
+			this.gbProtocol.Controls.Add(this.cbProtocol);
+			this.gbProtocol.Location = new System.Drawing.Point(8, 255);
+			this.gbProtocol.Margin = new System.Windows.Forms.Padding(0, 4, 0, 0);
+			this.gbProtocol.Name = "gbProtocol";
+			this.gbProtocol.Padding = new System.Windows.Forms.Padding(0);
+			this.gbProtocol.Size = new System.Drawing.Size(432, 74);
+			this.gbProtocol.TabIndex = 7;
+			this.gbProtocol.TabStop = false;
+			this.gbProtocol.Text = "Security protocol:";
+			// 
+			// button1
+			// 
+			this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button1.Location = new System.Drawing.Point(615, 27);
+			this.button1.Margin = new System.Windows.Forms.Padding(0);
+			this.button1.Name = "button1";
+			this.button1.Size = new System.Drawing.Size(40, 27);
+			this.button1.TabIndex = 4;
+			this.button1.TabStop = false;
+			this.button1.Text = "...";
+			this.button1.UseVisualStyleBackColor = true;
+			// 
+			// cbProtocol
+			// 
+			this.cbProtocol.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.cbProtocol.BackColor = System.Drawing.SystemColors.ControlLight;
+			this.cbProtocol.IntegralHeight = false;
+			this.cbProtocol.Location = new System.Drawing.Point(12, 30);
+			this.cbProtocol.Margin = new System.Windows.Forms.Padding(0);
+			this.cbProtocol.MaxDropDownItems = 12;
+			this.cbProtocol.Name = "cbProtocol";
+			this.cbProtocol.Size = new System.Drawing.Size(408, 28);
+			this.cbProtocol.TabIndex = 0;
+			this.cbProtocol.SelectedIndexChanged += new System.EventHandler(this.cbProtocol_SelectedIndexChanged);
+			this.cbProtocol.TextChanged += new System.EventHandler(this.cbProtocol_TextChanged);
+			this.cbProtocol.Enter += new System.EventHandler(this.cbProtocol_Enter);
+			this.cbProtocol.KeyDown += new System.Windows.Forms.KeyEventHandler(this.cbProtocol_KeyDown);
+			this.cbProtocol.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.cbProtocol_KeyPress);
+			this.cbProtocol.Leave += new System.EventHandler(this.cbProtocol_Leave);
 			// 
 			// gbCertificate
 			// 
 			this.gbCertificate.Controls.Add(this.cmdSelectCertificate);
-			this.gbCertificate.Controls.Add(this.cbNoCertificate);
 			this.gbCertificate.Controls.Add(this.tbCertificate);
-			this.gbCertificate.Location = new System.Drawing.Point(8, 259);
+			this.gbCertificate.Enabled = false;
+			this.gbCertificate.Location = new System.Drawing.Point(8, 337);
 			this.gbCertificate.Margin = new System.Windows.Forms.Padding(0, 8, 0, 8);
 			this.gbCertificate.Name = "gbCertificate";
 			this.gbCertificate.Padding = new System.Windows.Forms.Padding(0);
-			this.gbCertificate.Size = new System.Drawing.Size(432, 93);
+			this.gbCertificate.Size = new System.Drawing.Size(432, 74);
 			this.gbCertificate.TabIndex = 3;
 			this.gbCertificate.TabStop = false;
 			this.gbCertificate.Text = " Load SSL certifcate from: ";
@@ -288,23 +346,11 @@
 			this.cmdSelectCertificate.UseVisualStyleBackColor = true;
 			this.cmdSelectCertificate.Click += new System.EventHandler(this.cmdSelectCertificate_Click);
 			// 
-			// cbNoCertificate
-			// 
-			this.cbNoCertificate.AutoSize = true;
-			this.cbNoCertificate.Checked = true;
-			this.cbNoCertificate.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.cbNoCertificate.Location = new System.Drawing.Point(11, 61);
-			this.cbNoCertificate.Name = "cbNoCertificate";
-			this.cbNoCertificate.Size = new System.Drawing.Size(143, 24);
-			this.cbNoCertificate.TabIndex = 2;
-			this.cbNoCertificate.Text = "&No SSL, flat HTTP";
-			this.cbNoCertificate.UseVisualStyleBackColor = true;
-			this.cbNoCertificate.CheckedChanged += new System.EventHandler(this.cbNoCertificate_CheckedChanged);
-			// 
 			// tbCertificate
 			// 
 			this.tbCertificate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+			this.tbCertificate.BackColor = System.Drawing.SystemColors.ControlLight;
 			this.tbCertificate.Location = new System.Drawing.Point(12, 30);
 			this.tbCertificate.Margin = new System.Windows.Forms.Padding(0);
 			this.tbCertificate.Name = "tbCertificate";
@@ -312,6 +358,8 @@
 			this.tbCertificate.TabIndex = 0;
 			this.tbCertificate.Text = "C:\\Code\\localhost2.pfx";
 			this.tbCertificate.TextChanged += new System.EventHandler(this.tbCertificate_TextChanged);
+			this.tbCertificate.Enter += new System.EventHandler(this.tbCertificate_Enter);
+			this.tbCertificate.Leave += new System.EventHandler(this.tbCertificate_Leave);
 			// 
 			// openAssemblyDialog
 			// 
@@ -346,51 +394,174 @@
 			// 
 			// passwordPanel
 			// 
+			this.passwordPanel.Controls.Add(this.gbSiteName);
 			this.passwordPanel.Controls.Add(this.gbPassword);
 			this.passwordPanel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.passwordPanel.Location = new System.Drawing.Point(0, 0);
 			this.passwordPanel.Name = "passwordPanel";
-			this.passwordPanel.Size = new System.Drawing.Size(452, 457);
+			this.passwordPanel.Size = new System.Drawing.Size(452, 508);
 			this.passwordPanel.TabIndex = 9;
 			this.passwordPanel.Visible = false;
 			this.passwordPanel.Click += new System.EventHandler(this.passwordPanel_Click);
 			this.passwordPanel.Resize += new System.EventHandler(this.passwordPanel_Resize);
 			// 
-			// gbPassword
+			// gbSiteName
 			// 
-			this.gbPassword.Controls.Add(this.cmdCancelSslTest);
-			this.gbPassword.Controls.Add(this.cmdAcceptPassword);
-			this.gbPassword.Controls.Add(this.tbPassword);
-			this.gbPassword.Location = new System.Drawing.Point(11, 82);
-			this.gbPassword.Margin = new System.Windows.Forms.Padding(0);
-			this.gbPassword.Name = "gbPassword";
-			this.gbPassword.Padding = new System.Windows.Forms.Padding(0);
-			this.gbPassword.Size = new System.Drawing.Size(391, 74);
-			this.gbPassword.TabIndex = 9;
-			this.gbPassword.TabStop = false;
-			this.gbPassword.Text = " Certificate file password(it can be empty): ";
+			this.gbSiteName.Controls.Add(this.clientTargetPanel);
+			this.gbSiteName.Controls.Add(this.cmdCancelSslTest);
+			this.gbSiteName.Controls.Add(this.cmdStartCertificateTest);
+			this.gbSiteName.Controls.Add(this.button2);
+			this.gbSiteName.Controls.Add(this.button3);
+			this.gbSiteName.Controls.Add(this.tbSiteName);
+			this.gbSiteName.Location = new System.Drawing.Point(11, 202);
+			this.gbSiteName.Margin = new System.Windows.Forms.Padding(0);
+			this.gbSiteName.Name = "gbSiteName";
+			this.gbSiteName.Padding = new System.Windows.Forms.Padding(0);
+			this.gbSiteName.Size = new System.Drawing.Size(400, 100);
+			this.gbSiteName.TabIndex = 10;
+			this.gbSiteName.TabStop = false;
+			this.gbSiteName.Text = " Site / certificate header name:";
+			this.gbSiteName.Visible = false;
+			// 
+			// clientTargetPanel
+			// 
+			this.clientTargetPanel.AutoSize = true;
+			this.clientTargetPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.clientTargetPanel.Controls.Add(this.clientTaragetLabel);
+			this.clientTargetPanel.Controls.Add(this.clientTaragetText);
+			this.clientTargetPanel.Location = new System.Drawing.Point(10, 69);
+			this.clientTargetPanel.Margin = new System.Windows.Forms.Padding(0);
+			this.clientTargetPanel.Name = "clientTargetPanel";
+			this.clientTargetPanel.Size = new System.Drawing.Size(269, 20);
+			this.clientTargetPanel.TabIndex = 5;
+			// 
+			// clientTaragetLabel
+			// 
+			this.clientTaragetLabel.AutoSize = true;
+			this.clientTaragetLabel.Location = new System.Drawing.Point(0, 0);
+			this.clientTaragetLabel.Margin = new System.Windows.Forms.Padding(0);
+			this.clientTaragetLabel.Name = "clientTaragetLabel";
+			this.clientTaragetLabel.Size = new System.Drawing.Size(149, 20);
+			this.clientTaragetLabel.TabIndex = 6;
+			this.clientTaragetLabel.Text = "Client target address:";
+			// 
+			// clientTaragetText
+			// 
+			this.clientTaragetText.AutoSize = true;
+			this.clientTaragetText.Font = new System.Drawing.Font("Segoe UI Semibold", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+			this.clientTaragetText.Location = new System.Drawing.Point(149, 0);
+			this.clientTaragetText.Margin = new System.Windows.Forms.Padding(0);
+			this.clientTaragetText.Name = "clientTaragetText";
+			this.clientTaragetText.Size = new System.Drawing.Size(120, 20);
+			this.clientTaragetText.TabIndex = 7;
+			this.clientTaragetText.Text = "https://localhost";
 			// 
 			// cmdCancelSslTest
 			// 
 			this.cmdCancelSslTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.cmdCancelSslTest.AutoSize = true;
 			this.cmdCancelSslTest.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.cmdCancelSslTest.Location = new System.Drawing.Point(311, 30);
+			this.cmdCancelSslTest.Location = new System.Drawing.Point(310, 29);
 			this.cmdCancelSslTest.Margin = new System.Windows.Forms.Padding(0);
 			this.cmdCancelSslTest.Name = "cmdCancelSslTest";
-			this.cmdCancelSslTest.Size = new System.Drawing.Size(71, 30);
-			this.cmdCancelSslTest.TabIndex = 2;
+			this.cmdCancelSslTest.Size = new System.Drawing.Size(79, 30);
+			this.cmdCancelSslTest.TabIndex = 4;
 			this.cmdCancelSslTest.TabStop = false;
-			this.cmdCancelSslTest.Text = " Cancel ";
+			this.cmdCancelSslTest.Text = "  Cancel  ";
 			this.cmdCancelSslTest.UseVisualStyleBackColor = true;
 			this.cmdCancelSslTest.Click += new System.EventHandler(this.cmdCancelSslTest_Click);
+			// 
+			// cmdStartCertificateTest
+			// 
+			this.cmdStartCertificateTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.cmdStartCertificateTest.AutoSize = true;
+			this.cmdStartCertificateTest.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.cmdStartCertificateTest.Location = new System.Drawing.Point(217, 29);
+			this.cmdStartCertificateTest.Margin = new System.Windows.Forms.Padding(0);
+			this.cmdStartCertificateTest.Name = "cmdStartCertificateTest";
+			this.cmdStartCertificateTest.Size = new System.Drawing.Size(86, 30);
+			this.cmdStartCertificateTest.TabIndex = 3;
+			this.cmdStartCertificateTest.TabStop = false;
+			this.cmdStartCertificateTest.Text = " Start test ";
+			this.cmdStartCertificateTest.UseVisualStyleBackColor = true;
+			this.cmdStartCertificateTest.Click += new System.EventHandler(this.cmdStartCertificateTest_Click);
+			// 
+			// button2
+			// 
+			this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button2.AutoSize = true;
+			this.button2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.button2.Location = new System.Drawing.Point(514, 27);
+			this.button2.Margin = new System.Windows.Forms.Padding(0);
+			this.button2.Name = "button2";
+			this.button2.Size = new System.Drawing.Size(71, 30);
+			this.button2.TabIndex = 2;
+			this.button2.TabStop = false;
+			this.button2.Text = " Cancel ";
+			this.button2.UseVisualStyleBackColor = true;
+			// 
+			// button3
+			// 
+			this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.button3.AutoSize = true;
+			this.button3.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.button3.Location = new System.Drawing.Point(443, 27);
+			this.button3.Margin = new System.Windows.Forms.Padding(0);
+			this.button3.Name = "button3";
+			this.button3.Size = new System.Drawing.Size(63, 30);
+			this.button3.TabIndex = 1;
+			this.button3.TabStop = false;
+			this.button3.Text = "   OK   ";
+			this.button3.UseVisualStyleBackColor = true;
+			// 
+			// tbSiteName
+			// 
+			this.tbSiteName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.tbSiteName.Location = new System.Drawing.Point(12, 30);
+			this.tbSiteName.Margin = new System.Windows.Forms.Padding(0);
+			this.tbSiteName.Name = "tbSiteName";
+			this.tbSiteName.Size = new System.Drawing.Size(195, 27);
+			this.tbSiteName.TabIndex = 0;
+			this.tbSiteName.Text = "localhost";
+			this.tbSiteName.TextChanged += new System.EventHandler(this.tbSiteName_TextChanged);
+			this.tbSiteName.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbSiteName_KeyDown);
+			// 
+			// gbPassword
+			// 
+			this.gbPassword.Controls.Add(this.cmdClosePasswordPanel);
+			this.gbPassword.Controls.Add(this.cmdAcceptPassword);
+			this.gbPassword.Controls.Add(this.tbPassword);
+			this.gbPassword.Location = new System.Drawing.Point(11, 0);
+			this.gbPassword.Margin = new System.Windows.Forms.Padding(0);
+			this.gbPassword.Name = "gbPassword";
+			this.gbPassword.Padding = new System.Windows.Forms.Padding(0);
+			this.gbPassword.Size = new System.Drawing.Size(400, 74);
+			this.gbPassword.TabIndex = 9;
+			this.gbPassword.TabStop = false;
+			this.gbPassword.Text = " Certificate file password(it can be empty): ";
+			// 
+			// cmdClosePasswordPanel
+			// 
+			this.cmdClosePasswordPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.cmdClosePasswordPanel.AutoSize = true;
+			this.cmdClosePasswordPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.cmdClosePasswordPanel.Location = new System.Drawing.Point(310, 29);
+			this.cmdClosePasswordPanel.Margin = new System.Windows.Forms.Padding(0);
+			this.cmdClosePasswordPanel.Name = "cmdClosePasswordPanel";
+			this.cmdClosePasswordPanel.Size = new System.Drawing.Size(79, 30);
+			this.cmdClosePasswordPanel.TabIndex = 2;
+			this.cmdClosePasswordPanel.TabStop = false;
+			this.cmdClosePasswordPanel.Text = "  Cancel  ";
+			this.cmdClosePasswordPanel.UseVisualStyleBackColor = true;
+			this.cmdClosePasswordPanel.Click += new System.EventHandler(this.cmdCancelSslTest_Click);
 			// 
 			// cmdAcceptPassword
 			// 
 			this.cmdAcceptPassword.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.cmdAcceptPassword.AutoSize = true;
 			this.cmdAcceptPassword.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.cmdAcceptPassword.Location = new System.Drawing.Point(240, 30);
+			this.cmdAcceptPassword.Location = new System.Drawing.Point(240, 29);
 			this.cmdAcceptPassword.Margin = new System.Windows.Forms.Padding(0);
 			this.cmdAcceptPassword.Name = "cmdAcceptPassword";
 			this.cmdAcceptPassword.Size = new System.Drawing.Size(63, 30);
@@ -404,11 +575,11 @@
 			// 
 			this.tbPassword.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.tbPassword.Location = new System.Drawing.Point(9, 31);
+			this.tbPassword.Location = new System.Drawing.Point(12, 30);
 			this.tbPassword.Margin = new System.Windows.Forms.Padding(0);
 			this.tbPassword.Name = "tbPassword";
 			this.tbPassword.PasswordChar = '#';
-			this.tbPassword.Size = new System.Drawing.Size(223, 27);
+			this.tbPassword.Size = new System.Drawing.Size(218, 27);
 			this.tbPassword.TabIndex = 0;
 			this.tbPassword.Text = "C:\\Code\\Nodes\\PipeMania\\PipeMania\\Resources";
 			this.tbPassword.KeyDown += new System.Windows.Forms.KeyEventHandler(this.tbPassword_KeyDown);
@@ -419,7 +590,7 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoSize = true;
 			this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.ClientSize = new System.Drawing.Size(452, 457);
+			this.ClientSize = new System.Drawing.Size(452, 508);
 			this.Controls.Add(this.mainLayout);
 			this.Controls.Add(this.passwordPanel);
 			this.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
@@ -442,9 +613,14 @@
 			this.startPanel.ResumeLayout(false);
 			this.mainLayout.ResumeLayout(false);
 			this.mainLayout.PerformLayout();
+			this.gbProtocol.ResumeLayout(false);
 			this.gbCertificate.ResumeLayout(false);
 			this.gbCertificate.PerformLayout();
 			this.passwordPanel.ResumeLayout(false);
+			this.gbSiteName.ResumeLayout(false);
+			this.gbSiteName.PerformLayout();
+			this.clientTargetPanel.ResumeLayout(false);
+			this.clientTargetPanel.PerformLayout();
 			this.gbPassword.ResumeLayout(false);
 			this.gbPassword.PerformLayout();
 			this.ResumeLayout(false);
@@ -454,8 +630,8 @@
 
         #endregion
 
-        private Button cmdStartOnResources;
-        private Button cmdStartOnFiles;
+        private Button cmdResourceMode;
+        private Button cmdFileMode;
         private GroupBox gbFilePath;
         private TextBox tbWebroot;
         private GroupBox gpPort;
@@ -471,7 +647,6 @@
         private OpenFileDialog openAssemblyDialog;
         private GroupBox gbCertificate;
         private TextBox tbCertificate;
-        private CheckBox cbNoCertificate;
         private Button cmdSelectCertificate;
         private OpenFileDialog openFileDialog1;
         private OpenFileDialog openFileDialog2;
@@ -481,7 +656,19 @@
         private GroupBox gbPassword;
         private Button cmdAcceptPassword;
         private TextBox tbPassword;
-        private Button cmdCancelSslTest;
+        private Button cmdClosePasswordPanel;
 		private Button cmdLoadAssembly;
-	}
+        private GroupBox gbProtocol;
+        private Button button1;
+        private ComboBox cbProtocol;
+        private GroupBox gbSiteName;
+        private Button button2;
+        private Button button3;
+        private TextBox tbSiteName;
+        private Button cmdCancelSslTest;
+        private Button cmdStartCertificateTest;
+        private FlowLayoutPanel clientTargetPanel;
+        private Label clientTaragetLabel;
+        private Label clientTaragetText;
+    }
 }

@@ -41,7 +41,7 @@ namespace SimpleHttp
 		/// Creates new instance with given Assembly instance
 		/// </summary>
 		/// <param name="assembly">Assembly instance to wrap and represent as item</param>
-		public AssemblyItem ( Assembly assembly ):this( assembly , false ) 
+		public AssemblyItem ( Assembly assembly ):this ( assembly , false ) 
 		{
 		}
 		/// <summary>
@@ -55,7 +55,7 @@ namespace SimpleHttp
 			this.assembly = assembly ;
 			name = this.assembly.FullName ;
 			nameAndVersion = name ;
-			this.showBrackets = false ;
+			this.showBrackets = showBrackets ;
 			int i = name.IndexOf ( ',' ) ;
 			if ( i != -1 )
 			{

@@ -6,27 +6,43 @@ using System.Security.Cryptography.X509Certificates ;
 using System.Reflection ;
 using System.Net ;
 using System.Text ;
-using System.Threading.Tasks ;
+using System.Net.Http ;
 using System.Windows.Forms ;
 using System.Net.Security;
+using System.Security ;
 using System.Security.Authentication ;
 using System.Security.Cryptography ;
-using System.Net.Sockets;
-using System.Drawing.Printing;
+using System.Net.Sockets ;
+using WebSockets ;
 
 namespace SimpleHttp
 {
 	public partial class StartServerForm : Form
 	{
-		public const SslProtocols sslProtocol = SslProtocols.Tls12 ;
 		//Personal Information Exchange (*.pkx)|*.pkx
 		protected StartServerMode _mode ;
 		protected TcpListener tcpListener ;
 		protected Bitmap mainLayoutBitmap ;
 		protected Brush mainLayoutGrayBrush ;
 		protected Brush mainLayoutWindowBrush ;
-		protected bool ignorebNoCertificateCheck ;
-
+		protected Color inactiveEditBack ;
+		protected Dictionary <string,Dictionary<SslProtocols,CertificateTest>> certificateTests ;
+		protected CertificateTest runningTest ;
+		public class PasswordPanelBackgroundState
+		{
+			public Rectangle passwordBounds ;
+			public Rectangle siteNameBounds ;
+			public bool passwordVisible ;
+			public bool siteNameVisible ;
+			public PasswordPanelBackgroundState ()
+			{
+				passwordBounds = 
+				siteNameBounds = Rectangle.Empty ;
+				passwordVisible = 
+				siteNameVisible = false ;
+			}
+		}
+		protected PasswordPanelBackgroundState passwordPanelBackgroundState  ;
 		/// <summary>
 		/// Auxiliary variable for the certificatePassword property
 		/// </summary>
@@ -88,7 +104,7 @@ namespace SimpleHttp
 		/// </returns>
 		public X509Certificate2 certificate 
 		{
-			get => cbNoCertificate.Checked ? null : _certificate ;
+			get => useSsl ? _certificate : null ;
 		}
 		/// <summary>
 		/// Auxiliary variable for the certificateClientError property
@@ -143,21 +159,61 @@ namespace SimpleHttp
 			get => _assemblyPath ;
 			set => setAssemblyPath ( value ) ;
 		}
-		
+		public bool useSsl
+		{
+			get => cbProtocol.SelectedIndex >= 1 ;
+		}
+		/// <summary>
+		/// Get method for the sslProtocol
+		/// </summary>
+		/// <returns></returns>
+		public SslProtocols getSslProtocol ()
+		{
+			return cbProtocol.SelectedIndex == -1 ? SslProtocols.None :
+				( ( EnumItem<SslProtocols> ) cbProtocol.Items [ cbProtocol.SelectedIndex ] ).value ;
+		}
+		public SslProtocols sslProtocol
+		{
+			get => getSslProtocol () ;
+		}
 		/// <summary>
 		/// Creates new instance of StartServerForm
 		/// </summary>
 		public StartServerForm()
 		{
 			InitializeComponent() ;
+			certificateTests = new Dictionary<string, Dictionary<SslProtocols, CertificateTest>> () ;
+
+			runningTest = null ;
+			passwordPanelBackgroundState = new PasswordPanelBackgroundState () ;
 			_assemblyPath = "" ;
 			certificatePassword = "" ;
+			Color col1 = SystemColors.Window ;
+			Color col2 = SystemColors.ButtonFace ;
+			tbCertificate.BackColor =
+			cbAssemblies.BackColor =
+			tbWebroot.BackColor =
+			cbProtocol.BackColor = 
+			inactiveEditBack = Color.FromArgb (  255 ,
+												( ( int ) col1.R + ( int ) col2.R ) >> 1 ,
+												( ( int ) col1.G + ( int ) col2.G ) >> 1 ,
+												( ( int ) col1.B + ( int ) col2.B ) >> 1 ) ;
+			
 			loadAssemblies () ;
 			tcpListener = null ;
 			mainLayoutBitmap = null ;
 			mainLayoutGrayBrush = new SolidBrush ( Color.FromArgb ( 150 , Color.Gray ) ) ;
 			mainLayoutWindowBrush = new SolidBrush ( SystemColors.Control ) ;
-			ignorebNoCertificateCheck = false ;
+			ComboBox.ObjectCollection protocolItems = cbProtocol.Items ;
+			protocolItems.Add ( new EnumItem<SslProtocols> ( "No security, flat HTTP" , SslProtocols.None ) ) ;
+			protocolItems.Add ( new EnumItem<SslProtocols> ( "None (operating system default protocol)" , SslProtocols.None ) ) ;
+			protocolItems.Add ( new EnumItem<SslProtocols> ( "Defualt (obsolete, SSL 3 and TLS 1.0)" , SslProtocols.Default ) ) ;
+			protocolItems.Add ( new EnumItem<SslProtocols> ( "TLS (TLS 1.0, provided for backward compatibility)" , SslProtocols.Tls ) ) ;
+			protocolItems.Add ( new EnumItem<SslProtocols> ( "TLS 1.0 (obsolete)" , SslProtocols.Tls11 ) ) ;
+			protocolItems.Add ( new EnumItem<SslProtocols> ( "TLS 1.2" , SslProtocols.Tls12 ) ) ;
+			protocolItems.Add ( new EnumItem<SslProtocols> ( "TLS 1.3" , SslProtocols.Tls13 ) ) ;
+			cbProtocol.SelectedIndex = 0 ;
+			cbProtocol.SelectionLength = 0 ;
 			//gbPassword.Location = new Point ( - gbPassword.Width , - gbPassword.Height ) ;
 		}
 		/// <summary>
@@ -182,7 +238,7 @@ namespace SimpleHttp
 			base.OnHandleCreated(e) ;
 		}
 		/// <summary>
-		/// Set location(in center of owner if any(
+		/// Set location(in center of owner if any)
 		/// </summary>
 		private void setLocation ()
 		{
@@ -200,16 +256,16 @@ namespace SimpleHttp
 			_mode = value ;
 			if ( _mode == StartServerMode.fileServer )
 			{
-				cmdStartOnFiles.BackColor = Color.White ;
-				cmdStartOnResources.BackColor = SystemColors.ButtonFace ;
+				cmdFileMode.BackColor = SystemColors.Window ;
+				cmdResourceMode.BackColor = SystemColors.ButtonFace ;
 				gbAssemblies.Visible = false ;
 				gbFilePath.Visible = true ;
 				checkFolderSelection ( false , false ) ;
 			}
 			else
 			{
-				cmdStartOnResources.BackColor = Color.White ;
-				cmdStartOnFiles.BackColor = SystemColors.ButtonFace ;
+				cmdResourceMode.BackColor = SystemColors.Window ;
+				cmdFileMode.BackColor = SystemColors.ButtonFace ;
 				gbAssemblies.Visible = true ;
 				gbFilePath.Visible = false ;
 				cbAssemblies_SelectedIndexChanged ( cbAssemblies , new EventArgs () ) ;
@@ -248,20 +304,38 @@ namespace SimpleHttp
 			get => getPort () ;
 		}
 		
-		
-		private void cmdStartOnResources_Click ( object sender , EventArgs e )
+		/// <summary>
+		/// When user click "Resource based server" button
+		/// </summary>
+		/// <param name="sender">(Button)</param>
+		/// <param name="e">(EventArgs)</param>
+		private void cmdResourceMode_Click ( object sender , EventArgs e )
 		{
 			mode = StartServerMode.resourceServer ;
 		}
-		
-		private void cmdStartOnFiles_Click ( object sender , EventArgs e )
+		/// <summary>
+		/// When user click "Filebased server" button
+		/// </summary>
+		/// <param name="sender">(Button)</param>
+		/// <param name="e">(EventArgs)</param>
+		private void cmdFileMode_Click ( object sender , EventArgs e )
 		{
 			mode = StartServerMode.fileServer ;
 		}
+		/// <summary>
+		/// When user change value of the port text box this event handler calls checkPort method
+		/// </summary>
+		/// <param name="sender">(TextBox)</param>
+		/// <param name="e">(EventArgs)</param>
 		private void tbPort_TextChanged ( object sender, EventArgs e )
 		{
 			checkPort ( false ) ;
 		}
+		/// <summary>
+		/// Checks if the port value specified in port text box is valid.
+		/// </summary>
+		/// <param name="raiseEvents">When this parameter is true and the port value is invalid, invalidPortNumber event is raised</param>
+		/// <returns>Return true if port value is valid, otherwise false</returns>
 		private bool checkPort ( bool raiseEvents )
 		{
 			int i ;
@@ -283,6 +357,11 @@ namespace SimpleHttp
 			}
 			return false ;
 		}
+		/// <summary>
+		/// This event handler opens folder dialog for user to choose webroot path.
+		/// </summary>
+		/// <param name="sender">(Button)</param>
+		/// <param name="e">(EventArgs)</param>
 		private void cmdSelectPath_Click ( object sender, EventArgs e )
         {
 			folders.RootFolder = Environment.SpecialFolder.MyComputer ;
@@ -290,6 +369,11 @@ namespace SimpleHttp
 			openFileDialogFileOk = false ;
 			folders.ShowDialog ( this ) ;
         }
+		/// <summary>
+		/// This event handler opens file dialog to for user to choose certificate file
+		/// </summary>
+		/// <param name="sender">(Button)</param>
+		/// <param name="e">(EventArgs)</param>
 		private void cmdSelectCertificate_Click ( object sender, EventArgs e )
 		{
 			openCertificateDialog.FileName = tbCertificate.Text ;
@@ -301,16 +385,56 @@ namespace SimpleHttp
 				showCertificatePassword () ;
 			}
 		}
+		/// <summary>
+		/// Some resizing ...
+		/// </summary>
+		/// <param name="sender">(Panel)</param>
+		/// <param name="e">(EventArgs)</param>
 		private void gbCertificate_Resize ( object sender , EventArgs e )
 		{
 			int w = tbWebroot.Height * 5 / 4 ;
+			cmdSelectCertificate.Left = 
+			cmdSelectPath.Left = 
+			cmdSelectCertificate.Left = gbCertificate.Width - tbCertificate.Left + 1 ;
 			cmdLoadAssembly.Bounds =
 			cmdSelectCertificate.Bounds =
 			cmdSelectPath.Bounds = new Rectangle ( tbCertificate.Right - w , tbCertificate.Top , w , tbCertificate.Height ) ;
-			tbWebroot.Width = 
-			cbAssemblies.Width =
-			tbCertificate.Width = cmdSelectCertificate.Left - tbCertificate.Left ;			
+			
+			int ss = cbAssemblies.SelectionStart ;
+			int sl = cbAssemblies.SelectionLength ;
+			cbAssemblies.Width = cmdSelectCertificate.Left - tbCertificate.Left ;	
+			cbAssemblies.SelectionStart = ss ;
+			cbAssemblies.SelectionLength = sl ;
+
+			ss = tbWebroot.SelectionStart ;
+			sl = tbWebroot.SelectionLength ;
+			tbWebroot.Width = cbAssemblies.Width ;
+			tbWebroot.SelectionStart = ss ;
+			tbWebroot.SelectionLength = sl ;
+			
+			ss = tbCertificate.SelectionStart ;
+			sl = tbCertificate.SelectionLength ;
+			tbCertificate.Width = cbAssemblies.Width ;		
+			tbCertificate.SelectionStart = ss ;
+			tbCertificate.SelectionLength = sl ;
+
+			ss = cbProtocol.SelectionStart ;
+			sl = cbProtocol.SelectionLength ;
+			cbProtocol.Width = cmdSelectCertificate.Right - tbCertificate.Left - 1 ;			
+			cbProtocol.SelectionStart = ss ;
+			cbProtocol.SelectionLength = sl ;
+			gbPassword.Size = gbAssemblies.Size ;
+			
+			gbSiteName.Width = gbAssemblies.Width ;
+			gbPassword.Left =
+			gbSiteName.Left = gbAssemblies.Left ;
+
 		}
+		/// <summary>
+		/// Some resizing ...
+		/// </summary>
+		/// <param name="sender">(Button)</param>
+		/// <param name="e">(EventArgs)</param>
 		private void cmdSelectFolder_Resize ( object sender , EventArgs e )
 		{
 			Region oldRegion = cmdSelectPath.Region ;
@@ -330,6 +454,9 @@ namespace SimpleHttp
 			{ }
 			else e.Handled = true ;
 		}
+		/// <summary>
+		/// Load assemblies visible in current application domain
+		/// </summary>
 		public void loadAssemblies ()
 		{
 			cbAssemblies.Items.Clear () ;
@@ -338,33 +465,38 @@ namespace SimpleHttp
 			foreach ( Assembly assembly in AppDomain.CurrentDomain.GetAssemblies () )
 				cbAssemblies.Items.Add ( new AssemblyItem ( assembly ) ) ;
 			cbAssemblies.Sorted = true ;
+			//int c = cbAssemblies.Items.Count ;
+			//object [] items = new object [ c ] ;
+			//cbAssemblies.Items.CopyTo ( items , 0 ) ;
+			//cbAssemblies.Items.Clear () ;
+			cbAssemblies.Sorted = false ;
 		}
-		public static IEnumerable<Assembly> GetAllAssemblies()
-		{
-			List<string> list = new List<string>();
-			Stack<Assembly> stack = new Stack<Assembly>();
+		//public static IEnumerable<Assembly> GetAllAssemblies()
+		//{
+		//	List<string> list = new List<string>();
+		//	Stack<Assembly> stack = new Stack<Assembly>();
 
-			stack.Push ( Assembly.GetEntryAssembly () ) ;
+		//	stack.Push ( Assembly.GetEntryAssembly () ) ;
 
-			do
-			{
-				Assembly assembly = stack.Pop() ;
+		//	do
+		//	{
+		//		Assembly assembly = stack.Pop() ;
 
-				yield return assembly ;
+		//		yield return assembly ;
 
-				foreach ( AssemblyName reference in assembly.GetReferencedAssemblies() )
-					if ( !list.Contains ( reference.FullName ) )
-						try
-						{
-							stack.Push ( Assembly.Load ( reference ) ) ;
-							list.Add ( reference.FullName ) ;
-						}
-						catch { }
+		//		foreach ( AssemblyName reference in assembly.GetReferencedAssemblies() )
+		//			if ( !list.Contains ( reference.FullName ) )
+		//				try
+		//				{
+		//					stack.Push ( Assembly.Load ( reference ) ) ;
+		//					list.Add ( reference.FullName ) ;
+		//				}
+		//				catch { }
 
-			}
-			while ( stack.Count > 0 ) ;
+		//	}
+		//	while ( stack.Count > 0 ) ;
 
-		}
+		//}
 		/// <summary>
 		/// Get method for the certficateIsValid property
 		/// </summary>
@@ -386,7 +518,7 @@ namespace SimpleHttp
 		}
 		public CerrtificateState getCerrtificateState ()
 		{
-			if ( cbNoCertificate.Checked ) return CerrtificateState.none ;
+			if ( !useSsl ) return CerrtificateState.none ;
 			if ( _certificateFilePath != tbCertificate.Text ) return CerrtificateState.notTested ;
 			if ( ( _certificateLoadError != null ) || 
 				 ( _certificateClientError != null ) ||
@@ -403,13 +535,18 @@ namespace SimpleHttp
 		{
 			get => getCertficateIsValid () ;
 		}
-		protected bool checkCertifiacte ( bool raiseEvents , bool focusErrorControl )
+		protected bool checkCertificate ( bool raiseEvents , bool focusErrorControl )
 		{
-			if ( !cbNoCertificate.Checked )
+			if ( useSsl )
 				switch ( getCerrtificateState () )
 				{
+					case CerrtificateState.loaded :
+						tbCertificate.BackColor = tbCertificate.Focused ? SystemColors.Window : SystemColors.Info ;		
+						if ( raiseEvents ) 
+							showCertificatePassword () ;
+					return false ;
 					case CerrtificateState.notTested :
-						tbCertificate.BackColor = Color.MistyRose ;
+						tbCertificate.BackColor = SystemColors.Info ;
 						if ( focusErrorControl ) tbCertificate.Focus () ;
 						if ( raiseEvents ) 
 							if ( File.Exists ( tbCertificate.Text ) )
@@ -434,11 +571,12 @@ namespace SimpleHttp
 						}
 					return false ;
 				}
+			tbCertificate.BackColor = tbCertificate.Focused ? SystemColors.Window : inactiveEditBack ;		
 			return true ;
 		}
 		protected bool validateValues ( bool raiseEvents , bool focusErrorControl )
 		{
-			if ( !checkCertifiacte ( true , true ) ) return false ;
+			if ( !checkCertificate ( true , true ) ) return false ;
 			if ( mode == StartServerMode.fileServer )
 				if ( !checkFolderSelection ( raiseEvents , focusErrorControl ) ) return false ;
 			return checkPort ( raiseEvents ) ;
@@ -447,6 +585,12 @@ namespace SimpleHttp
 		{
 			if ( validateValues ( true , true ) )
 				( mode == StartServerMode.fileServer ? _fileServerChoosen : _resourceServerChoosen )?.Invoke ( this , e ) ;
+		}
+		public static void setSelection ( ComboBox control , int oldSelectionStart , string oldText )
+		{
+			int s = matchCount ( oldText , control.Text ) ;
+			control.SelectionStart = s < oldSelectionStart ? s : oldSelectionStart ;
+			control.SelectionLength = control.SelectionStart == 0 ? 0 : control.Text.Length - control.SelectionStart ;
 		}
 		private void cbAssemblies_KeyDown ( object sender , KeyEventArgs e )
 		{
@@ -488,7 +632,7 @@ namespace SimpleHttp
 						oldText = cbAssemblies.Text ;
 						oldSelectionStart = cbAssemblies.SelectionStart ;
 						cbAssemblies.SelectedIndex-- ;
-						setSelection ( oldSelectionStart , oldText ) ;
+						setSelection ( cbAssemblies , oldSelectionStart , oldText ) ;
 					}
 				break ;
 				case Keys.Down :
@@ -498,16 +642,10 @@ namespace SimpleHttp
 						oldText = cbAssemblies.Text ;
 						oldSelectionStart = cbAssemblies.SelectionStart ;
 						cbAssemblies.SelectedIndex++ ;
-						setSelection ( oldSelectionStart , oldText ) ;
+						setSelection ( cbAssemblies , oldSelectionStart , oldText ) ;
 					}
 				break ;
 			}
-		}
-		private void setSelection ( int oldSelectionStart , string oldText )
-		{
-			int s = matchCount ( oldText , cbAssemblies.Text ) ;
-			cbAssemblies.SelectionStart = s < oldSelectionStart ? s : oldSelectionStart ;
-			cbAssemblies.SelectionLength = cbAssemblies.SelectionStart == 0 ? 0 : cbAssemblies.Text.Length - cbAssemblies.SelectionStart ;
 		}
 		private void cbAssemblies_KeyPress ( object sender, KeyPressEventArgs e )
 		{
@@ -571,6 +709,123 @@ namespace SimpleHttp
 			}
 			return position ;
 		}
+		private void cbProtocol_KeyDown ( object sender , KeyEventArgs e )
+		{
+			string oldText ;
+			int oldSelectionStart ;
+			switch ( e.KeyCode )
+			{
+				case Keys.Escape:
+					cbProtocol.DroppedDown = false ;
+				break ;
+				case Keys.Left :
+					if ( !e.Control )
+						if ( cbProtocol.SelectionStart + cbProtocol.SelectionLength == cbProtocol.Text.Length )
+						{
+							if ( cbProtocol.SelectionStart > 0 )
+							{
+								cbProtocol.SelectionStart-- ;
+								cbProtocol.SelectionLength = cbProtocol.Text.Length - cbProtocol.SelectionStart ;
+								e.Handled = true ;
+							}
+						}
+				break ;
+				case Keys.Right :
+					if ( !e.Control )
+						if ( cbProtocol.SelectionStart + cbProtocol.SelectionLength == cbProtocol.Text.Length )
+						{
+							if ( cbProtocol.SelectionStart < cbProtocol.Text.Length - 1 )
+							{
+								cbProtocol.SelectionStart++ ;
+								cbProtocol.SelectionLength = cbProtocol.Text.Length - cbProtocol.SelectionStart ;
+								e.Handled = true ;
+							}
+						}
+				break ;
+				case Keys.Up :
+					if ( cbProtocol.SelectedIndex > 0 ) 
+					{
+						e.Handled = true ;
+						oldText = cbProtocol.Text ;
+						oldSelectionStart = cbProtocol.SelectionStart ;
+						cbProtocol.SelectedIndex-- ;
+						setSelection ( cbProtocol , oldSelectionStart , oldText ) ;
+					}
+				break ;
+				case Keys.Down :
+					if ( cbProtocol.SelectedIndex < cbProtocol.Items.Count - 1 )
+					{
+						e.Handled = true ;
+						oldText = cbProtocol.Text ;
+						oldSelectionStart = cbProtocol.SelectionStart ;
+						cbProtocol.SelectedIndex++ ;
+						setSelection ( cbProtocol , oldSelectionStart , oldText ) ;
+					}
+				break ;
+			}
+		}
+		private void cbProtocol_KeyPress ( object sender, KeyPressEventArgs e )
+		{
+			e.Handled = true ;
+			if ( ( e.KeyChar == '<' ) || ( e.KeyChar == '>' ) ) return ;
+			string newText = cbProtocol.Text ;
+			int selectionStart = cbProtocol.SelectionStart ;
+				
+			if ( e.KeyChar == '\b' ) 
+			{
+				if ( cbProtocol.SelectionLength == 0 ) 
+				{
+					if ( selectionStart > 0 ) newText = newText.Substring ( 0 , --selectionStart );
+				}
+				else if ( cbProtocol.SelectionStart + cbProtocol.SelectionLength == cbProtocol.Text.Length ) 
+				{
+					if ( cbProtocol.SelectionStart > 0 )
+					{
+						cbProtocol.SelectionStart-- ; 
+						cbProtocol.SelectionLength = cbProtocol.Text.Length - cbProtocol.SelectionStart ;
+					}
+				}
+			}
+			else 
+			{
+				newText = ( selectionStart == 0 ? "" : newText.Substring ( 0 , selectionStart ) ) +
+					( ( e.KeyChar == '\b' ?  "" : e.KeyChar ) + newText.Substring ( selectionStart + cbProtocol.SelectionLength ) ) ;
+				selectionStart += ( e.KeyChar == '\b' ? 0 : 1 ) ;
+			}
+			if ( newText != cbProtocol.Text )
+			{
+				int s = cbProtocol.SelectionStart ;
+				int matchCount ;
+				int i = searchForProtocol ( newText , out matchCount ) ;
+				if ( i != -1 )
+				{
+					cbProtocol.SelectedIndex = i ; 
+					//cbProtocol.Text = newText ;
+					cbProtocol.SelectionStart = matchCount ;
+					cbProtocol.SelectionLength = cbProtocol.Text.Length - matchCount ;
+				}
+				//cbProtocol.Text = newText ;
+				
+			}
+		}
+		public int searchForProtocol ( string newText , out int matchCount )
+		{
+			ComboBox.ObjectCollection items = cbProtocol.Items ;
+			matchCount = 0 ;
+			int c = items.Count ;
+			int position = -1 ;
+			newText = newText.ToLower () ;
+			for ( int i = 0 ; i < c ; i++ )
+			{
+				int mc = StartServerForm.matchCount ( newText , items [ i ].ToString().ToLower() ) ;
+				if ( mc > matchCount )
+				{
+					position = i ;
+					matchCount = mc ;
+				}
+			}
+			return position ;
+		}
 		public static int matchCount ( string search , string source )
 		{
 			int c = Math.Min ( search.Length , source.Length ) ;
@@ -600,62 +855,35 @@ namespace SimpleHttp
 			generatedCert.Dispose () ;
 			return pfxGeneratedCert ;
 		}
-		/// <summary>
-		/// This method accepts TCP connection during SSL certificate test.
-		/// </summary>
-		/// <param name="ar">This parameter carries the AcceptTcpClienState instance in the AsyncState property.
-		/// <br/>AcceptTcpClienState instance contains TcpClient and X509Certificate2</param>
-		public void OnAcceptTcpClient ( IAsyncResult ar ) 
-		{
-			AcceptTcpClienState state = null ;
-			Exception ex = null ;
-			SslStream sslStream = null ;
-			try
-			{
-				state = ( AcceptTcpClienState ) ar.AsyncState ;
-				TcpClient tcpClient = tcpListener.EndAcceptTcpClient ( ar ) ;
-				sslStream = new SslStream ( tcpClient.GetStream() ) ;
-				sslStream.AuthenticateAsServer ( state.certificate , false , sslProtocol , false ) ;
-				sslStream.Write ( Encoding.ASCII.GetBytes ( "Hello" ) ) ;
-				BeginInvoke ( tryAcceptCertificate , new object [ 2 ] { state.certificate , state.certificateFilePath } ) ;
-			}
-			catch ( Exception x )
-			{
-				ex = x ;
-			}
-			try
-			{
-				if ( state != null )
-					if ( state.tcpListener != null ) tcpListener.Stop () ;
-			}
-			catch { }
-			try
-			{
-				if ( sslStream != null ) sslStream.Dispose () ;
-			}
-			catch { }
-			if ( ex != null ) 
-			{
-				BeginInvoke ( onCertificateFailedOnServer , new object [ 1 ] { new ErrorEventArgs ( ex ) } ) ;
-			}
-		}
-		protected void onCertificateFailedOnServer ( ErrorEventArgs e )
+		protected void onCertificateFailedOnServer ( CertificateTest certificateTest , ErrorEventArgs e )
 		{
 			_certificate = null ;
 			_certificateServerError = e.GetException() ;
+			if ( _certificateServerError.InnerException != null ) _certificateServerError = _certificateServerError.InnerException ;
 			tbCertificate.BackColor = Color.MistyRose ;
 			_certificateFailedOnServer?.Invoke ( this , e ) ;
+			passwordPanel.Enabled = true ;
+			UseWaitCursor = false ;
+			addCertificateTest ( certificateTest ) ;
+
 		}
-		protected void onCertificateFailedOnClient ( ErrorEventArgs e )
+		protected void onCertificateFailedOnClient ( CertificateTest certificateTest , ErrorEventArgs e )
 		{
+			UseWaitCursor = false ;
+			passwordPanel.Enabled = true ;
 			_certificate = null ;
 			_certificateClientError = e.GetException() ;
 			tbCertificate.BackColor = Color.MistyRose ;
-			_certificateFailedOnClient?.Invoke ( this , e ) ;
+			if ( _certificateClientError.InnerException != null ) _certificateClientError = _certificateClientError.InnerException ;
+			addCertificateTest ( certificateTest ) ;
+			_certificateFailedOnClient?.Invoke ( this , e ) ; ;
 		}
-		protected void onOpenTcpTestFailed ( ErrorEventArgs e )
+		protected void onOpenTcpTestFailed ( CertificateTest certificateTest , ErrorEventArgs e )
 		{
+			passwordPanel.Enabled = true ;
+			UseWaitCursor = false ;
 			tbCertificate.BackColor = Color.LightSalmon ;
+			addCertificateTest ( certificateTest ) ;
 			_openTcpTestFailed?.Invoke ( this , e ) ;
 		}
 		/// <summary>
@@ -663,58 +891,58 @@ namespace SimpleHttp
 		/// It checks values of both _certificateClientError and _certificateServerError variables in order to set cetfiticate and visuals.
 		/// If any of these variable values is null then
 		/// </summary>
-		/// <returns>Returns true if values in both _certificateClientError and _certificateServerError variables are null.</returns>
-		protected bool tryAcceptCertificate ( X509Certificate2 certificate , string certificateFilePath )
+		/// <param name="certificateTest">CertifiacteTest instance with all relevant data</param>
+		protected void acceptCertificate ( CertificateTest certificateTest )
 		{
-			if ( ( _certificateClientError == null ) && ( _certificateServerError == null ) )
+			addCertificateTest ( certificateTest ) ;
+			UseWaitCursor = false ;
+			passwordPanel.Enabled = true ;				
+			passwordPanel.Visible = false ;				
+			_certificate = certificateTest.certificate ;
+			_certificateFilePath = certificateTest.source ;
+			_certificateLoadError = certificateTest.certificateLoadError ;
+			_certificateClientError = certificateTest.certificateClientError ;
+			_certificateServerError = certificateTest.certificateServerError ;
+			tbCertificate.BackColor = SystemColors.Window ;
+			_certificateAccepted?.Invoke ( this , certificate ) ;
+		}
+		/// <summary>
+		/// Add CertificateTest instance into certificateTests dictionary
+		/// </summary>
+		/// <param name="certificateTest">CertificateTest instance to add into certificateTests dictionary</param>
+		protected void addCertificateTest ( CertificateTest certificateTest )
+		{
+			string s = certificateTest.source.Trim().ToLower() ;
+			Dictionary<SslProtocols,CertificateTest> testsByProtocol ;
+			if ( certificateTests.ContainsKey ( s ) )
 			{
-				_certificate = certificate ;
-				_certificateFilePath = certificateFilePath ;
-				cbNoCertificate.Checked = false ;
-				tbCertificate.BackColor = SystemColors.Window ;
-				return true ;
+				testsByProtocol = certificateTests [ s ] ;
+				if ( testsByProtocol.ContainsKey ( certificateTest.sslProtocol ) )
+				{
+					CertificateTest oldTest = testsByProtocol [ certificateTest.sslProtocol ] ;
+					if ( oldTest != certificateTest )			//!!!!!
+					{
+						testsByProtocol [ certificateTest.sslProtocol ].Dispose () ;
+						testsByProtocol [ certificateTest.sslProtocol ] = certificateTest ;
+					}
+				}
+				else testsByProtocol.Add ( certificateTest.sslProtocol , certificateTest ) ;
 			}
 			else 
 			{
-				tbCertificate.BackColor = Color.MistyRose ;
-				return false ;
-			}
-
-		}
-		/// <summary>
-		/// TcpListener and X509Certificate2
-		/// </summary>
-		public class AcceptTcpClienState 
-		{
-			public TcpListener tcpListener
-			{
-				get ; protected set ;
-			}
-			public X509Certificate2 certificate
-			{
-				get ; protected set ;
-			}
-			public string certificateFilePath
-			{
-				get ; protected set ;
-			}
-			public AcceptTcpClienState ( TcpListener tcpListener , X509Certificate2 certificate , string certificateFilePath ) 
-			{
-				this.tcpListener = tcpListener ;
-				this.certificateFilePath = certificateFilePath ;
-				this.certificate = certificate ;
+				testsByProtocol= new Dictionary<SslProtocols, CertificateTest> ( 3 ) ;
+				testsByProtocol.Add ( certificateTest.sslProtocol , certificateTest ) ;
+				certificateTests.Add ( s , testsByProtocol ) ;
 			}
 		}
-		
 		/// <summary>
-		/// This method tries to load certificate and connect over SSL with it.
+		/// Show password text box
 		/// </summary>
 		private void showCertificatePassword ()
 		{
-			ignorebNoCertificateCheck = true ;
-			cbNoCertificate.Checked = true ;
-			ignorebNoCertificateCheck = false  ;
 			_loadedCertificate = null ;
+			gbPassword.Visible = true ;
+			gbSiteName.Visible = false ;
 			setCertificatePasswordBackground () ;
 			BeginInvoke ( () =>
 			{
@@ -722,20 +950,31 @@ namespace SimpleHttp
 				if ( Form.ActiveForm == this ) tbPassword.Focus () ;
 			} ) ;
 		}
+
 		/// <summary>
 		/// This method tries to load certificate and connect over SSL with it.
 		/// </summary>
 		private void setCertificatePasswordBackground ()
 		{
 			if ( mainLayoutBitmap != null )
-				if ( ( mainLayoutBitmap.Width != mainLayout.Width ) || ( mainLayoutBitmap.Height != mainLayout.Height ) )
+				if ( ( mainLayoutBitmap.Width != mainLayout.Width ) || ( mainLayoutBitmap.Height != mainLayout.Height ) 
+					|| ( passwordPanelBackgroundState.passwordVisible != gbPassword.Visible )
+					|| ( passwordPanelBackgroundState.siteNameVisible != gbSiteName.Visible )
+					|| ( !passwordPanelBackgroundState.passwordBounds.Equals ( gbPassword.Bounds ) )
+					|| ( !passwordPanelBackgroundState.siteNameBounds.Equals ( gbSiteName.Bounds ) ) )
 				{
 					mainLayoutBitmap.Dispose () ;
 					mainLayoutBitmap = null ;
 				}
 			if ( mainLayoutBitmap == null ) mainLayoutBitmap = new Bitmap ( mainLayout.Width , mainLayout.Height ) ;
 			mainLayout.DrawToBitmap ( mainLayoutBitmap , new Rectangle ( Point.Empty , mainLayout.Size ) ) ;
-			drawPasswordPanelBackground () ;
+
+			passwordPanelBackgroundState.passwordVisible = gbPassword.Visible ;
+			passwordPanelBackgroundState.siteNameVisible = gbSiteName.Visible ;
+			passwordPanelBackgroundState.passwordBounds = gbPassword.Bounds ;
+			passwordPanelBackgroundState.siteNameBounds = gbSiteName.Bounds ;
+
+			drawPasswordPanelBackground ( gbSiteName.Visible ? gbSiteName.Bounds : gbPassword.Bounds ) ;
 			passwordPanel.BackgroundImageLayout = ImageLayout.None ;
 			passwordPanel.BackgroundImage = mainLayoutBitmap ;
 			try
@@ -745,36 +984,38 @@ namespace SimpleHttp
 			}
 			catch { }
 		}
-		private void drawPasswordPanelBackground ()
+		private void drawPasswordPanelBackground ( Rectangle panelBounds )
 		{
 			Rectangle rect = new Rectangle ( Point.Empty , mainLayout.Size ) ;
 			using ( Graphics graphics = Graphics.FromImage ( mainLayoutBitmap ) )
 			{
 				graphics.FillRectangle ( mainLayoutGrayBrush , rect ) ;
-				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , 0 , mainLayout.Width , gbPassword.Top - 2 ) ) ;
-				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , gbPassword.Top - 2 , gbPassword.Left - 4 , gbPassword.Height + 6 ) ) ;
-				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , gbPassword.Bottom + 4 , mainLayout.Width , mainLayout.Height - gbPassword.Bottom - 4 ) ) ;
-				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( gbPassword.Right + 4 , gbPassword.Top - 2 , mainLayout.Width - gbPassword.Right + 4 , gbPassword.Height + 6  ) ) ;
+				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , 0 , mainLayout.Width , panelBounds.Top - 2 ) ) ;
+				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , panelBounds.Top - 2 , panelBounds.Left - 4 , panelBounds.Height + 6 ) ) ;
+				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , panelBounds.Bottom + 4 , mainLayout.Width , mainLayout.Height - panelBounds.Bottom - 4 ) ) ;
+				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( panelBounds.Right + 4 , panelBounds.Top - 2 , mainLayout.Width - panelBounds.Right + 4 , panelBounds.Height + 6  ) ) ;
 				
-				//graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( gbPassword.Left - 4 , gbPassword.Top - 2 , gbPassword.Width + 8 , gbPassword.Height + 6 ) ) ;
+				//graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Left - 4 , panelBounds.Top - 2 , panelBounds.Width + 8 , panelBounds.Height + 6 ) ) ;
 
-				graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( gbPassword.Left - 5 , gbPassword.Top - 3 , gbPassword.Width + 10 , gbPassword.Height + 7 ) ) ;
+				graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Left - 5 , panelBounds.Top - 3 , panelBounds.Width + 10 , panelBounds.Height + 7 ) ) ;
 
-				graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( gbPassword.Left - 6 , gbPassword.Top - 2 , 1 , gbPassword.Height + 5 ) ) ;
-				graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( gbPassword.Right + 5 , gbPassword.Top - 2 , 1 , gbPassword.Height + 5 ) ) ;
+				graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Left - 6 , panelBounds.Top - 2 , 1 , panelBounds.Height + 5 ) ) ;
+				graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Right + 5 , panelBounds.Top - 2 , 1 , panelBounds.Height + 5 ) ) ;
 				
 			}
 		}
-		private void passwordPanel_Resize(object sender, EventArgs e)
+		private void passwordPanel_Resize ( object sender , EventArgs e )
 		{
 			gbPassword.Location = new Point ( ( passwordPanel.Width - gbPassword.Width ) >> 1 , gbCertificate.Bottom ) ;
+			gbSiteName.Location = new Point ( ( passwordPanel.Width - gbSiteName.Width ) >> 1 , gbCertificate.Bottom ) ;
+			if ( gbSiteName.Bottom > passwordPanel.Height - 20 )
+				gbSiteName.Top = gbSiteName.Top - gbSiteName.Bottom + passwordPanel.Height - 20 ;
 			if ( passwordPanel.Visible ) setCertificatePasswordBackground () ;
 		}
 		private void passwordPanel_Click ( object sender, EventArgs e )
 		{
 			passwordPanel.Visible = false ;
 		}
-
 		private void cmdAcceptPassword_Click ( object sender, EventArgs e )
 		{
 			_loadedCertificate = null ;
@@ -783,129 +1024,121 @@ namespace SimpleHttp
 			_certificateServerError = null ;
 			try
 			{ 
+				runningTest = new CertificateTest ( tbCertificate.Text , tbPassword.Text , sslProtocol , port, "localhost" ) ;
+				runningTest.certificateFailedOnClient += certificateTest_certificateFailedOnClient ;
+				runningTest.certificateFailedOnServer += certificateTest_certificateFailedOnServer ;
+				runningTest.certificateLoadFailed += certificateTest_certificateLoadFailed ;
+				runningTest.openTcpTestFailed += certificateTest_openTcpTestFailed ;
+				runningTest.certificateAccepted += certificateTest_certificateAccepted ;
+				runningTest.certificateLoaded += certificateTest_certificateLoaded ;
+				runningTest.loadCertifiacte () ;
+				UseWaitCursor = true ;
+				passwordPanel.Enabled = false ;
+				/*
 				_loadedCertificate = new X509Certificate2 ( tbCertificate.Text , tbPassword.Text ) ;
-				checkSslCertificate ( _loadedCertificate , tbCertificate.Text ) ;
+				startSslComunication ( _loadedCertificate , tbCertificate.Text ) ;
+				*/
 			}
 			catch ( Exception x )
 			{
 				_certificateLoadError = x ;
+				UseWaitCursor = false ;
+				passwordPanel.Enabled = true ;
 			}
 			if ( _certificateLoadError != null ) 
 			{
 				_certificateLoadFailure?.Invoke ( this , new ErrorEventArgs ( _certificateLoadError ) ) ;
 				if ( certificate != null ) certificate.Dispose () ;
 			}
-			passwordPanel.Visible = false ;
-			validateValues ( true , true ) ;
 		}
-		private void cmdCancelSslTest_Click ( object sender, EventArgs e )
-		{
-			passwordPanel.Visible = false ;
-		}
-		/// <summary>
-		/// This method tries to load certificate and connect over SSL with it.
-		/// </summary>
-		private void checkSslCertificate ( X509Certificate2 certificate , string certificateFilePath )
-		{
-			ErrorEventArgs errorEventArgs = null ;
-			
-			_certificateServerError = null ;
-			_certificateClientError = null ;
-			tbCertificate.BackColor = SystemColors.Window ;
-			HttpClient httpClient = null ;
-			try
-			{
-				tcpListener = new TcpListener ( IPAddress.Any , 50080 ) ;
-				tcpListener.Start () ;
-				tcpListener.BeginAcceptTcpClient ( OnAcceptTcpClient , new AcceptTcpClienState ( tcpListener , certificate , certificateFilePath ) ) ;
-				httpClient = new HttpClient () ;
-				//httpClient.BaseAddress = new Uri ( "https:50080//localhost/" ) ;
-				httpClient.GetStringAsync ( "https://localhost:50080/PipeMania.html?uja=muja" ).ContinueWith ( onHttpClient ) ;
-				//_certificate = GenerateSelfSignedCertificate () ;
-			}
-			catch ( Exception x )
-			{ 
-				errorEventArgs = new ErrorEventArgs ( x ) ;
-				tbCertificate.BackColor = Color.MistyRose ; 
-			}
-			if ( errorEventArgs != null ) onOpenTcpTestFailed ( errorEventArgs ) ;
-		}
-		protected void onHttpClient ( Task<string> task )
-		{
-			_certificateClientError = null ;
-			try
-			{
-				string result = task.Result ;
-			}
-			catch ( Exception x )
-			{
-				_certificateClientError = x.InnerException == null ? x : x.InnerException ;
-			}
-			if ( _certificateClientError != null ) 
-				BeginInvoke ( () =>
-				{
-					onCertificateFailedOnClient ( new ErrorEventArgs ( _certificateClientError ) ) ;
-				} ) ;
-		}
-		/// <summary>
-		/// This method tries to load certificate and connect over SSL with it.
-		/// </summary>
-		private void checkSslCertificate0 ( X509Certificate2 certificate , string certificateFilePath )
-		{
-			ErrorEventArgs errorEventArgs = null ;
-			
-			_certificateServerError = null ;
-			_certificateClientError = null ;
-			tbCertificate.BackColor = SystemColors.Window ;
-			try
-			{
-				//_certificate = GenerateSelfSignedCertificate () ;
-				tcpListener = new TcpListener ( IPAddress.Any , 0 ) ;
-				tcpListener.Start () ;
-				tcpListener.BeginAcceptTcpClient ( OnAcceptTcpClient , new AcceptTcpClienState ( tcpListener , certificate , certificateFilePath ) ) ;
-				makeClientTestRequest ( ( ( IPEndPoint ) tcpListener.LocalEndpoint ).Port ) ;
-			}
-			catch ( Exception x )
-			{ 
-				errorEventArgs = new ErrorEventArgs ( x ) ;
-				tbCertificate.BackColor = Color.MistyRose ; 
-			}
-			if ( errorEventArgs != null ) onOpenTcpTestFailed ( errorEventArgs ) ;
-		}
-		protected void makeClientTestRequest ( int port )
-		{
-			TcpClient tcpClient = null ;
-			ErrorEventArgs errorEventArgs = null ;
-			try
-			{
-				tcpClient = new TcpClient ( new IPEndPoint ( new IPAddress ( new byte [ 4 ] { 127 , 0 , 0 , 1 } ) , 50011 ) ) ;
-				tcpClient.Connect ( new IPEndPoint ( new IPAddress ( new byte [ 4 ] { 127 , 0 , 0 , 1 } ) , port ) ) ;
-				NetworkStream clientStream = tcpClient.GetStream () ;
-				SslStream sslClientSteam = new SslStream ( clientStream ) ;
-				SslClientAuthenticationOptions ops = new SslClientAuthenticationOptions () ;
-				ops.TargetHost = "localhost" ;
-				ops.EnabledSslProtocols = sslProtocol ;
-				ops.AllowRenegotiation = true ;
-				sslClientSteam.AuthenticateAsClient ( ops ) ;
-				sslClientSteam.Write ( System.Text.Encoding.ASCII.GetBytes ( "Hello" ) ) ;
-			}
-			catch ( Exception x )
-			{
-				errorEventArgs = new ErrorEventArgs ( x ) ;
-			}
-			try
-			{
-				if ( tcpClient != null ) tcpClient.Close () ;
-			}
-			catch { }
-			try
-			{
-				if ( tcpClient != null ) tcpClient.Dispose () ;
-			}
-			catch { }
-			if ( errorEventArgs  != null ) onCertificateFailedOnClient ( errorEventArgs ) ;
 
+
+		private void certificateTest_certificateFailedOnClient ( object sender , ErrorEventArgs e )
+		{
+			BeginInvoke ( onCertificateFailedOnClient , new object [ 2 ] { sender , e } ) ;
 		}
+
+		private void certificateTest_certificateFailedOnServer ( object sender , ErrorEventArgs e )
+		{
+			BeginInvoke ( onCertificateFailedOnServer , new object [ 2 ] { sender , e } ) ;
+		}
+
+		private void certificateTest_openTcpTestFailed ( object? sender , ErrorEventArgs e )
+		{
+			BeginInvoke ( onOpenTcpTestFailed , new object [ 2 ] { sender , e } ) ;
+		}
+		
+		private void certificateTest_certificateLoaded ( object? sender , CertificateSource e )
+		{
+			BeginInvoke ( () =>
+			{
+				passwordPanel.Enabled = true ;
+				UseWaitCursor = false ;
+				gbPassword.Visible = false ;
+				gbSiteName.Visible = true ;
+				setCertificatePasswordBackground () ;
+				_loadedCertificate = e.certificate ;
+				
+				if ( tbSiteName.Text == runningTest.siteName )
+					tbSiteName_TextChanged ( tbSiteName , new EventArgs () ) ;
+				else tbSiteName.Text = runningTest.siteName ;
+
+				tbSiteName.Focus () ;
+			} ) ;
+		}
+		private void cmdStartCertificateTest_Click ( object sender, EventArgs e)
+		{
+			try
+			{
+				runningTest.siteName = tbSiteName.Text.Trim () ;
+				runningTest.testCertifiate () ;
+				UseWaitCursor = true ;
+				passwordPanel.Enabled = false ;
+			}
+			catch ( Exception x )
+			{ 
+				onOpenTcpTestFailed ( runningTest , new ErrorEventArgs ( x ) ) ;
+			}
+		}
+		/// <summary>
+		/// This event handler reacts when CertificateTest instance accepts certificate
+		/// </summary>
+		/// <param name="sender">CertificateTest instance</param>
+		/// <param name="e">(EventArgs)</param>
+		private void certificateTest_certificateAccepted ( object? sender , EventArgs e )
+		{
+			BeginInvoke ( () =>
+			{
+				acceptCertificate ( ( CertificateTest ) sender ) ;
+			} ) ;
+		}
+		/// <summary>
+		/// This event handler reacts when CertificateTest instance cannot load certificate file
+		/// </summary>
+		/// <param name="sender">CertificateTest instance</param>
+		/// <param name="e">ErrorEventArgs instance, call GetException() method to get exception</param>
+		private void certificateTest_certificateLoadFailed ( object sender , ErrorEventArgs e )
+		{
+			BeginInvoke ( () =>
+			{
+				UseWaitCursor = false ;
+				passwordPanel.Enabled = true ;
+				addCertificateTest ( ( CertificateTest ) sender ) ;
+				_certificateLoadFailure?.Invoke ( this , e ) ;
+			} ) ;			
+		}
+		/// <summary>
+		/// When user press Cancel button on password or site name input
+		/// </summary>
+		/// <param name="sender">Button instance</param>
+		/// <param name="e">(EventArgs)</param>
+		private void cmdCancelSslTest_Click ( object sender , EventArgs e )
+		{
+			passwordPanel.Visible = false ;
+		}
+		
+
+		
 		/// <summary>
 		/// This method checks if folder specified in tbWebroot(TextBox) is exisitng 
 		/// and set(enables/disables) cmdStart button if raiseEvent flag us up
@@ -922,12 +1155,17 @@ namespace SimpleHttp
 			{
 				tbWebroot.BackColor = Color.MistyRose ; 
 				if ( focusOnError ) tbWebroot.Focus () ;
-				if ( raiseEvent ) invalidWebrootFolder?.Invoke ( this , tbWebroot.Text ); ;
+				if ( raiseEvent ) _invalidWebrootFolder?.Invoke ( this , tbWebroot.Text ); ;
 				return false ;
 			}
 		}
-		
-		private void cmdLoadAssembly_Click ( object sender, EventArgs e )
+		/// <summary>
+		/// When user press button near assemblies combo box this method handles click event
+		/// and opens file dialog.
+		/// </summary>
+		/// <param name="sender">Button instance</param>
+		/// <param name="e">(EventArgs)</param>
+		private void cmdLoadAssembly_Click ( object sender , EventArgs e )
 		{
 			openFileDialogFileOk = false ;
 			if ( _assemblyPath != "" ) openAssemblyDialog.FileName = _assemblyPath ;
@@ -944,28 +1182,19 @@ namespace SimpleHttp
 				}
 		}
 		/// <summary>
-		/// Set "assemblies" combo box background color and
-		/// </summary>
-		private void setAssembliesBackColor1 ()
-		{
-			cbAssemblies.BackColor = 
-			( cmdStart.Enabled = cbAssemblies.SelectedIndex == -1 ? false : cbAssemblies.Text == cbAssemblies.SelectedItem.ToString () ) 
-			? SystemColors.ButtonFace : Color.MistyRose ;
-		}
-		/// <summary>
 		/// Inserts new Assmebly loaded from disk
 		/// </summary>
 		/// <param name="newItem">AssemblyItem instance with Assembly</param>
 		protected void insertLoadedAssembly ( AssemblyItem newItem )
 		{
 			ComboBox.ObjectCollection items = cbAssemblies.Items ;
-			string assemblyName = "<" + newItem.assembly.GetName().Name + ">" ;
+			string assemblyName = newItem.ToString () ;
 			int c = items.Count ;
 			Assembly assembly = newItem.assembly ;
 			for ( int i = 0 ; i < c ; i++ )
 			{
 				AssemblyItem item = ( AssemblyItem ) items [ i ] ;
-				int r = string.Compare ( "<" + item.assembly.GetName().Name + ">" , assemblyName ) ;
+				int r = string.Compare ( assemblyName , items [ i ].ToString () ) ;
 				if ( r == 0 )
 				{
 					items.RemoveAt ( i ) ;
@@ -992,11 +1221,27 @@ namespace SimpleHttp
 		private void cbAssemblies_SelectedIndexChanged ( object sender , EventArgs e )
 		{
 			_resourceAssembly = cbAssemblies.SelectedIndex == -1 ? null : ( ( AssemblyItem ) cbAssemblies.SelectedItem ).assembly ;
-			cbAssemblies.BackColor = _resourceAssembly == null ? Color.MistyRose : SystemColors.ButtonFace ;
+			setAssebliesBackColor () ;
 			if ( mode == StartServerMode.resourceServer )
 				cmdStart.Enabled = ( _resourceAssembly != null ) && 
 					( ( getCerrtificateState () & CerrtificateState.badMask ) == CerrtificateState.none ) ;
-		}	
+		}
+		/// <summary>
+		/// Set proper asseblies text box background color
+		/// </summary>
+		protected void setAssebliesBackColor ()
+		{
+			cbAssemblies.BackColor = 
+				( cmdStart.Enabled = cbAssemblies.SelectedIndex == -1 ? false : cbAssemblies.Text == cbAssemblies.SelectedItem.ToString () ) 
+				? cbAssemblies.Focused ? SystemColors.Window : inactiveEditBack : Color.MistyRose ;
+		}
+		/// <summary>
+		/// Set proper certificate text box background color
+		/// </summary>
+		protected void setCertificateBackColor ()
+		{
+			checkCertificate ( false , false ) ;
+		}
 		/// <summary>
 		/// When "assemblies" dropdown list is open this event hanler set cbAssemblies(ComboBox)
 		/// </summary>
@@ -1078,47 +1323,62 @@ namespace SimpleHttp
 		/// <summary>
 		/// Auxiliary variable for the resourcesClicked event
 		/// </summary>
-		protected EventHandler _invalidWebrootFolder ;
+		protected EventHandler<string> _invalidWebrootFolder ;
 		/// <summary>
 		/// Raised when message about invalid webroot folder should be placed from host/owner form(you do it)
 		/// </summary>
-		public event EventHandler<string> invalidWebrootFolder ;
-
+		public event EventHandler<string> invalidWebrootFolder 
+		{
+			add => _invalidWebrootFolder += value ;
+			remove => _invalidWebrootFolder -= value ;
+		}
+		/// <summary>
+		/// Auxiliary variable for the resourcesClicked event
+		/// </summary>
+		protected EventHandler<X509Certificate2> _certificateAccepted ;
+		/// <summary>
+		/// Raised when certifatced loaded and tested
+		/// </summary>
+		public event EventHandler<X509Certificate2> certificateAccepted 
+		{
+			add => _certificateAccepted += value ;
+			remove => _certificateAccepted -= value ;
+		}
 		/// <summary>
 		/// Auxiliary variable for the certificateFailedOnClient event
 		/// </summary>
-		protected EventHandler<ErrorEventArgs> _certificateFailedOnClient ;
+		protected ErrorEventHandler _certificateFailedOnClient ;
 		/// <summary>
 		/// Raised when certificate SSL test failes on client side
 		/// </summary>
-		public event EventHandler<ErrorEventArgs> certificateFailedOnClient 
+		public event ErrorEventHandler certificateFailedOnClient 
 		{
-			add => _certificateFailedOnClient += value;
-			remove => _certificateFailedOnClient -= value;
+			add => _certificateFailedOnClient += value ;
+			remove => _certificateFailedOnClient -= value ;
 		}
 		/// <summary>
 		/// Auxiliary variable for the certificateFailedOnServer event
 		/// </summary>
-		protected EventHandler<ErrorEventArgs> _certificateFailedOnServer ;
+		protected ErrorEventHandler _certificateFailedOnServer ;
 		/// <summary>
 		/// Raised when certificate SSL test failes on Server side
 		/// </summary>
-		public event EventHandler<ErrorEventArgs> certificateFailedOnServer 
+		public event ErrorEventHandler certificateFailedOnServer 
 		{
-			add => _certificateFailedOnServer += value;
-			remove => _certificateFailedOnServer -= value;
+			add => _certificateFailedOnServer += value ;
+			remove => _certificateFailedOnServer -= value ;
 		}
 		/// <summary>
 		/// Auxiliary variable for the certificateLoadFailure event
 		/// </summary>
-		protected EventHandler<ErrorEventArgs> _certificateLoadFailure ;
+		protected ErrorEventHandler _certificateLoadFailure ;
 		/// <summary>
 		/// Raised when certificate file cannnot be open for any reason including but not limiting to bad password
 		/// </summary>
-		public event EventHandler<ErrorEventArgs> certificateLoadFailure 
+		public event ErrorEventHandler certificateLoadFailure 
 		{
-			add => _certificateLoadFailure += value;
-			remove => _certificateLoadFailure -= value;
+			add => _certificateLoadFailure += value ;
+			remove => _certificateLoadFailure -= value ;
 		}
 		/// <summary>
 		/// Auxiliary variable for the invalidPortNumbere event
@@ -1129,8 +1389,8 @@ namespace SimpleHttp
 		/// </summary>
 		public event EventHandler<ErrorEventArgs> invalidPortNumber 
 		{
-			add => _invalidPortNumber += value;
-			remove => _invalidPortNumber -= value;
+			add => _invalidPortNumber += value ;
+			remove => _invalidPortNumber -= value ;
 		}
 		/// <summary>
 		/// Auxiliary variable for the _onOpenTcpTestFailed event
@@ -1153,8 +1413,8 @@ namespace SimpleHttp
 		/// </summary>
 		public event EventHandler<ErrorEventArgs> assemblyLoadError 
 		{
-			add => _assemblyLoadError += value;
-			remove => _assemblyLoadError -= value;
+			add => _assemblyLoadError += value ;
+			remove => _assemblyLoadError -= value ;
 		}
 		/// <summary>
 		/// This flag indicated if openAssemblyDialog or openCertificateDialog accepted file
@@ -1164,23 +1424,17 @@ namespace SimpleHttp
 		/// When user accepts file via openAssemblyDialog or openCertificateDialog this event handler raises openFileDialogFileOk flag
 		/// </summary>
 		/// <param name="sender">openAssemblyDialog or openCertificateDialog(OpenFileDialog)</param>
-		/// <param name="e"></param>
+		/// <param name="e">(CancelEventArgs)</param>
 		private void openFileDialog_FileOk ( object sender, CancelEventArgs e )
 		{
 			openFileDialogFileOk = true ;
 		}
-
 		/// <summary>
-		/// When user checks/unchecsk "No certificate" box this event handler enables/disables "certificate" text box
+		/// This keydown event handler restores clipboard copy/cut functionality(commonly disabled for password text box)
+		/// <br/>It also handles Enter and Escape keys.
 		/// </summary>
-		/// <param name="sender">cbNoCertificate(CheckBox)</param>
-		/// <param name="e">(EventArgs)</param>
-		private void cbNoCertificate_CheckedChanged ( object sender , EventArgs e )
-		{
-			if ( ignorebNoCertificateCheck ) return ;
-			//tbCertificate.Enabled = !cbNoCertificate.Checked ;
-			validateValues ( false , false ) ;
-		}
+		/// <param name="sender">(TextBox)</param>
+		/// <param name="e">(KeyEventArgs)</param>
 		private void tbPassword_KeyDown ( object sender , KeyEventArgs e )
 		{
 			if ( e.Control )
@@ -1203,20 +1457,139 @@ namespace SimpleHttp
 						e.Handled = true ;
 					break ;
 					case Keys.Escape :
-						cmdCancelSslTest_Click ( cmdCancelSslTest , e ) ;
+						cmdCancelSslTest_Click ( cmdClosePasswordPanel , e ) ;
 						e.Handled = true ;
 					break ;
 				}
 		}
-
+		/// <summary>
+		/// Whenever certificate file path is changed this method search trought the certificateTests dictionary and set<br>
+		/// </br>_certificateLoadError, _certificateClientError, _certificateServerError and _certificate to proper values 
+		/// </summary>
+		/// <param name="sender">(TextBox)</param>
+		/// <param name="e">(EventArgs)</param>
 		private void tbCertificate_TextChanged ( object sender , EventArgs e )
 		{
+			string s = tbCertificate.Text.Trim().ToLower() ;
+			//first this 
 			_certificateLoadError = null ;
-			_certificateFailedOnClient = null ;
-			_certificateFailedOnServer = null ;
-			_certificate = null ;
+			_certificateClientError = null ;
+			_certificateServerError = null ;
+			_certificate = null ; 
+			if ( certificateTests.ContainsKey ( s ) )
+			{
+				Dictionary<SslProtocols,CertificateTest> testsByProtocol = certificateTests [ s ] ;
+				if ( testsByProtocol.ContainsKey ( sslProtocol ) )
+				{
+					CertificateTest certificateTest = testsByProtocol [ sslProtocol ] ;
+					tbPassword.Text = certificateTest.password ;
+					_certificateLoadError = certificateTest.certificateLoadError ;
+					_certificateServerError = certificateTest.certificateServerError ;
+					_certificateClientError = certificateTest.certificateClientError ;
+					_certificate = certificateTest.certificate ;
+				}
+				else foreach ( CertificateTest certificateTest in testsByProtocol.Values )
+					{
+						tbPassword.Text = certificateTest.password ;
+						_certificateLoadError = certificateTest.certificateLoadError ;
+						break ;
+					}
+			}
+			setCertificateBackColor () ;
 		}
-		//public class CertifiacteItem
+		/// <summary>
+		/// Clean up any resources being used.
+		/// </summary>
+		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+		protected override void Dispose ( bool disposing )
+		{
+			if (disposing && (components != null))
+			{
+				components.Dispose();
+			}
+			base.Dispose(disposing);
+		}       
+
+		private void cbProtocol_SelectedIndexChanged ( object sender , EventArgs e )
+		{
+			gbCertificate.Enabled = cbProtocol.SelectedIndex > 0 ;
+			tbCertificate_TextChanged ( tbCertificate , e ) ;
+		}
+
+		private void cbProtocol_TextChanged ( object sender , EventArgs e )
+		{
+			cbProtocol_SelectedIndexChanged ( cbProtocol , e ) ;
+		}
+
+		private void cbAssemblies_Enter ( object sender , EventArgs e )
+		{
+			setAssebliesBackColor () ;
+		}
+
+		private void cbAssemblies_Leave ( object sender , EventArgs e )
+		{
+			setAssebliesBackColor () ;
+		}
+
+		private void tbCertificate_Leave ( object sender , EventArgs e )
+		{
+			setCertificateBackColor () ;
+		}
+
+		private void tbCertificate_Enter ( object sender , EventArgs e )
+		{
+			setCertificateBackColor () ;
+		}
+
+		private void cbProtocol_Enter ( object sender , EventArgs e )
+		{
+			cbProtocol.BackColor = SystemColors.Window ;
+		}
+
+		private void cbProtocol_Leave ( object sender, EventArgs e )
+		{
+			cbProtocol.BackColor = inactiveEditBack ;
+		}
+
+		private void tbWebroot_Leave ( object sender, EventArgs e )
+		{
+			tbWebroot.BackColor = inactiveEditBack ;
+		}
+		private void tbWebroot_Enter ( object sender, EventArgs e )
+		{
+			tbWebroot.BackColor = SystemColors.Window ;
+		}
+		private void tbPort_Leave ( object sender, EventArgs e )
+		{
+			tbPort.BackColor = inactiveEditBack ;
+		}
+		private void tbPort_Enter ( object sender, EventArgs e )
+		{
+			tbPort.BackColor = SystemColors.Window ;
+		}
+
+		private void tbSiteName_TextChanged ( object sender , EventArgs e )
+		{
+			string s = tbSiteName.Text.Trim() ;
+			clientTaragetText.Text = s == "" ? "" : ( "https://" + s + ":" + ( port == 0 ? "(?)" : port.ToString () ) ) ;
+		}
+
+		private void tbSiteName_KeyDown ( object sender , KeyEventArgs e )
+		{
+			switch ( e.KeyCode )
+			{
+				case Keys.Enter :
+					e.Handled = true ;
+					cmdStartCertificateTest_Click ( cmdStartCertificateTest , e ) ;
+				break ;
+				case Keys.Cancel :
+					e.Handled = true ;
+					cmdCancelSslTest_Click ( cmdCancelSslTest , e ) ;
+				break ;
+			}
+		}
+
+
 		//{
 		//	public X509Certificate2 certificate 
 		//	{
