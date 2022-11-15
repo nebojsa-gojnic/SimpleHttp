@@ -160,10 +160,7 @@
 			this.lbError.Padding = new System.Windows.Forms.Padding(4);
 			this.lbError.Size = new System.Drawing.Size(8, 23);
 			this.lbError.TabIndex = 2;
-			this.lbError.Click += new System.EventHandler(this.lbError_Click);
 			this.lbError.DoubleClick += new System.EventHandler(this.lbError_DoubleClick);
-			this.lbError.MouseEnter += new System.EventHandler(this.lbError_MouseEnter);
-			this.lbError.MouseLeave += new System.EventHandler(this.lbError_MouseLeave);
 			// 
 			// originLabel
 			// 
@@ -284,9 +281,9 @@
 			this.statusLabel.Location = new System.Drawing.Point(8, 8);
 			this.statusLabel.Name = "statusLabel";
 			this.statusLabel.Padding = new System.Windows.Forms.Padding(4);
-			this.statusLabel.Size = new System.Drawing.Size(74, 23);
+			this.statusLabel.Size = new System.Drawing.Size(70, 23);
 			this.statusLabel.TabIndex = 4;
-			this.statusLabel.Text = "Not started";
+			this.statusLabel.Text = "No started";
 			// 
 			// notifyIcon
 			// 

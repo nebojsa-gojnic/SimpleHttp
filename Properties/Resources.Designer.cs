@@ -153,9 +153,9 @@ namespace SimpleHttp.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon stopIcon {
+        internal static System.Drawing.Icon stoped {
             get {
-                object obj = ResourceManager.GetObject("stopIcon", resourceCulture);
+                object obj = ResourceManager.GetObject("stoped", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

@@ -2,8 +2,6 @@
 /bin/**
 /obj
 /obj/**
-/packadges
-/packadges/**
 /.vs
 /.vs/**
 *.vsidx

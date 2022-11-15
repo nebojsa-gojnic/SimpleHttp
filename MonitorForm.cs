@@ -95,8 +95,8 @@ namespace SimpleHttp
 				if ( autoStart )
 				{
 					if ( mode == StartServerMode.fileServer )
-						autoStarted = startFileServer ( port , webroot , "utf-8" , null , SslProtocols.None ) ;
-					else autoStarted = startResourceServer ( port , "utf-8" , resourceAssembly , null , SslProtocols.None ) ;
+						autoStarted = startFileServer ( port , webroot , null , SslProtocols.None ) ;
+					else autoStarted = startResourceServer ( port , resourceAssembly , null , SslProtocols.None ) ;
 					if ( autoStarted ) Visible = false ;
 				}
 			}
@@ -143,7 +143,7 @@ namespace SimpleHttp
 			//stopButton.Location = new Point ( spliterLayout.Left , statusLabel.Top ) ;
 			stopButton.Anchor = AnchorStyles.Top | AnchorStyles.Right ;
 			//statusLabel.Padding = new Padding ( stopButton.Width + 1 , statusLabel.Padding.Top , statusLabel.Padding.Right , statusLabel.Padding.Bottom ) ;
-			if ( !isListening && string.IsNullOrEmpty ( startingMessage ) )
+			if ( !serverStarted && string.IsNullOrEmpty ( startingMessage ) )
 				if ( startServerForm == null ) showServerStarterForm () ;
 			base.OnShown ( e ) ;
         }
@@ -243,7 +243,7 @@ namespace SimpleHttp
 		private void startServerForm_certificateAccepted ( object? sender , X509Certificate2 e )
 		{
 			ShowMessage ( SimpleHttp.Properties.Resources.greenCheck , "Certificate accepted" , 
-					"Client server comunication commited, certificate accepted." , "" , "" , "    OK    " ) ;
+					"Client server comunication commited, certificate accepted." , "    OK    " , "" , "" ) ;
 		}
 
 		private void startServerForm_invalidPortNumber ( object? sender , ErrorEventArgs e )
@@ -274,7 +274,7 @@ namespace SimpleHttp
 			spliterLayout.Enabled = true ;
 			StartServerForm? startServerForm = ( StartServerForm? ) sender ;
 			autoStarted = false ;
-			startFileServer ( startServerForm.port , startServerForm.webroot , "utf-8" , startServerForm.certificate , startServerForm.sslProtocol ) ;
+			startFileServer ( startServerForm.port , startServerForm.webroot , startServerForm.certificate , startServerForm.sslProtocol ) ;
 			startServerForm.Hide () ;
 			restoreForm () ;
 		}
@@ -282,7 +282,7 @@ namespace SimpleHttp
 		private void startServerForm_resourceServerChoosen ( object sender , EventArgs e )
 		{
 			autoStarted = false ;
-			startResourceServer ( startServerForm.port , "utf-8" , startServerForm.selectedAssembly , startServerForm.certificate , startServerForm.sslProtocol ) ;
+			startResourceServer ( startServerForm.port , startServerForm.selectedAssembly , startServerForm.certificate , startServerForm.sslProtocol ) ;
 			startServerForm.Hide () ;
 			restoreForm () ;
 		}
@@ -330,12 +330,11 @@ namespace SimpleHttp
 				ShowErrorMessage ( "Certificate failed on client side" , e.GetException() ) ;
 			} ) ;
 		}
-		private bool startFileServer ( int port , string webroot , string charset , X509Certificate2 certificate , SslProtocols sslProtocol )
+		private bool startFileServer ( int port , string webroot , X509Certificate2 certificate , SslProtocols sslProtocol )
 		{
 			try
 			{
 				mode = StartServerMode.fileServer ;
-				isCriticalError = false ;
 				this.webroot = webroot ;
 				if ( Directory.Exists ( webroot ) )
 				{
@@ -361,11 +360,10 @@ namespace SimpleHttp
 			return false ;
 		}
 
-		private bool startResourceServer ( int port , string charset , Assembly resourceAssembly , X509Certificate2 certificate , SslProtocols sslProtocol )
+		private bool startResourceServer ( int port , Assembly resourceAssembly , X509Certificate2 certificate , SslProtocols sslProtocol )
 		{
 			mode = StartServerMode.resourceServer ;
 			this.resourceAssembly = resourceAssembly ;
-			isCriticalError = false ;
 			//ServerStarter.start ( port , resourceAssembly , webServer_clientConnected , webServer_serverResponded ) ;
 			try
 			{
@@ -375,8 +373,8 @@ namespace SimpleHttp
 				{
 					webServer = new WebServer ( new HttpServiceFactory ( resourceAssembly , null ) , 
 											webServer_clientConnected , webServer_serverResponded ,
-											webServer_sarted , webServer_stoped , webServer_connectionErrorRaised , 
-											webServer_criticalErrorRaised , webServer_disposed ) ;
+											webServer_sarted , webServer_stoped , webServer_connectionErrorRaised , webServer_criticalErrorRaised , webServer_disposed ) ;
+
 					webServer.Listen ( port , certificate , sslProtocol ) ;
 					spliterLayout.Enabled = true ;
 					return true ;
@@ -407,25 +405,22 @@ namespace SimpleHttp
 					if ( webServer == sender as WebServer ) 
 					{
 						if ( autoStarted ) Visible = false ;
+						string p = webServer.port.ToString () ;
 						HttpServiceFactory httpServiceFactory  = ( HttpServiceFactory ) webServer.serviceFactory ;
 						notifyIcon.Icon = SimpleHttp.Properties.Resources.mainIcon ;
-						string t = ( webServer.isSecure ? StartServerForm.getProtocolName ( webServer.sslProtocol ) : "Flat http" ) + " on port " +  webServer.port.ToString () ;
-
 						if ( httpServiceFactory.isResourceBased )
 						{
-							string a = httpServiceFactory.resourceAssembly.GetName().Name ;
-							statusLabel.Text = t + ", assembly: " + a ;
-							t = t + ", assembly:\r\n" + a ;
-							notifyIcon.Text = t.Substring ( 0 , Math.Min ( 127 , t.Length ) ) ;
+							string a = httpServiceFactory.assembly.GetName().Name ;
+							notifyIcon.Text = "Listening on port " + p + ", assembly:\r\n" + a ;
+							statusLabel.Text = "Listening on port " + p + ", assembly: " + a ;
 						}
 						else 
 						{
-							statusLabel.Text = t + ", webroot: " + httpServiceFactory.webroot ;
-							t = t + ", webroot:\r\n" + httpServiceFactory.webroot ;
-							notifyIcon.Text = t.Substring ( 0 , Math.Min ( 127 , t.Length ) ) ;
+							notifyIcon.Text = "Listening on port " + p + ", webroot:\r\n" + httpServiceFactory.webroot ;
+							statusLabel.Text = "Listening on port " + p + ", webroot: " + httpServiceFactory.webroot ;
+							stopServerMenuItem.Text = "Stop http server" ;
+							notifyIcon.Icon = SimpleHttp.Properties.Resources.mainIcon ;
 						}
-						Icon =
-						notifyIcon.Icon = SimpleHttp.Properties.Resources.mainIcon ;
 						stopServerMenuItem.Text = "Stop http server" ;
 						notifyIcon.ShowBalloonTip ( 3000 , "Http server is working" , statusLabel.Text , ToolTipIcon.Info ) ;
 					}
@@ -439,44 +434,40 @@ namespace SimpleHttp
 			BeginInvoke ( () =>
 			{
 				if ( IsDisposed ) return ;
-				if ( isCriticalError ) return ;
 				if ( webServer == null ) return ;
 				if ( webServer == sender as WebServer )
 				{
-					
 					string p = webServer.port.ToString () ;
 					HttpServiceFactory httpServiceFactory  = ( HttpServiceFactory ) webServer.serviceFactory ;
 					if ( httpServiceFactory.isResourceBased )
 					{
-						string a = httpServiceFactory.resourceAssembly.GetName().Name ;
-						statusLabel.Text = "Stoped on port " + p + ", assembly: " + a ;
-						p = "Stoped on port " + p + ", assembly:\r\n" + a ;
-						notifyIcon.Text = p.Substring ( 0 , Math.Min ( 127 , p.Length ) ) ;
+						string a = httpServiceFactory.assembly.GetName().Name ;
+						notifyIcon.Text = "Listening on port " + p + ", assembly:\r\n" + a ;
+						statusLabel.Text = "Listening on port " + p + ", assembly: " + a ;
 					}
 					else 
 					{
-						statusLabel.Text = "Stoped on port " + p + ", webroot: " + httpServiceFactory.webroot ;
-						p = "Stoped on port " + p + ", webroot:\r\n" + httpServiceFactory.webroot ;
-						notifyIcon.Text = p.Substring ( 0 , Math.Min ( 127 , p.Length ) ) ;
+						notifyIcon.Text = "Listening on port " + p + ", webroot:\r\n" + httpServiceFactory.webroot ;
+						statusLabel.Text = "Listening on port " + p + ", webroot: " + httpServiceFactory.webroot ;
+						stopServerMenuItem.Text = "Stop http server" ;
+						notifyIcon.Icon = SimpleHttp.Properties.Resources.mainIcon ;
 					}
-					Icon = notifyIcon.Icon = SimpleHttp.Properties.Resources.mainIcon ;
-					stopServerMenuItem.Visible = false ;
-					showStartDialogMenuItem.Visible = true ;
+					stopServerMenuItem.Text = "Stop http server" ;
+					notifyIcon.ShowBalloonTip ( 3000 , "Http server is working" , statusLabel.Text , ToolTipIcon.Info ) ;
 				}
 			} ) ;
 		}
-		protected bool isCriticalError ;
-		protected void webServer_criticalErrorRaised ( object sender , ErrorAndUriEventArgs e )
+		
+		protected void webServer_criticalErrorRaised ( object sender , ErrorEventArgs e )
 		{
 			Exception ex = e.GetException() ;
-			webServer_connectionErrorRaised ( sender , new HttpConnectionDetails ( e.uri , ex ) ) ;
+			webServer_connectionErrorRaised ( sender , new HttpConnectionDetails ( ex ) ) ;
 			BeginInvoke ( ()=>
 			{
-				string s = "Http server is down,\r\n" + ( ex.InnerException == null ? ex.Message : ex.InnerException.Message ) ;
-				isCriticalError = true ;
-				notifyIcon.Text = s.Substring ( 0 , Math.Min ( 127 , s.Length ) ) ;
-				Icon = notifyIcon.Icon = SimpleHttp.Properties.Resources.stopIcon ;
-				notifyIcon.ShowBalloonTip ( 12000 , "Http server critical error" , s , ToolTipIcon.Info ) ;
+				string s = ex.InnerException == null ? ex.Message : ex.InnerException.Message ;
+				statusLabel.Text = "Error: " + s ;
+				notifyIcon.Text = "Http server is down,\r\n" + s ;
+				notifyIcon.Icon = SimpleHttp.Properties.Resources.stoped ;
 			} ) ;
 		}
 		protected void webServer_connectionErrorRaised ( object sender , HttpConnectionDetails e )
@@ -530,7 +521,7 @@ namespace SimpleHttp
 		{
 			startServerForm.FormClosed -= startServerForm_FormClosed ; //ah govnari
 			startServerForm.Dispose () ;
-			if ( isListening ) 
+			if ( serverStarted ) 
 				spliterLayout.Enabled = true ;
 			else Close () ;
 		}
@@ -663,12 +654,11 @@ namespace SimpleHttp
 			( ( Form ) sender ).Dispose () ;
 			try
 			{
-				if ( webServer != null ) webServer.Dispose () ;
+				webServer.Dispose () ;
 			}
 			catch { }
 			notifyIcon.Text = "Http server is down" ;
-			Icon =
-			notifyIcon.Icon = SimpleHttp.Properties.Resources.stopIcon ;
+			notifyIcon.Icon = SimpleHttp.Properties.Resources.stoped ;
 			statusLabel.Text = "Closed" ;
 			if ( closeProgramDemand ) 
 			{
@@ -697,10 +687,6 @@ namespace SimpleHttp
 			closeProgramDemand = false ;
 			closeProgramConfirmed = false ;
 			spliterLayout.Enabled = Application.OpenForms.Count == 1 ;
-			if ( WindowState == FormWindowState.Minimized ) return ; 
-			if ( !ShowInTaskbar ) return ; 
-			if ( startServerForm == null ) return ;
-			if ( startServerForm.Visible ) startServerForm.Focus () ;
 		}
 		private void stopButton_Click ( object sender , EventArgs e )
 		{
@@ -760,7 +746,7 @@ namespace SimpleHttp
 		}
 		protected override void OnFormClosing ( FormClosingEventArgs e )
 		{
-			if ( !closeProgramConfirmed && isListening )
+			if ( !closeProgramConfirmed && serverStarted )
 			{
 				e.Cancel = true ;
 				if ( closeProgramDemand || ( messageForm != null )  && ( e.CloseReason == CloseReason.UserClosing ) )
@@ -778,25 +764,18 @@ namespace SimpleHttp
 			}
 			base.OnFormClosing ( e ) ;
 		}
-		/// <summary>
-		/// Get method for the isListening property
-		/// </summary>
-		/// <returns>Retruns true if WebServer instance is not null and listening</returns>
-		protected bool getIsListening ()
+		protected bool getServerStarted ()
 		{
 			try
 			{
-				return webServer == null ? false : webServer.isListening ;
+				return webServer == null ? false : webServer.isActive ;
 			}
 			catch { }
 			return false ;
 		}
-		/// <summary>
-		/// Returns true is web server is active/listening.
-		/// </summary>
-		public bool isListening 
+		public bool serverStarted 
 		{
-			get => getIsListening () ;
+			get => getServerStarted () ;
 		}
 		/// <summary>
 		///  Clean up any resources being used.
@@ -835,11 +814,11 @@ namespace SimpleHttp
 		}
 		private void iconMenu_Opening ( object sender , System.ComponentModel.CancelEventArgs e )
 		{
-			bool showStartDialogMenuItemVisible = showStartDialogMenuItem.Visible = !isListening ;
+			bool showStartDialogMenuItemVisible = showStartDialogMenuItem.Visible = !serverStarted ;
 			//jebo im pas mater
 			showMonitorMenuItem.Visible = !Visible ;
-			stopServerMenuItem.Visible = isListening ;
-			if ( isListening )
+			stopServerMenuItem.Visible = serverStarted ;
+			if ( serverStarted )
 			{
 				toolStripSeparator1.Visible = showStartDialogMenuItemVisible || !Visible ;
 				toolStripSeparator2.Visible = true ;
@@ -849,7 +828,7 @@ namespace SimpleHttp
 				toolStripSeparator1.Visible = showStartDialogMenuItemVisible || !Visible ;
 				toolStripSeparator2.Visible = false ;
 			}
-			closeProgramMenuItem.Text = isListening ? "Close http server and program" : "Close program" ;
+			closeProgramMenuItem.Text = serverStarted ? "Close http server and program" : "Close program" ;
 		}
 		private void restoreForm ()
 		{
@@ -885,7 +864,7 @@ namespace SimpleHttp
 			}
 			else if ( e.ClickedItem == stopServerMenuItem )
 			{
-				if ( isListening )
+				if ( serverStarted )
 					restoreForm ( () =>
 					{
 						closeProgramDemand = false ;
@@ -963,26 +942,6 @@ namespace SimpleHttp
 			int t = ( e.Bounds.Height - ( int ) sz.Height ) >> 1 ;
 			e.Graphics.DrawString ( s , logList.Font , ink , 
 				new Rectangle ( e.Bounds.Left , e.Bounds.Top + t , 65535 , e.Bounds.Height - t ) ) ;
-		}
-
-		private void lbError_MouseEnter(object sender, EventArgs e)
-		{
-			lbError.BackColor = SystemColors.Window ; 
-		}
-
-		private void lbError_MouseLeave(object sender, EventArgs e)
-		{
-			lbError.BackColor = lbError.Parent.BackColor ;
-		}
-
-		private void lbError_Click ( object sender , EventArgs e )
-		{
-			try
-			{
-				HttpConnectionDetails connectionDetails = ( HttpConnectionDetails ) logList.Items [ logList.SelectedIndex ] ;
-				showErrorMessage ( "Stack trace" , connectionDetails.error.StackTrace ) ;
-			}
-			catch { }
 		}
 	}
 }
