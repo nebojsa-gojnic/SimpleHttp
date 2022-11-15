@@ -1,20 +1,20 @@
 ﻿using System ;
-using System.Security.Cryptography.X509Certificates ;
-using System.Security ;
-using System.Reflection ;
-using System.Net ;
-using System.Text ;
 using System.Windows.Forms ;
-using System.Net.Security;
+using System.Reflection ;
+using System.Text ;
+using System.Net ;
+using System.Net.Sockets ;
+using System.Net.Security ;
+using System.Security ;
 using System.Security.Authentication ;
 using System.Security.Cryptography ;
-using System.Net.Sockets ;
+using System.Security.Cryptography.X509Certificates ;
 using WebSockets ;
 
 namespace WebSockets
 {
 	/// <summary>
-	/// Certificate tester
+	/// Site SSL certificate tester
 	/// </summary>
 	public class CertificateTest : IDisposable
 	{
@@ -27,7 +27,7 @@ namespace WebSockets
 		/// SslProtocols.Tls2 and SslProtocols.Tls3 are the only really valid options.</param>
 		/// <param name="port">Socket port, it you set to 0 any availible port will be usesd(system supplied),<br/>
 		/// and this.port property value will be changed to reall value once webServer starts listening</param>
-		/// <param name="siteName">Site name, also known as Header Site Name("CN=...")</param>
+		/// <param name="siteName">Site name, also known as Header Site Name("CN=site_name_here")</param>
 		public CertificateTest ( string source , string password , SslProtocols sslProtocol , int port , string siteName )
 		{
 			this.source = source ;
@@ -39,7 +39,7 @@ namespace WebSockets
 			this.siteName = siteName ;
 		}
 		/// <summary>
-		/// This is true ifs object is disposed
+		/// This is true if object is disposed
 		/// </summary>
 		public bool isDisposed
 		{
@@ -62,6 +62,9 @@ namespace WebSockets
 			get ;
 			protected set ;
 		}
+		/// <summary>
+		/// Site name to target
+		/// </summary>
 		public string siteName
 		{
 			get ;
@@ -82,7 +85,7 @@ namespace WebSockets
 		{
 			get ;
 			protected set ;
-		}
+		} = null! ; // I dont know when they introduced this in C# but I HATE IT
 		/// <summary>
 		/// Tls 1.2 or Tls 1.3
 		/// </summary>
@@ -125,7 +128,7 @@ namespace WebSockets
 		{
 			get ;
 			protected set ;
-		}
+		} = null! ; // I dont know when they introduced this in C# but I HATE IT
 		/// <summary>
 		/// Certificate file password
 		/// </summary>
@@ -133,7 +136,7 @@ namespace WebSockets
 		{
 			get ;
 			protected set ;
-		}
+		} = null! ; // I dont know when they introduced this in C# but I HATE IT
 		/// <summary>
 		/// Error on client side
 		/// </summary>
@@ -141,7 +144,7 @@ namespace WebSockets
 		{
 			get ;
 			protected set ;
-		}
+		} = null! ; // I dont know when they introduced this in C# but I HATE IT
 		/// <summary>
 		/// Error on server side
 		/// </summary>
@@ -149,7 +152,7 @@ namespace WebSockets
 		{
 			get ;
 			protected set ;
-		}
+		} = null! ; // I dont know when they introduced this in C# but I HATE IT
 		/// <summary>
 		/// Invalid password or file load error
 		/// </summary>
@@ -157,7 +160,7 @@ namespace WebSockets
 		{
 			get ;
 			protected set ;
-		}
+		} = null! ; // I dont know when they introduced this in C# but I HATE IT
 		/// <summary>
 		/// This event is fired when certificate loading started
 		/// </summary>
@@ -165,7 +168,7 @@ namespace WebSockets
 		/// <summary>
 		/// This event is fired when certificate client server communication started(real test)
 		/// </summary>
-		public event EventHandler attemptingComuncation ; 
+		public event EventHandler attemptingComunication ; 
 		/// <summary>
 		/// This is fired if loading of certificate failes
 		/// </summary>
@@ -199,7 +202,7 @@ namespace WebSockets
 		/// </summary>
 		public void loadCertifiacte ()
 		{
-			certificate = null ;
+			certificate = null ; //cs8625 !?!?
 			certificateLoadError = null ;
 			certificateClientError = null ;
 			certificateServerError = null ;
@@ -235,12 +238,12 @@ namespace WebSockets
 				loadCertifiacte () ;
 				return ;
 			}
-			attemptingComuncation?.Invoke ( this , new EventArgs () ) ;
+			attemptingComunication?.Invoke ( this , new EventArgs () ) ;
 			try
 			{
 				if ( webServer == null )
 				{
-					webServer = new WebServer ( new HttpServiceFactory ( "you are connected" ) , null ) ;
+					webServer = new WebServer ( HttpServiceFactory.createTestFactory ( "you are connected" , null ) , null ) ;
 					webServer.connectionErrorRaised += webServer_connectionErrorRaised ;
 					webServer.criticalErrorRaised += webServer_criticalErrorRaised;
 					webServer.disposed += webServer_disposed ;
@@ -285,7 +288,7 @@ namespace WebSockets
 		/// </summary>
 		/// <param name="sender">WebServer instance</param>
 		/// <param name="e">ErrorEventArgs instance, call GetException() method to get exception</param>
-		private void webServer_criticalErrorRaised ( object sender , ErrorEventArgs e )
+		private void webServer_criticalErrorRaised ( object sender , ErrorAndUriEventArgs e )
 		{
 			if ( webServer == sender as WebServer ) onOpenTcpTestFailed ( e ) ;
 		}
@@ -356,7 +359,7 @@ namespace WebSockets
 			catch { }
 		}
 		/// <summary>
-		/// This method raises onCertificateFailedOnClient event and stores exception in certificateFailedOnClient property 
+		/// This method raises certificateFailedOnClient event and stores exception in certificateFailedOnClient property 
 		/// </summary>
 		/// <param name="e">(ErrorEventArgs), call GetException() method to get exception</param>
 		protected void onCertificateFailedOnClient ( ErrorEventArgs e )
@@ -370,7 +373,7 @@ namespace WebSockets
 			catch { }
 		}
 		/// <summary>
-		/// This method raises onOpenTcpTestFailed event and stores exception in openTcpTestFailed property 
+		/// This method raises openTcpTestFailed event and stores exception in openTcpTestFailed property 
 		/// </summary>
 		/// <param name="e">(ErrorEventArgs), call GetException() method to get exception</param>
 		protected void onOpenTcpTestFailed ( ErrorEventArgs e )
