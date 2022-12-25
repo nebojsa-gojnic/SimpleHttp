@@ -14,6 +14,7 @@ using System.Security.Authentication ;
 using System.Security.Cryptography ;
 using System.Net.Sockets ;
 using WebSockets ;
+using System.Diagnostics;
 
 namespace SimpleHttp
 {
@@ -27,18 +28,28 @@ namespace SimpleHttp
 		protected Color inactiveEditBack ;
 		protected Dictionary <string,Dictionary<SslProtocols,CertificateTest>> certificateTests ;
 		protected CertificateTest runningTest ;
-		protected ResourcesForm resourcesForm ;
-		public class PasswordPanelBackgroundState
+		/// <summary>
+		/// last Focused control
+		/// </summary>
+		protected Control lastControl ;
+		public enum certificateRequestedBy
 		{
-			public Rectangle passwordBounds ;
-			public bool passwordVisible ;
-			public PasswordPanelBackgroundState ()
-			{
-				passwordBounds = Rectangle.Empty ;
-				passwordVisible = false ;
-			}
+			none = 0 ,
+			startButtonClick = 1 ,
+			showParametersClick = 2 
 		}
-		protected PasswordPanelBackgroundState passwordPanelBackgroundState  ;
+		/// <summary>
+		/// If this flag is set to true then fileServerChoosen or resourceServerChoosen event will be fired in acceptCertificate() method(server will start)
+		/// </summary>
+		protected certificateRequestedBy certificateBy ;
+		/// <summary>
+		/// Semi-bold font
+		/// </summary>
+		protected Font boldFont ;
+		/// <summary>
+		/// Semi-bold underline font
+		/// </summary>
+		protected Font boldUnderlineFont ;
 		/// <summary>
 		/// Auxiliary variable for the certificatePassword property
 		/// </summary>
@@ -73,6 +84,23 @@ namespace SimpleHttp
 			_resourceAssembly = value ;
 		}
 		/// <summary>
+		/// Get method for the SiteUri property
+		/// </summary>
+		/// <returns>Returns Uri based on values supplied in hostname, port and security protocol field. Can be null.</returns>
+		protected Uri getSiteUri ()
+		{
+			Uri uri ;
+			Uri.TryCreate ( lbSiteUri.Text , new UriCreationOptions () , out uri ) ;
+			return uri ;
+		}
+		/// <summary>
+		/// Returns Uri based on values supplied in hostname, port and security protocol field. Can be null.
+		/// </summary>
+		public Uri siteUri
+		{
+			get => getSiteUri() ;
+		}
+		/// <summary>
 		/// Selectred assembly with resources
 		/// </summary>
 		public Assembly resourceAssembly 
@@ -93,10 +121,10 @@ namespace SimpleHttp
 		/// </summary>
 		protected string _certificateFilePath ;
 		/// <summary>
-		/// Certifacte loaded with path from "certificate" text box
+		/// certificate loaded with path from "certificate" text box
 		/// </summary>
 		/// <returns>
-		/// Returns certifacte loaded with path from "certificate" text box or null
+		/// Returns certificate loaded with path from "certificate" text box or null
 		/// </returns>
 		public X509Certificate2 certificate 
 		{
@@ -180,8 +208,9 @@ namespace SimpleHttp
 			InitializeComponent() ;
 			certificateTests = new Dictionary<string, Dictionary<SslProtocols, CertificateTest>> () ;
 
+			boldUnderlineFont = lbSiteUri.Font ;
+			boldFont = new Font ( boldUnderlineFont , FontStyle.Regular ) ;
 			runningTest = null ;
-			passwordPanelBackgroundState = new PasswordPanelBackgroundState () ;
 			_assemblyPath = "" ;
 			certificatePassword = "" ;
 			Color col1 = SystemColors.Window ;
@@ -202,14 +231,35 @@ namespace SimpleHttp
 			mainLayoutGrayBrush = new SolidBrush ( Color.FromArgb ( 150 , Color.Gray ) ) ;
 			mainLayoutWindowBrush = new SolidBrush ( SystemColors.Control ) ;
 
-			cbProtocol.Items.Add ( new EnumItem<SslProtocols> ( "No security, flat HTTP" , SslProtocols.None ) ) ;
-			cbProtocol.Items.AddRange ( getSslProtocols () ) ;
+			cbProtocol.Items.Add ( new EnumItem<SslProtocols> ( "Flat HTTP" , SslProtocols.None ) ) ;
+			cbProtocol.Items.Add ( new EnumItem<SslProtocols> ( "TLS 1.2" , SslProtocols.Tls12 ) ) ;
+			cbProtocol.Items.Add ( new EnumItem<SslProtocols> ( "TLS 1.3" , SslProtocols.Tls13 ) ) ;
+			//cbProtocol.Items.AddRange ( getSslProtocols () ) ;
 
 			cbProtocol.SelectedIndex = 0 ;
 			cbProtocol.SelectionLength = 0 ;
 			setSiteUriText () ;
+
+			gbProtocol.MouseUp += groupBox_MouseUp ;
+			gbCertificate.MouseUp += groupBox_MouseUp ;
+			gbPassword.MouseUp += groupBox_MouseUp ;
+			gbSiteName.MouseUp += groupBox_MouseUp ;
+			gbWebroot.MouseUp += groupBox_MouseUp ;
+			gbAssemblies.MouseUp  += groupBox_MouseUp ;
+			gbPort.MouseUp  += groupBox_MouseUp ;
+
 			//gbPassword.Location = new Point ( - gbPassword.Width , - gbPassword.Height ) ;
 		}
+
+		private void groupBox_MouseUp ( object sender , MouseEventArgs e )
+		{
+			try
+			{
+				( ( GroupBox ) sender ).Controls [ 0 ].Focus () ;
+			}
+			catch { }
+		}
+
 		/// <summary>
 		/// This method set (again)location and then calls base method(to raise Shown event)
 		/// </summary>
@@ -218,9 +268,63 @@ namespace SimpleHttp
 		{
 			BeginInvoke ( setLocation ) ;
 			gbCertificate_Resize ( this , e ) ;
-			gbFilePath_Resize ( this , e ) ;
-			gbAssemblies_Resize ( this , e ) ;
+			Size sz = Size ;
+			AutoSize = false ;
+			Size = sz ;
 			base.OnShown ( e ) ;
+			Opacity = 1.0 ;
+		}
+		protected override void OnActivated ( EventArgs e )
+		{
+			base.OnActivated ( e ) ;
+			BeginInvoke ( button_MouseUp  , new object [ 2 ] ) ;
+		}
+		protected override void OnKeyDown ( KeyEventArgs e )
+		{
+			ComboBox box ;
+			try
+			{
+				if ( e.Control )
+					switch ( e.KeyCode )
+					{
+						case Keys.F :
+							cmdFileMode_Click ( cmdFileMode , e ) ;
+						break ;
+						case Keys.R :
+							cmdResourceMode_Click ( cmdResourceMode , e ) ;
+						break ;
+					}
+				else 
+					switch ( e.KeyCode )
+					{
+						case Keys.Enter :
+							e.Handled = true ;
+							if ( ActiveControl == null )
+								tbSiteName.Focus () ;
+							{
+								box = ActiveControl as ComboBox ;
+								if ( box != null )
+								{
+									if ( box.DroppedDown )
+									{
+										box.DroppedDown = false ;
+										return ;
+									}
+								}
+								if ( ( ActiveControl == tbWebroot ) || ( ActiveControl == cbAssemblies ) )
+									cmdStart_Click ( cmdStart , e ) ;
+								else API.SendSingleKey ( API.VK.Tab ) ;
+							}
+						break ;
+						case Keys.Cancel :
+							e.Handled = true ;
+							box = ActiveControl as ComboBox ;
+							if ( box != null ) box.DroppedDown = true ;
+						break ;
+					}
+			}
+			catch { }
+			base.OnKeyDown ( e ) ;
 		}
 		/// <summary>
 		/// This method set mode and location and then calls base method(to raise HandleCreated event)
@@ -233,11 +337,7 @@ namespace SimpleHttp
 			setLocation () ;
 			base.OnHandleCreated(e) ;
 		}
-		protected override void OnVisibleChanged(EventArgs e)
-		{
-			if ( !Visible && ( resourcesForm != null ) ) resourcesForm.Hide () ;
-			base.OnVisibleChanged ( e ) ;
-		}
+
 		/// <summary>
 		/// Set location(in center of owner if any)
 		/// </summary>
@@ -259,16 +359,20 @@ namespace SimpleHttp
 			{
 				cmdFileMode.BackColor = SystemColors.Window ;
 				cmdResourceMode.BackColor = SystemColors.ButtonFace ;
-				assembliesPanel.Visible = false ;
-				filePathPanel.Visible = true ;
+				cmdResourceMode.Font = Font ;
+				cmdFileMode.Font = boldFont ;
+				gbAssemblies.Visible = false ;
+				gbWebroot.Visible = true ;
 				checkFolderSelection ( false , false ) ;
 			}
 			else
 			{
 				cmdResourceMode.BackColor = SystemColors.Window ;
 				cmdFileMode.BackColor = SystemColors.ButtonFace ;
-				assembliesPanel.Visible = true ;
-				filePathPanel.Visible = false ;
+				cmdResourceMode.Font = boldFont ;
+				cmdFileMode.Font = Font ;
+				gbAssemblies.Visible = true ;
+				gbWebroot.Visible = false ;
 				cbAssemblies_SelectedIndexChanged ( cbAssemblies , new EventArgs () ) ;
 			}
 		}
@@ -279,6 +383,13 @@ namespace SimpleHttp
 		{ 
 			get => _mode ; 
 			set => setMode ( value ) ;
+		}
+		/// <summary>
+		/// Webroot or assembly path(depending on mode property value)
+		/// </summary>
+		public string source 
+		{ 
+			get => _mode == StartServerMode.fileServer ? webroot : selectedAssemblySource ; 
 		}
 		/// <summary>
 		/// Disk folder path where webroot is
@@ -313,6 +424,11 @@ namespace SimpleHttp
 		private void cmdResourceMode_Click ( object sender , EventArgs e )
 		{
 			mode = StartServerMode.resourceServer ;
+			try
+			{
+				( lastControl = cbAssemblies ).Focus () ;
+			}
+			catch { }
 		}
 		/// <summary>
 		/// When user click "Filebased server" button
@@ -322,6 +438,11 @@ namespace SimpleHttp
 		private void cmdFileMode_Click ( object sender , EventArgs e )
 		{
 			mode = StartServerMode.fileServer ;
+			try
+			{
+				( lastControl = tbWebroot ).Focus () ;
+			}
+			catch { }
 		}
 		/// <summary>
 		/// When user change value of the port text box this event handler calls checkPort method
@@ -340,6 +461,8 @@ namespace SimpleHttp
 		private bool checkPort ( bool raiseEvents )
 		{
 			int i ;
+			setSiteUriText () ;
+
 			if ( int.TryParse ( tbPort.Text.Trim() , out i ) )
 				if ( ( i < 0 ) || ( i > 65535 ) )
 				{
@@ -356,7 +479,6 @@ namespace SimpleHttp
 				tbPort.BackColor = Color.MistyRose ;
 				if ( raiseEvents )  _invalidPortNumber?.Invoke ( this , new ErrorEventArgs ( new ApplicationException ( "Invalid text for port number, \"" + tbPort.Text.Trim() + "\" cannot be converted to number" ) ) ) ;
 			}
-			setSiteUriText () ;
 			return false ;
 		}
 		/// <summary>
@@ -364,7 +486,7 @@ namespace SimpleHttp
 		/// </summary>
 		/// <param name="sender">(Button)</param>
 		/// <param name="e">(EventArgs)</param>
-		private void cmdSelectPath_Click ( object sender, EventArgs e )
+		private void cmdSelectPath_Click ( object sender , EventArgs e )
         {
 			folders.RootFolder = Environment.SpecialFolder.MyComputer ;
 			folders.SelectedPath = tbWebroot.Text ;
@@ -376,7 +498,7 @@ namespace SimpleHttp
 		/// </summary>
 		/// <param name="sender">(Button)</param>
 		/// <param name="e">(EventArgs)</param>
-		private void cmdSelectCertificate_Click ( object sender, EventArgs e )
+		private void cmdSelectCertificate_Click ( object sender , EventArgs e )
 		{
 			openCertificateDialog.FileName = tbCertificate.Text ;
 			if ( openCertificateDialog.ShowDialog () == DialogResult.OK )
@@ -384,70 +506,6 @@ namespace SimpleHttp
 				tbCertificate.Text = openCertificateDialog.FileName ;
 				showCertificatePassword () ;
 			}
-		}
-		/// <summary>
-		/// Some resizing ...
-		/// </summary>
-		/// <param name="sender">(Panel)</param>
-		/// <param name="e">(EventArgs)</param>
-		private void gbCertificate_Resize ( object sender , EventArgs e )
-		{
-			int w = tbWebroot.Height * 5 / 4 ;
-			cmdSelectCertificate.Left = gbCertificate.Width - tbCertificate.Left + 1 ;
-			cmdSelectCertificate.Bounds = new Rectangle ( tbCertificate.Right - w , tbCertificate.Top , w , tbCertificate.Height ) ;
-			
-			int ss = cbAssemblies.SelectionStart ;
-			int sl = cbAssemblies.SelectionLength ;
-			cbAssemblies.Width = cmdSelectCertificate.Left - tbCertificate.Left ;	
-			cbAssemblies.SelectionStart = ss ;
-			cbAssemblies.SelectionLength = sl ;
-
-			
-			ss = tbCertificate.SelectionStart ;
-			sl = tbCertificate.SelectionLength ;
-			tbCertificate.Width = cbAssemblies.Width ;		
-			tbCertificate.SelectionStart = ss ;
-			tbCertificate.SelectionLength = sl ;
-
-			ss = cbProtocol.SelectionStart ;
-			sl = cbProtocol.SelectionLength ;
-			cbProtocol.Width = cmdSelectCertificate.Right - tbCertificate.Left - 1 ;			
-			cbProtocol.SelectionStart = ss ;
-			cbProtocol.SelectionLength = sl ;
-			gbPassword.Size = gbAssemblies.Size ;
-			
-			gbPassword.Left = gbAssemblies.Left ;
-
-		}
-		private void gbFilePath_Resize ( object sender , EventArgs e )
-		{
-			int w = tbWebroot.Height * 5 / 4 ;
-			
-
-			int ss = tbWebroot.SelectionStart ;
-			int sl = tbWebroot.SelectionLength ;
-			cmdSelectPath.Left = gbFilePath.Width - tbWebroot.Left + 1 - w ;
-			tbWebroot.Width = cmdSelectPath.Left - tbWebroot.Left ;
-			tbWebroot.SelectionStart = ss ;
-			tbWebroot.SelectionLength = sl ;
-
-			cmdSelectPath.Bounds = new Rectangle ( cmdSelectPath.Left , tbWebroot.Top , w , tbCertificate.Height ) ;
-			
-		}
-
-		private void gbAssemblies_Resize ( object sender , EventArgs e )
-		{
-			int w = tbWebroot.Height * 5 / 4 ;
-			
-
-			int ss = cbAssemblies.SelectionStart ;
-			int sl = cbAssemblies.SelectionLength ;
-			cmdLoadAssembly.Left = gbAssemblies.Width - cbAssemblies.Left + 1 - w ;
-			cbAssemblies.Width = cmdLoadAssembly.Left - cbAssemblies.Left ;
-			cbAssemblies.SelectionStart = ss ;
-			cbAssemblies.SelectionLength = sl ;
-
-			cmdLoadAssembly.Bounds = new Rectangle ( cmdLoadAssembly.Left , tbWebroot.Top , w , tbCertificate.Height ) ;
 		}
 		/// <summary>
 		/// Some resizing ...
@@ -535,6 +593,10 @@ namespace SimpleHttp
 			valid = 127 ,
 			badMask = 7
 		}
+		/// <summary>
+		/// Checks current certificate state(no sertificate, not tested, loaded, error or valid
+		/// </summary>
+		/// <returns>Returns current certificate state(no sertificate, not tested, loaded, error or valid</returns>
 		public CerrtificateState getCerrtificateState ()
 		{
 			if ( !useSsl ) return CerrtificateState.none ;
@@ -554,7 +616,13 @@ namespace SimpleHttp
 		{
 			get => getCertficateIsValid () ;
 		}
-		protected bool checkCertificate ( bool raiseEvents , bool focusErrorControl )
+		/// <summary>
+		/// Checks current certificate state and change visual state accordingly
+		/// </summary>
+		/// <param name="raiseEvents">When this parameters true, certificateLoadFailure, certificateFailedOnServer and certificateFailedOnClient events may be fired</param>
+		/// <param name="focusErrorControl">>When this parameters true certificate text box may be focused</param>
+		/// <returns>Returns true if certificate is loaded and tested, otherwise false</returns>
+		protected bool checkAndReflectCertificate ( bool raiseEvents , bool focusErrorControl )
 		{
 			if ( useSsl )
 				switch ( getCerrtificateState () )
@@ -595,7 +663,7 @@ namespace SimpleHttp
 		}
 		protected bool validateValues ( bool raiseEvents , bool focusErrorControl )
 		{
-			if ( !checkCertificate ( true , true ) ) return false ;
+			if ( !checkAndReflectCertificate ( true , true ) ) return false ;
 			if ( mode == StartServerMode.fileServer )
 				if ( !checkFolderSelection ( raiseEvents , focusErrorControl ) ) return false ;
 			return checkPort ( raiseEvents ) ;
@@ -603,7 +671,92 @@ namespace SimpleHttp
 		private void cmdStart_Click ( object sender , EventArgs e )
 		{
 			if ( validateValues ( true , true ) )
-				( mode == StartServerMode.fileServer ? _fileServerChoosen : _resourceServerChoosen )?.Invoke ( this , e ) ;
+				_paremetersChoosen?.Invoke ( this , getStartParameters() ) ;
+			else certificateBy = passwordPanel.Visible ? certificateRequestedBy.startButtonClick : certificateRequestedBy.none ; 
+		}
+		private void showStartParametersClick ( )
+		{
+			certificateBy = certificateRequestedBy.showParametersClick ;
+			if ( validateValues ( true , true ) ) 
+			{
+				certificateBy = certificateRequestedBy.none ;
+				_showStartParameters?.Invoke ( this , getStartParameters () ) ;
+			}
+
+		}
+		/// <summary>
+		/// Creates new HttpStartParameters instance filled with data from this form
+		/// </summary>
+		/// <returns>Returns new HttpStartParameters instance filled with data from this form</returns>
+		protected HttpStartParameters getStartParameters ()
+		{ 
+			return new HttpStartParameters ( mode , port , source , siteUri == null ? "" : siteUri.Host , 
+											cbProtocol.SelectedIndex > 0 ? tbCertificate.Text : "" , 
+											tbPassword.Text , sslProtocol , true ) ;
+		}
+		public void loadFromStartParameters ( HttpStartParameters startParameters )
+		{
+			loadFromStartParameters ( startParameters , null ) ;
+		}
+		public void loadFromStartParameters ( HttpStartParameters startParameters , X509Certificate2 certificate )
+		{
+			mode = startParameters.mode ;
+			cbProtocol.SelectedIndexChanged -= cbProtocol_SelectedIndexChanged ;
+			tbCertificate.TextChanged -= tbCertificate_TextChanged ;
+			cbAssemblies.SelectedIndexChanged -= cbAssemblies_SelectedIndexChanged ;
+			tbPort.Text = startParameters.port.ToString() ;
+			tbSiteName.Text = string.IsNullOrEmpty ( startParameters.sitename ) ? "localhost" : startParameters.sitename ;
+			_loadedCertificate = certificate ;
+			_certificate = certificate ;
+			_certificateClientError = null ;
+			_certificateServerError = null ;
+			_certificateLoadError = null ;
+			if ( !string.IsNullOrEmpty ( startParameters.certificate ) ) tbCertificate.Text = startParameters.certificate ;
+			if ( certificate == null )
+				cbProtocol.SelectedIndex = 0 ;
+			else 
+			{ 
+				tbPassword.Text = _certificatePassword = startParameters.password ;
+				_certificateFilePath =
+				tbCertificate.Text = startParameters.certificate ; //this delete cerificate
+				switch ( startParameters.protocol )
+				{
+					case SslProtocols.Tls13 :
+						cbProtocol.SelectedIndex = 2 ;
+					break ;
+					case SslProtocols.Tls12 :
+					default :
+						cbProtocol.SelectedIndex = 1 ;
+					break ;
+				}
+				_loadedCertificate = 
+				_certificate = certificate ; //!!!!again
+			}
+			if ( startParameters.mode == StartServerMode.fileServer )
+				tbWebroot.Text = startParameters.source ;
+			else
+			{
+				
+				int i = findAssemblyItemIndex ( startParameters.source ) ;
+				if ( i == -1 )
+				{
+					if ( File.Exists ( startParameters.source ) )
+					try
+					{
+						insertLoadedAssembly ( new AssemblyItem ( _assemblyPath = startParameters.source ) ) ;
+					}
+					catch { }
+				}
+				else cbAssemblies.SelectedIndex = i ;
+			}
+			cbProtocol.SelectedIndexChanged += cbProtocol_SelectedIndexChanged ;
+			tbCertificate.TextChanged += tbCertificate_TextChanged ;
+			cbAssemblies.SelectedIndexChanged += cbAssemblies_SelectedIndexChanged ;
+			cbAssemblies_SelectedIndexChanged ( cbAssemblies , new EventArgs () ) ;
+			if ( mode == StartServerMode.fileServer )
+				cmdFileMode_Click ( cmdFileMode , new EventArgs () ) ;
+			else cmdResourceMode_Click ( cmdResourceMode, new EventArgs () ) ;
+			validateValues ( false , false ) ;
 		}
 		public static void setSelection ( ComboBox control , int oldSelectionStart , string oldText )
 		{
@@ -929,6 +1082,16 @@ namespace SimpleHttp
 			_certificateServerError = certificateTest.certificateServerError ;
 			tbCertificate.BackColor = SystemColors.Window ;
 			_certificateAccepted?.Invoke ( this , certificate ) ;
+			switch ( certificateBy )
+			{
+				case certificateRequestedBy.startButtonClick :
+					if ( validateValues ( true , true ) ) _paremetersChoosen?.Invoke ( this , getStartParameters () ) ;
+				break ;
+				case certificateRequestedBy.showParametersClick :
+					_showStartParameters?.Invoke ( this , getStartParameters () ) ;
+				break ;
+			}
+			certificateBy = certificateRequestedBy.none ;
 		}
 		/// <summary>
 		/// Add CertificateTest instance into certificateTests dictionary
@@ -980,18 +1143,15 @@ namespace SimpleHttp
 		private void setCertificatePasswordBackground ()
 		{
 			if ( mainLayoutBitmap != null )
-				if ( ( mainLayoutBitmap.Width != mainLayout.Width ) || ( mainLayoutBitmap.Height != mainLayout.Height ) 
-					|| ( passwordPanelBackgroundState.passwordVisible != gbPassword.Visible ) ) 
+				if ( ( mainLayoutBitmap.Width != mainLayout.Width ) || ( mainLayoutBitmap.Height != mainLayout.Height ) )
+					//|| ( passwordVisible != gbPassword.Visible ) ) 
 				{
 					mainLayoutBitmap.Dispose () ;
 					mainLayoutBitmap = null ;
 				}
 			if ( mainLayoutBitmap == null ) mainLayoutBitmap = new Bitmap ( mainLayout.Width , mainLayout.Height ) ;
 			mainLayout.DrawToBitmap ( mainLayoutBitmap , new Rectangle ( Point.Empty , mainLayout.Size ) ) ;
-
-			passwordPanelBackgroundState.passwordVisible = gbPassword.Visible ;
-			passwordPanelBackgroundState.passwordBounds = gbPassword.Bounds ;
-
+			
 			drawPasswordPanelBackground ( gbPassword.Bounds ) ;
 			passwordPanel.BackgroundImageLayout = ImageLayout.None ;
 			passwordPanel.BackgroundImage = mainLayoutBitmap ;
@@ -1183,7 +1343,7 @@ namespace SimpleHttp
 				}
 				catch ( Exception x )
 				{
-					_assemblyLoadError?.Invoke ( this, new ErrorEventArgs ( x ) ) ;
+					_assemblyLoadFailed?.Invoke ( this, new ErrorEventArgs ( x ) ) ;
 				}
 		}
 		/// <summary>
@@ -1218,6 +1378,42 @@ namespace SimpleHttp
 			cbAssemblies.SelectedIndex = items.Count - 1 ;
 		}
 		/// <summary>
+		/// Returns the assembly corresponding to the given source
+		/// </summary>
+		/// <param name="source">Assembly name, assembly full name or assembly location</param>
+		protected Assembly findAssembly ( string source )
+		{
+			ComboBox.ObjectCollection items = cbAssemblies.Items ;
+			int c = items.Count ;
+			source = source.ToLower () ;
+			for ( int i = 0 ; i < c ; i++ )
+			{
+				Assembly assembly = ( ( AssemblyItem ) items [ i ] ).assembly ;
+				if ( assembly.Location.ToLower() == source ) return assembly ;
+				if ( assembly.FullName.ToLower() == source ) return assembly ;
+				if ( assembly.GetName().Name.ToLower() == source ) return assembly ;
+			}
+			return null ;
+		}
+		/// <summary>
+		/// Returns the assembly corresponding to the given source
+		/// </summary>
+		/// <param name="source">Assembly name, assembly full name or assembly location</param>
+		protected int findAssemblyItemIndex ( string source )
+		{
+			ComboBox.ObjectCollection items = cbAssemblies.Items ;
+			int c = items.Count ;
+			source = source.ToLower () ;
+			for ( int i = 0 ; i < c ; i++ )
+			{
+				Assembly assembly = ( ( AssemblyItem ) items [ i ] ).assembly ;
+				if ( assembly.Location.ToLower() == source ) return i ;
+				if ( assembly.FullName.ToLower() == source ) return i ;
+				if ( assembly.GetName().Name.ToLower() == source ) return i ;
+			}
+			return -1 ;
+		}
+		/// <summary>
 		/// When "assemblies" list index is changed this event hanler calls setAssembliesBackColor() method in order to 
 		/// set "assemblies" checkbox color and/or activate openAssemblyDialog(OpenFileDialog)
 		/// </summary>
@@ -1245,7 +1441,7 @@ namespace SimpleHttp
 		/// </summary>
 		protected void setCertificateBackColor ()
 		{
-			checkCertificate ( false , false ) ;
+			checkAndReflectCertificate ( false , false ) ;
 		}
 		/// <summary>
 		/// When "assemblies" dropdown list is open this event hanler set cbAssemblies(ComboBox)
@@ -1294,30 +1490,7 @@ namespace SimpleHttp
 			cbAssemblies.SelectedIndex = i ;
 			return true ;
 		}
-		/// <summary>
-		/// MouseUp event handle for all(!) buttons
-		/// </summary>
-		/// <param name="sender">Probaly Button but it could something else as well</param>
-		/// <param name="e">(MouseEventArgs)</param>
-		public void button_MouseUp ( object sender , MouseEventArgs e )
-		{
-			try
-			{
-				if ( passwordPanel.Visible )
-					if ( gbPassword.Visible )
-						tbPassword.Focus () ;
-					else if ( gbSiteUri.Visible )
-						gbSiteUri.Focus () ;
-				else 
-				{
-					Button button = sender as Button ;
-					if ( button != null )
-					{
-					}
-				}
-			}
-			catch { }
-		}
+
 		/// <summary>
 		/// Currently selected assembly
 		/// </summary>
@@ -1326,31 +1499,40 @@ namespace SimpleHttp
 			get => cbAssemblies.SelectedIndex == -1 ? null : ( ( AssemblyItem ) cbAssemblies.SelectedItem ).assembly ;
 		}
 		/// <summary>
-		/// Auxiliary variable for the resourcesClicked event
+		/// Currently selected assembly source
 		/// </summary>
-		protected EventHandler _resourceServerChoosen ;
-		/// <summary>
-		/// Raised when user choose resource based server and click on start button
-		/// </summary>
-		public event EventHandler resourceServerChoosen 
+		public string selectedAssemblySource
 		{
-			add => _resourceServerChoosen += value ;
-			remove => _resourceServerChoosen -= value ;
+			get => cbAssemblies.SelectedIndex == -1 ? null : ( ( AssemblyItem ) cbAssemblies.SelectedItem ).source ;
 		}
-		/// <summary>
-		/// Auxiliary variable for the resourcesClicked event
+		
+
+			/// <summary>
+		/// Auxiliary variable for the paremetersChoosen event
 		/// </summary>
-		protected EventHandler _fileServerChoosen ;
+		protected EventHandler<HttpStartParameters> _paremetersChoosen ;
 		/// <summary>
 		/// Raised when user choose file based server and click on start button
 		/// </summary>
-		public event EventHandler fileServerChoosen 
+		public event EventHandler<HttpStartParameters> paremetersChoosen 
 		{
-			add => _fileServerChoosen += value ;
-			remove => _fileServerChoosen -= value ;
+			add => _paremetersChoosen += value ;
+			remove => _paremetersChoosen -= value ;
 		}
 		/// <summary>
-		/// Auxiliary variable for the resourcesClicked event
+		/// Auxiliary variable for the showStartParameters event
+		/// </summary>
+		protected EventHandler<HttpStartParameters> _showStartParameters;
+		/// <summary>
+		/// Raised when user choose to show command line parameters created from this form data
+		/// </summary>
+		public event EventHandler<HttpStartParameters> showStartParameters 
+		{
+			add => _showStartParameters += value ;
+			remove => _showStartParameters -= value ;
+		}
+		/// <summary>
+		/// Auxiliary variable for the invalidWebrootFolder event
 		/// </summary>
 		protected EventHandler<string> _invalidWebrootFolder ;
 		/// <summary>
@@ -1362,7 +1544,7 @@ namespace SimpleHttp
 			remove => _invalidWebrootFolder -= value ;
 		}
 		/// <summary>
-		/// Auxiliary variable for the resourcesClicked event
+		/// Auxiliary variable for the certificateAccepted event
 		/// </summary>
 		protected EventHandler<X509Certificate2> _certificateAccepted ;
 		/// <summary>
@@ -1434,16 +1616,40 @@ namespace SimpleHttp
 			remove => _openTcpTestFailed -= value ;
 		}
 		/// <summary>
-		/// Auxiliary variable for the assemblyLoadError event
+		/// Auxiliary variable for the assemblyLoadFailed event
 		/// </summary>
-		protected EventHandler<ErrorEventArgs> _assemblyLoadError ;
+		protected EventHandler<ErrorEventArgs> _assemblyLoadFailed ;
 		/// <summary>
 		/// Raised when assembly loading failed
 		/// </summary>
-		public event EventHandler<ErrorEventArgs> assemblyLoadError 
+		public event EventHandler<ErrorEventArgs> assemblyLoadFailed 
 		{
-			add => _assemblyLoadError += value ;
-			remove => _assemblyLoadError -= value ;
+			add => _assemblyLoadFailed += value ;
+			remove => _assemblyLoadFailed -= value ;
+		}
+		/// <summary>
+		/// Auxiliary variable for the UIErrorRaised event
+		/// </summary>
+		protected EventHandler<ErrorEventArgs> _UIErrorRaised ;
+		/// <summary>
+		/// UI error/warning message
+		/// </summary>
+		public event EventHandler<ErrorEventArgs> UIErrorRaised 
+		{
+			add => _UIErrorRaised += value ;
+			remove => _UIErrorRaised -= value ;
+		}
+		/// <summary>
+		/// Auxiliary variable for the resourceViewNeeded event
+		/// </summary>
+		protected EventHandler<Assembly> _resourceViewNeeded ;
+		/// <summary>
+		/// When user activates resource view for an assembly
+		/// </summary>
+		public event EventHandler<Assembly> resourceViewNeeded  
+		{
+			add => _resourceViewNeeded += value ;
+			remove => _resourceViewNeeded -= value ;
 		}
 		/// <summary>
 		/// This keydown event handler restores clipboard copy/cut functionality(commonly disabled for password text box)
@@ -1520,8 +1726,6 @@ namespace SimpleHttp
 		protected override void Dispose ( bool disposing )
 		{
 			if ( disposing && ( components != null ) ) components.Dispose() ;
-			if ( resourcesForm != null ) resourcesForm.Dispose () ;
-			
 			base.Dispose ( disposing ) ;
 		}       
 
@@ -1539,9 +1743,35 @@ namespace SimpleHttp
 
 		private void cbAssemblies_Enter ( object sender , EventArgs e )
 		{
+			lastControl = cbAssemblies ;
 			setAssebliesBackColor () ;
 		}
 
+		private void tbSiteName_Enter ( object sender , EventArgs e )
+		{
+			lastControl = tbSiteName ;
+			tbSiteName.BackColor = SystemColors.Window ;
+		}
+		private void tbPort_Enter ( object sender, EventArgs e )
+		{
+			lastControl = tbPort ;
+			tbPort.BackColor = SystemColors.Window ;
+		}
+		private void cbProtocol_Enter ( object sender , EventArgs e )
+		{
+			lastControl = cbProtocol ;
+			cbProtocol.BackColor = SystemColors.Window ;
+		}
+		private void tbCertificate_Enter ( object sender , EventArgs e )
+		{
+			lastControl = tbCertificate ;
+			setCertificateBackColor () ;
+		}
+		private void tbWebroot_Enter ( object sender, EventArgs e )
+		{
+			lastControl = tbWebroot ;
+			tbWebroot.BackColor = SystemColors.Window ;
+		}
 		private void cbAssemblies_Leave ( object sender , EventArgs e )
 		{
 			setAssebliesBackColor () ;
@@ -1551,29 +1781,6 @@ namespace SimpleHttp
 		{
 			setCertificateBackColor () ;
 		}
-
-
-		private void tbSiteName_Enter ( object sender , EventArgs e )
-		{
-			tbSiteName.BackColor = SystemColors.Window ;
-		}
-		private void tbPort_Enter ( object sender, EventArgs e )
-		{
-			tbPort.BackColor = SystemColors.Window ;
-		}
-		private void cbProtocol_Enter ( object sender , EventArgs e )
-		{
-			cbProtocol.BackColor = SystemColors.Window ;
-		}
-		private void tbCertificate_Enter ( object sender , EventArgs e )
-		{
-			setCertificateBackColor () ;
-		}
-		private void tbWebroot_Enter ( object sender, EventArgs e )
-		{
-			tbWebroot.BackColor = SystemColors.Window ;
-		}
-
 		private void cbProtocol_Leave ( object sender, EventArgs e )
 		{
 			cbProtocol.BackColor = inactiveEditBack ;
@@ -1632,7 +1839,7 @@ namespace SimpleHttp
 					new EnumItem<SslProtocols> ( "TLS 1.2" , SslProtocols.Tls12 ) ,
 					new EnumItem<SslProtocols> ( "TLS 1.3" , SslProtocols.Tls13 ) 	
 				} ;
-			return _sslProtocols ;
+			return _sslProtocolsShort ;
 		}
 		public static string getProtocolName ( SslProtocols sslProtocol )
 		{
@@ -1651,27 +1858,29 @@ namespace SimpleHttp
 
 		private void assembliesContextMenu_Opening ( object sender, CancelEventArgs e )
 		{
-			assembliesCutMenuItem.Visible = false ;
-			assembliesLine1.Visible = false ;
-			if ( cbAssemblies.Focused )
+			if ( Clipboard.ContainsText () )
 			{
-				//assembliesCutMenuItem.Visible =
-				if ( cbAssemblies.SelectionLength > 0 )
-				{
-					assembliesCopyMenuItem.Visible = true ;
-					assembliesLine1.Visible = true ;
-				}
-				if ( cbAssemblies.SelectionLength > 0 )
-				{
-					assembliesPasteMenuItem.Visible = Clipboard.ContainsText () ;
-					assembliesLine1.Visible = true ;
-				}
+				assembliesLine1.Visible = true ;
+				assembliesPasteMenuItem.Visible = true ;
 			}
-			else 
+			else
 			{
-				assembliesCopyMenuItem.Visible = false ;
+				assembliesLine1.Visible = false ;
 				assembliesPasteMenuItem.Visible = false ;
 			}
+			if ( cbAssemblies.SelectionLength > 0 )
+			{
+				assembliesCutMenuItem.Visible = true ;
+				assembliesCopyMenuItem.Visible = true ;
+				assembliesLine1.Visible = true ;
+			}
+			else
+			{
+				assembliesCutMenuItem.Visible = 
+				assembliesCopyMenuItem.Visible = false ;
+			}
+			// damn, they are not visible yet #@$@!@!
+			// assembliesLine1.Visible = assembliesPasteMenuItem.Visible || assembliesCopyMenuItem.Visible || assembliesCutMenuItem.Visible ;
 			assembliesShowMenuItem.Visible = resourceAssembly != null ;
 		}
 
@@ -1702,39 +1911,14 @@ namespace SimpleHttp
 					cmdLoadAssembly_Click ( cmdLoadAssembly , e ) ;
 				}
 				else if ( e.ClickedItem == assembliesShowMenuItem )
-				{
-					if ( resourcesForm == null )
-					{
-						resourcesForm = new ResourcesForm ( resourceAssembly ) ;
-						resourcesForm.Opacity = 0 ;
-						resourcesForm.Disposed += resourcesForm_Disposed ;
-						resourcesForm.Shown += resourcesForm_Shown ;
-						resourcesForm.Show ( this ) ;
-					}
-					else 
-					{
-						resourcesForm.resourceAssembly = resourceAssembly ;
-						resourcesForm.Show ( this ) ;
-					}
-				}
+					_resourceViewNeeded?.Invoke ( this ,  resourceAssembly ) ;
 			}
 			catch { }
 
 		}
 
-		private void resourcesForm_Shown ( object? sender , EventArgs e )
-		{
-			resourcesForm.Opacity = 1 ;
-			resourcesForm.Location = new Point ( 
-				Left + ( ( Width - resourcesForm.Width ) >> 1 ) ,
-				Top + ( ( Height - resourcesForm.Height ) >> 1 ) ) ;
-		}
-
-		private void resourcesForm_Disposed ( object? sender , EventArgs e )
-		{
-			if ( sender as ResourcesForm == resourcesForm ) resourcesForm = null ;
-		}
-
+		
+	
 		private void cbAssemblies_MouseDown ( object sender, MouseEventArgs e )
 		{
 			if ( e.Button == MouseButtons.Right ) 
@@ -1761,5 +1945,97 @@ namespace SimpleHttp
 			catch { }
 		}
 
+		private void lbSiteUri_MouseEnter ( object sender , EventArgs e )
+		{
+			lbSiteUri.Font = boldUnderlineFont ;
+		}
+
+		private void lbSiteUri_MouseLeave ( object sender , EventArgs e )
+		{
+			lbSiteUri.Font = boldFont ;
+		}
+
+		private void lbSiteUri_MouseDown ( object sender , MouseEventArgs e )
+		{
+			switch ( e.Button )
+			{
+				case MouseButtons.Left :
+					openSiteUri () ;
+				break ;
+				case MouseButtons.Right :
+				break ;
+			}
+		}
+		private void openSiteUri ()
+		{
+			try
+			{
+				Uri uri = new Uri ( lbSiteUri.Text ) ;
+				ProcessStartInfo startInfo = new ProcessStartInfo ( uri.ToString () ) ;
+				startInfo.UseShellExecute = true ;
+				Process.Start ( startInfo ) ;
+			}
+			catch ( Exception x )
+			{
+				_UIErrorRaised?.Invoke ( this , new ErrorEventArgs ( x ) ) ;
+			}
+		}
+		private void siteUriContextMenu_ItemClicked ( object sender , ToolStripItemClickedEventArgs e )
+		{
+			if ( e.ClickedItem == siteUriOpenItem )
+				openSiteUri () ;
+			else if ( e.ClickedItem == siteUriCopyItem )
+				Clipboard.SetText ( lbSiteUri.Text ) ;
+		}
+
+		private void tbSiteName_Resize ( object sender , EventArgs e )
+		{
+			cmdLoadAssembly.MinimumSize = 
+			cmdSelectPath.MinimumSize = 
+			cmdSelectCertificate.MinimumSize = new Size ( 0 , tbSiteName.Height ) ;
+		}
+
+		private void gbCertificate_Resize ( object sender , EventArgs e )
+		{
+			statusPanel.Width = gbCertificate.Width ;
+			gbWebroot.Width = gbCertificate.Width ;
+			gbAssemblies.Width = gbCertificate.Width ;
+			gbPassword.Width = gbCertificate.Width ;
+			cmdFileMode.Width =
+			cmdResourceMode.Width = ( gbCertificate.Width - cmdFileMode.Margin.Horizontal - cmdResourceMode.Margin.Horizontal ) >> 1 ;
+			cmdStart.Left = gbCertificate.Width - cmdStart.Width ;
+		}
+
+
+		private void startContextMenu_ItemClicked ( object sender , ToolStripItemClickedEventArgs e )
+		{
+			if ( e.ClickedItem == startMenuItem )
+				cmdStart_Click ( cmdStart , e ) ;
+			else if ( e.ClickedItem == parametersMenuItem )
+				showStartParametersClick () ;
+		}
+
+		private void button_MouseUp ( object sender , MouseEventArgs e )
+		{
+			try
+			{
+				if ( Form.ActiveForm == this ) lastControl.Focus () ;
+			}
+			catch { }
+		}
+
+		private void edit_MouseUp ( object sender , MouseEventArgs e )
+		{
+			try
+			{ 
+				ComboBox box = ActiveControl as ComboBox ;
+				if ( box != null )
+				{
+					if ( !box.DroppedDown )
+						( ( Control ) sender ).Focus () ;
+				}
+			}
+			catch { }
+		}
 	}
 }

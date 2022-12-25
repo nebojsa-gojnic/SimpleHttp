@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body style="font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif">
+<script>
+		//create XMLHttpRequest object
+	const xhr = new XMLHttpRequest() ;
+	var startStopButton ;
+	var working = true ;
+	var count = 0 ;
+	document.addEventListener ( "DOMContentLoaded" , ( e ) =>
+	{
+		startStopButton = document.getElementById ( "startStopButton" ) ;
+		startStopButton.addEventListener ( "click" , startStopButton_Click ) ; 
+		statusDiv = document.getElementById ( "statusDiv" ) ;
+		counterSpan = document.getElementById ( "counterSpan" ) ;
+		sendPing () ;
+	} ) ;
+	
+	function sendPing()
+	{
+		if ( !working ) return ;
+		xhr.open ( "GET" , "/pinger.html")
+		//send the Http request
+		xhr.send()
+
+		xhr.onload = function() 
+		{
+			statusDiv.textContent = xhr.status == 200 ? "Working ..." : ( "Wrong status: " + xhr.status.toString () ) ;
+			counterSpan.textContent = ++count ; 
+			setTimeout ( sendPing , 500 ) ;    
+		}
+
+		xhr.onerror = function ( e ) 
+		{
+			statusDiv.textContent = "Critical error " + e.toString () ;
+		}
+	}
+	function startStopButton_Click ( e )
+	{
+		if ( startStopButton.innerHTML == "Stop" )
+		{
+			startStopButton.innerHTML = "Start" ;
+			statusDiv.textContent = "" ;
+			working = false ;
+		}
+		else
+		{
+			startStopButton.innerHTML = "Stop" ;
+			statusDiv.textContent = "Working" ;
+			count = 0 ;
+			working = true ;
+			sendPing () ;
+		}
+	}
+</script>
+	<button id="startStopButton">Stop</button>&nbsp;&nbsp;<span id="counterSpan"></span>
+	<div id="statusDiv">Working</div>
+</body>
+</html>

@@ -256,8 +256,7 @@ namespace WebSockets
 				httpClient = new HttpClient () ;
 				//httpClient.BaseAddress = new Uri ( "https:50080//localhost/" ) ;
 				//
-				httpClient.GetStringAsync ( "https://" + siteName + ":" +
-					webServer.port.ToString () + "/" ).ContinueWith ( onHttpClient ) ;
+				httpClient.GetStringAsync ( "https://" + siteName + ":" + webServer.port.ToString () + "/" ).ContinueWith ( onHttpClient ) ;
 				//_certificate = GenerateSelfSignedCertificate () ;
 			}
 			catch ( Exception x )
@@ -288,9 +287,9 @@ namespace WebSockets
 		/// </summary>
 		/// <param name="sender">WebServer instance</param>
 		/// <param name="e">ErrorEventArgs instance, call GetException() method to get exception</param>
-		private void webServer_criticalErrorRaised ( object sender , ErrorAndUriEventArgs e )
+		private void webServer_criticalErrorRaised ( object sender , HttpConnectionDetails e )
 		{
-			if ( webServer == sender as WebServer ) onOpenTcpTestFailed ( e ) ;
+			if ( webServer == sender as WebServer ) onOpenTcpTestFailed ( new ErrorEventArgs ( e.error ) ) ;
 		}
 		/// <summary>
 		/// When error is raised during connection handling on webServer 

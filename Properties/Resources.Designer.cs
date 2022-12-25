@@ -61,12 +61,22 @@ namespace SimpleHttp.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Bitmap closeButton {
+        internal static System.Drawing.Icon activeIcon {
             get {
-                object obj = ResourceManager.GetObject("closeButton", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                object obj = ResourceManager.GetObject("activeIcon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon activeMonitorIcon {
+            get {
+                object obj = ResourceManager.GetObject("activeMonitorIcon", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
             }
         }
         
@@ -76,16 +86,6 @@ namespace SimpleHttp.Properties {
         internal static System.Drawing.Bitmap closeIcon {
             get {
                 object obj = ResourceManager.GetObject("closeIcon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap closeRightButton {
-            get {
-                object obj = ResourceManager.GetObject("closeRightButton", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -111,21 +111,21 @@ namespace SimpleHttp.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Icon playing {
+        internal static System.Drawing.Bitmap rightDoubleArrow {
             get {
-                object obj = ResourceManager.GetObject("playing", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
+                object obj = ResourceManager.GetObject("rightDoubleArrow", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap rightRewind {
+        internal static System.Drawing.Bitmap searchIcon {
             get {
-                object obj = ResourceManager.GetObject("rightRewind", resourceCulture);
+                object obj = ResourceManager.GetObject("searchIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -136,16 +136,6 @@ namespace SimpleHttp.Properties {
         internal static System.Drawing.Bitmap settings {
             get {
                 object obj = ResourceManager.GetObject("settings", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap stopButton {
-            get {
-                object obj = ResourceManager.GetObject("stopButton", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

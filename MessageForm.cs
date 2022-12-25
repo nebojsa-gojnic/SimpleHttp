@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System ;
+using System.Collections.Generic ;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Drawing ;
+using System.Text ;
+using System.Windows.Forms ;
 
 namespace SimpleHttp
 {
@@ -16,12 +13,16 @@ namespace SimpleHttp
 		{
 			InitializeComponent();
 		}
+		// nullable/non-nullable, omg what did thay do with C#
+		public event EventHandler<EventArgs>? cmdOkClicked ;
+		public event EventHandler<EventArgs>? cmdNoClicked ;
+		public event EventHandler<EventArgs>? cmdCancelClicked ;
 
 		private void cmdOk_Click ( object sender , EventArgs e )
 		{
 			cmdOkClicked?.Invoke ( this , e ) ;
 		}
-		private void cmdNo_Click(object sender, EventArgs e)
+		private void cmdNo_Click ( object sender , EventArgs e )
 		{
 			cmdNoClicked?.Invoke ( this , e ) ;
 		}
@@ -30,9 +31,6 @@ namespace SimpleHttp
 		{
 			cmdCancelClicked?.Invoke ( this , e ) ;
 		}
-		public event EventHandler<EventArgs> cmdOkClicked ;
-		public event EventHandler<EventArgs> cmdNoClicked ;
-		public event EventHandler<EventArgs> cmdCancelClicked ;
 		public string messageText
 		{
 			get => textLabel.Text ;
@@ -171,8 +169,14 @@ namespace SimpleHttp
 		public Image messageImage 
 		{
 			get => messagePicture.Image ;
-			set => messagePicture.Image = value ;
+			set => setMessageImage ( value ) ;
 		}
+		protected void setMessageImage ( Image value )
+		{
+			messagePicture.Image = value ;
+			messagePicturePanel.Visible = value != null ;
+		}
+
 		public void setTitleAndCaption ( string title , string caption )
 		{ 
 			Text = title ;
@@ -191,9 +195,25 @@ namespace SimpleHttp
 		}
 		public void setAll ( Image image , string title , string caption , string okButtonText , string noButtonText ,  string cancelButtonText )
 		{ 
-			messagePicture.Image = image ;
+			messageImage = image ;
+			messagePicturePanel.Visible = image != null ;
 			setAllText ( title , caption , okButtonText , noButtonText , cancelButtonText ) ;
 		}
+		protected override void OnHandleCreated ( EventArgs e )
+		{
+			Screen screen = Screen.FromHandle ( Handle ) ;
+			Rectangle bounds = screen.Bounds ;
+			textLabel.MaximumSize = new Size ( bounds.Width > bounds.Height ? bounds.Width >> 1 : ( bounds.Width << 1 ) / 3 , 0 ) ;
+			base.OnHandleCreated ( e ) ;
+		}
 
-	}
+        private void textLabel_DoubleClick ( object sender , EventArgs e )
+        {
+			try
+			{
+				Clipboard.SetText ( textLabel.Text ) ;
+			}
+			catch { }
+        }
+    }
 }

@@ -106,6 +106,7 @@
 			this.textLabel.TabIndex = 1;
 			this.textLabel.Text = "Hello world!";
 			this.textLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.textLabel.DoubleClick += new System.EventHandler(this.textLabel_DoubleClick);
 			// 
 			// buttonPanel
 			// 

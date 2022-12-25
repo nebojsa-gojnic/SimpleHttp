@@ -31,11 +31,30 @@ namespace SimpleHttp
 		/// </summary>
 		public bool showBrackets { get ; protected set ; }
 		/// <summary>
+		/// Auxiliary variable for the source property
+		/// </summary>
+		protected string _source ;
+		/// <summary>
+		/// Get method for the source property
+		/// </summary>
+		protected string getSource ()
+		{
+			return _source == null ? assembly.FullName : _source ;
+		}
+		/// <summary>
+		/// Assembly source
+		/// </summary>
+		public string source 
+		{ 
+			get => getSource() ;
+		}
+		/// <summary>
 		/// Loads new Assembly instance from given file name and wraps it into new AssemblyItem instance
 		/// </summary>	
 		/// <param name="assemblyFileName">Full path and name to valid Assembly file</param>
 		public AssemblyItem ( string assemblyFileName ) : this ( Assembly.LoadFrom ( assemblyFileName ) , true )
 		{
+			_source = assemblyFileName ;
 		}
 		/// <summary>
 		/// Creates new instance with given Assembly instance
@@ -52,6 +71,7 @@ namespace SimpleHttp
 		/// If it is true then ToString method presents name and version inside of angualr brackets</param>
 		public AssemblyItem ( Assembly assembly , bool showBrackets )
 		{
+			_source = null ;
 			this.assembly = assembly ;
 			name = this.assembly.FullName ;
 			nameAndVersion = name ;
