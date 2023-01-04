@@ -4,7 +4,7 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>Resource 50080</ActiveDebugProfile>
+    <ActiveDebugProfile>File 50080</ActiveDebugProfile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="AboutForm.cs">

@@ -247,12 +247,13 @@ namespace SimpleHttp
 		}
 		public override string ToString()
 		{
-			return ( mode == StartServerMode.resourceServer ? "/r" : "/f" ) + " \"" + source + "\" /p " + port.ToString() + " " +
+			return ( ( mode == StartServerMode.resourceServer ? "/r" : "/f" ) + " \"" + source + "\" /p " + port.ToString() + " " +
 							( string.IsNullOrWhiteSpace ( certificate ) ? "" :
 							( "/c \"" + certificate + "\" " + 
 							( string.IsNullOrWhiteSpace ( password ) ? "" : ( "/pw \"" + password + "\" " ) ) + 
-							"/" + TlsShort ( protocol ) + " " ) +
-							( string.IsNullOrWhiteSpace ( sitename ) ? "" : ( "/s \"" + sitename + "\"" ) ) 
+							"/" + TlsShort ( protocol ) + " " ) 
+							) + 
+							( string.IsNullOrWhiteSpace ( sitename ) ? "" : ( "/s \"" + sitename + "\"" ) )
 							).Trim() ;
 		}
 	}
