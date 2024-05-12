@@ -1,5 +1,6 @@
 ﻿using System ;
 using System.Reflection ;
+using WebSockets;
 
 namespace SimpleHttp
 {
@@ -49,12 +50,49 @@ namespace SimpleHttp
 			get => getSource() ;
 		}
 		/// <summary>
-		/// Loads new Assembly instance from given file name and wraps it into new AssemblyItem instance
-		/// </summary>	
-		/// <param name="assemblyFileName">Full path and name to valid Assembly file</param>
-		public AssemblyItem ( string assemblyFileName ) : this ( Assembly.LoadFrom ( assemblyFileName ) , true )
+		/// Tries to find an assembly by name(full or partial), if assembly is not found then it tries to load it from file system.
+		/// </summary>
+		/// <param name="source">Assembly name(full or short) or file path</param>
+		/// <returns>Returns AssemblyItem with assembly  or null</returns>
+		public static AssemblyItem loadAssemblyItem ( string source )
 		{
-			_source = assemblyFileName ;
+			if ( File.Exists ( source ) )
+			{
+				source = new FileInfo( source ).FullName.ToLower() ;
+				foreach ( Assembly assembly in AppDomain.CurrentDomain.GetAssemblies () )
+					if ( assembly.Location.ToLower() == source ) 
+						return new AssemblyItem ( assembly , false ) ;
+				return new AssemblyItem ( Assembly.LoadFrom ( source ), false ) ;
+			}
+			else
+			{
+				int i = source.IndexOf ( ',' ) ;
+				if ( i == -1 )
+				{
+					foreach ( Assembly assembly in AppDomain.CurrentDomain.GetAssemblies () )
+						if ( assembly.GetName().Name == source ) 
+							return new AssemblyItem ( assembly , false ) ;
+				}
+				else 
+				{
+					int sl = source.Length ;
+					string sourcePlus = source + "," ;
+					foreach ( Assembly assembly in AppDomain.CurrentDomain.GetAssemblies () )
+					{
+						string fullName = assembly.GetName().FullName ;
+						switch ( Math.Sign ( fullName.Length - sl ) )
+						{
+							case 0 :
+								if ( source == fullName ) return new AssemblyItem ( assembly , false ) ;
+							break ;
+							case 1 :
+								if ( fullName.Substring ( 0 , sl + 1 ) == sourcePlus ) return new AssemblyItem ( assembly , false ) ;
+							break ;
+						}
+					}
+				}
+			}
+			return null ;
 		}
 		/// <summary>
 		/// Creates new instance with given Assembly instance

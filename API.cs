@@ -28,6 +28,7 @@ namespace SimpleHttp
 		public const int BM_Click = 0x00F5 ;
 		public const int EM_GetSel = 0x00B0 ;
 		public const int EM_SetSel = 0x00B1 ;
+		public const int EM_SetTabStops = 0x00CB ;
 		public const int WM_NCMouseMove = 0x00A0 ;
         public const int WM_NCMouseLeave =  0x02A2 ;
         public const int WM_NCLButtonDown = 0x00A1 ;  
@@ -2730,6 +2731,12 @@ namespace SimpleHttp
 			ptr = API.CreateIconIndirect ( ref tmp ) ;
 			return new Cursor ( ptr ) ;
 		}
-
+		public static void SetTabWidth ( IntPtr handle , int someSize )
+		{
+			unsafe
+			{
+				SendMessageW ( handle , WindowMessage.EM_SetTabStops , new IntPtr ( 1 ) , new IntPtr ( &someSize ) ) ;
+			}
+		}
 	}
 }

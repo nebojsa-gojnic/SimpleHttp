@@ -2,25 +2,25 @@
   "profiles": {
     "File 50080 stop": {
       "commandName": "Project",
-      "commandLineArgs": "/f \"C:\\Code\\Nodes\\PipeMania\\PipeMania\\Resources\" /p 50080 /d",
+      "commandLineArgs": "/f \"I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources\" /p 50080 /d",
       "hotReloadEnabled": false
     },
     "File 50080": {
       "commandName": "Project",
-      "commandLineArgs": "/f C:\\Code\\Nodes\\PipeMania\\PipeMania\\Resources /p 50080 /s localhost",
+      "commandLineArgs": "/f I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources /p 50080 /s localhost",
       "hotReloadEnabled": false
     },
     "Resource 50080": {
       "commandName": "Project",
-      "commandLineArgs": "/r PipeMania.dll /p 50080 /c \"C:\\Code\\localhost2.pfx\" /pw \"password\" /tls12 /s localhost"
+      "commandLineArgs": "/r PipeManiaService.dll /p 50080 /c \"I:\\Code\\localhost2.pfx\" /pw \"password\" /tls12 /s localhost"
     },
     "File wrong": {
       "commandName": "Project",
-      "commandLineArgs": "/f C:\\Code\\Nodes\\PipeMania\\PipeMania\\Resources1 /p 50080"
+      "commandLineArgs": "/f I:\\Code\\Nodes\\PipeMania\\PipeMania\\Resources1 /p 50080"
     },
-    "Primitives": {
+    "webconfig.json": {
       "commandName": "Project",
-      "commandLineArgs": "/r \"Microsoft.Win32.Primitives, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a\" /p 50080 /c \"C:\\Code\\localhost2.pfx\" /pw \"password\" /tls12 /s localhost"
+      "commandLineArgs": "webconfig.json"
     }
   }
 }

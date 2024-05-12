@@ -10,27 +10,105 @@ using System.Diagnostics ;
 using WebSockets ;
 using System.Security.Cryptography ;
 using System.Security.Authentication ;
+using Newtonsoft.Json.Linq ;
+using Newtonsoft.Json ;
 using Microsoft.Win32 ;
+using System.Text.RegularExpressions;
+
 namespace SimpleHttp
 {
 	public partial class MonitorForm : Form
 	{
+		public MonitorForm() : this ( new HttpStartParameters ( new string [ 0 ] ) )
+		{
+		}
+		public MonitorForm ( HttpStartParameters startParameters )
+		{
+			InitializeComponent() ;
+			Visible = false ;
+			Opacity =  0.0 ;
+			WindowState = FormWindowState.Minimized ; //!!!!
+
+			JsonSerializerSettings settings = new JsonSerializerSettings () ;
+			settings.Formatting = Formatting.Indented ;
+			jsonSerializer = JsonSerializer.Create ( settings ) ;
+
+			searchSplitter.Controls.Add ( searchSplitterInner = getSplitterInner ( verticalSplitterPainer ) ) ;
+			logListSplitter.Controls.Add ( logListSplitterInner = getSplitterInner ( verticalSplitterPainer ) ) ;
+			propertiesSplitter.Controls.Add ( propertiesSplitterInner = getSplitterInner ( horizontalSplitterPainer ) ) ;
+
+			requestGrid.Controls.Add ( getGridBottomLine () ) ;
+			responseGrid.Controls.Add ( getGridBottomLine () ) ;
+
+			//currentStartParameters =
+			programStartParameters = startParameters ;
+			KeyPreview = true ;
+			_monitorActive = false ;
+			normalBackBrush = new SolidBrush ( SystemColors.Window ) ;
+			normalInkBrush = new SolidBrush ( SystemColors.WindowText ) ;
+			alternateBackBrush = new SolidBrush ( SystemColors.Control ) ;
+			alternateInkBrush = new SolidBrush ( SystemColors.ControlText ) ;
+			selectedBackBrush = new SolidBrush ( MonitorForm.mixColors ( SystemColors.Highlight , SystemColors.ControlDarkDark ) ) ;
+			selectedInkBrush = new SolidBrush ( SystemColors.HighlightText ) ;
+			searchBackBrush = new SolidBrush ( MonitorForm.mixColors ( SystemColors.Highlight , SystemColors.ControlLight ) ) ;
+			//searchInkBrush = new SolidBrush ( SystemColors.HighlightText ) ;
+			searchInkBrush = new SolidBrush ( Color.Yellow ) ;
+			errorBackBrush = new SolidBrush ( mixColors ( Color.White , Color.LightSalmon ) ) ;
+			alternateErrorBackBrush = new SolidBrush ( mixColors ( Color.White , Color.DarkSalmon ) ) ;
+			errorInkBrush = new SolidBrush ( Color.DarkRed ) ;
+			alternateErrorInkBrush = new SolidBrush ( Color.DarkRed ) ;
+			selectedErrorBackBrush = new SolidBrush ( Color.DarkRed ) ;
+			selectedErrorInkBrush = new SolidBrush ( Color.LightYellow ) ;
+			buttonBrush = new SolidBrush ( SystemColors.ButtonFace ) ;
+			lightPen = new Pen ( SystemColors.ButtonHighlight ) ;
+			darkPen = new Pen ( SystemColors.ButtonShadow ) ;
+			darkerPen = new Pen ( SystemColors.ControlDarkDark ) ;
+
+
+
+
+			requestGrid.AlternatingRowsDefaultCellStyle.BackColor = SystemColors.Control ;
+			requestGrid.AlternatingRowsDefaultCellStyle.ForeColor = SystemColors.ControlText ;
+			requestGrid.AlternatingRowsDefaultCellStyle.SelectionBackColor = selectedBackBrush.Color ;
+			requestGrid.AlternatingRowsDefaultCellStyle.SelectionForeColor = selectedInkBrush.Color ;
+			requestGrid.RowsDefaultCellStyle.SelectionBackColor = selectedBackBrush.Color ;
+			requestGrid.RowsDefaultCellStyle.SelectionForeColor = selectedInkBrush.Color ;
+			responseGrid.AlternatingRowsDefaultCellStyle.BackColor = SystemColors.Control ;
+			responseGrid.AlternatingRowsDefaultCellStyle.ForeColor = SystemColors.ControlText ;
+			responseGrid.AlternatingRowsDefaultCellStyle.SelectionBackColor = selectedBackBrush.Color ;
+			responseGrid.AlternatingRowsDefaultCellStyle.SelectionForeColor = selectedInkBrush.Color ;
+			responseGrid.RowsDefaultCellStyle.SelectionBackColor = selectedBackBrush.Color ;
+			responseGrid.RowsDefaultCellStyle.SelectionForeColor = selectedInkBrush.Color ;
+
+			webServer = null ;
+			resourceAssemblyName = null ;
+
+			boldUnderlineFont = new Font ( uriLabel.Font.FontFamily , Font.Size , uriLabel.Font.Style ) ;
+			configFileNameLabel.Font = 
+			resourceLabel.Font = 
+			requestLabel.Font = 
+			uriLabel.Font = 
+			boldFont = new Font ( boldUnderlineFont , FontStyle.Regular ) ;
+			_searchBoxDemanded = getSearchBoxDemanded () ;
+		}
+
+
 		MessageForm messageForm ;
-		StartServerForm startServerForm ;
+		QuickStartForm quickStartForm ;
 		PipeSecurity pipeSecurity ;
 		protected ResourcesForm resourcesForm ;
 		protected bool closeProgramDemand ;
 		protected bool closeProgramConfirmed ;
 		protected string webroot ;
 		protected string source ;
-		protected X509Certificate2 certificate ;
 		protected NamedPipeServerStream recivier ;
-		protected Assembly resourceAssembly ;
+		protected string resourceAssemblyName ;
 		protected int port ;
 		protected Uri siteUri ;
 		protected SslProtocols protocol ;
 		protected bool autoStarted ;
 		protected WebServer webServer ;
+		protected JsonSerializer jsonSerializer ;
 		/// <summary>
 		/// Previous FormWindowState, we need it to react properly when form is restored
 		/// </summary>
@@ -81,11 +159,29 @@ namespace SimpleHttp
 		/// <summary>
 		/// Current start parameters
 		/// </summary>
-		protected HttpStartParameters currentStartParameters ;
+		//protected HttpStartParameters currentStartParameters ;
+		/// <summary>
+		/// Set method for the monitorActive property
+		/// </summary>
+		/// <param name="value">New value monitorActive property</param>
+		protected void setMonitorActive ( bool value )
+		{
+			_monitorActive = value ;
+			setActiveStateIcon () ;
+		}
 		/// <summary>
 		/// Events are logged and dispalyed when this is true 
 		/// </summary>
-		protected bool monitorActive ;
+		protected bool _monitorActive ;
+		/// <summary>
+		/// Events are logged and dispalyed when this is true 
+		/// </summary>
+		public bool monitorActive 
+		{
+			get => _monitorActive ;
+			set => setMonitorActive ( value ) ;
+		}
+
 		/// <summary>
 		/// search box width prior to splitter dragging
 		/// </summary>
@@ -107,9 +203,7 @@ namespace SimpleHttp
 		{
 			return Color.FromArgb ( ( ( int ) c1.A + ( int ) c2.A ) >> 1 , ( ( int ) c1.R + ( int ) c2.R ) >> 1 , ( ( int ) c1.G + ( int ) c2.G ) >> 1 , ( c1.B + c2.B ) >> 1 ) ;
 		}
-		public MonitorForm() : this ( new HttpStartParameters ( new string [ 0 ] ) )
-		{
-		}
+		
 		public static Panel getSplitterInner ( PaintEventHandler paintHandler )
 		{
 			Panel splitterInner = new Panel () ;
@@ -119,7 +213,6 @@ namespace SimpleHttp
 			splitterInner.Enabled = false ;
 			splitterInner.BackColor = SystemColors.ButtonShadow ;
 			splitterInner.Paint += paintHandler ;
-
 			return splitterInner ;
 		}
 		public static Panel getGridBottomLine ()
@@ -131,128 +224,42 @@ namespace SimpleHttp
 			panel.Dock = DockStyle.Bottom ;
 			return panel ;
 		}
-		public MonitorForm ( HttpStartParameters startParameters )
+		
+		/// <summary>
+		/// Auxiliary variable for the jsonEditorVisible property
+		/// </summary>
+		private bool _jsonEditorVisible ;
+		/// <summary>
+		/// Set method for the jsonEditorVisible property
+		/// </summary>
+		/// <param name="value">New value for the jsonEditorVisible property</param>
+		private void setJsonEditorVisible ( bool value )
 		{
-			InitializeComponent() ;
-
-			searchSplitter.Controls.Add ( searchSplitterInner = getSplitterInner ( verticalSplitterPainer ) ) ;
-			logListSplitter.Controls.Add ( logListSplitterInner = getSplitterInner ( verticalSplitterPainer ) ) ;
-			propertiesSplitter.Controls.Add ( propertiesSplitterInner = getSplitterInner ( horizontalSplitterPainer ) ) ;
-
-			requestGrid.Controls.Add ( getGridBottomLine () ) ;
-			responseGrid.Controls.Add ( getGridBottomLine () ) ;
-
-			currentStartParameters =
-			programStartParameters = startParameters ;
-			KeyPreview = true ;
-			monitorActive = false ;
-			normalBackBrush = new SolidBrush ( SystemColors.Window ) ;
-			normalInkBrush = new SolidBrush ( SystemColors.WindowText ) ;
-			alternateBackBrush = new SolidBrush ( SystemColors.Control ) ;
-			alternateInkBrush = new SolidBrush ( SystemColors.ControlText ) ;
-			selectedBackBrush = new SolidBrush ( MonitorForm.mixColors ( SystemColors.Highlight , SystemColors.ControlDarkDark ) ) ;
-			selectedInkBrush = new SolidBrush ( SystemColors.HighlightText ) ;
-			searchBackBrush = new SolidBrush ( MonitorForm.mixColors ( SystemColors.Highlight , SystemColors.ControlLight ) ) ;
-			//searchInkBrush = new SolidBrush ( SystemColors.HighlightText ) ;
-			searchInkBrush = new SolidBrush ( Color.Yellow ) ;
-			errorBackBrush = new SolidBrush ( mixColors ( Color.White , Color.LightSalmon ) ) ;
-			alternateErrorBackBrush = new SolidBrush ( mixColors ( Color.White , Color.DarkSalmon ) ) ;
-			errorInkBrush = new SolidBrush ( Color.DarkRed ) ;
-			alternateErrorInkBrush = new SolidBrush ( Color.DarkRed ) ;
-			selectedErrorBackBrush = new SolidBrush ( Color.DarkRed ) ;
-			selectedErrorInkBrush = new SolidBrush ( Color.LightYellow ) ;
-			buttonBrush = new SolidBrush ( SystemColors.ButtonFace ) ;
-			lightPen = new Pen ( SystemColors.ButtonHighlight ) ;
-			darkPen = new Pen ( SystemColors.ButtonShadow ) ;
-			darkerPen = new Pen ( SystemColors.ControlDarkDark ) ;
-
-
-
-
-			requestGrid.AlternatingRowsDefaultCellStyle.BackColor = SystemColors.Control ;
-			requestGrid.AlternatingRowsDefaultCellStyle.ForeColor = SystemColors.ControlText ;
-			requestGrid.AlternatingRowsDefaultCellStyle.SelectionBackColor = selectedBackBrush.Color ;
-			requestGrid.AlternatingRowsDefaultCellStyle.SelectionForeColor = selectedInkBrush.Color ;
-			requestGrid.RowsDefaultCellStyle.SelectionBackColor = selectedBackBrush.Color ;
-			requestGrid.RowsDefaultCellStyle.SelectionForeColor = selectedInkBrush.Color ;
-			responseGrid.AlternatingRowsDefaultCellStyle.BackColor = SystemColors.Control ;
-			responseGrid.AlternatingRowsDefaultCellStyle.ForeColor = SystemColors.ControlText ;
-			responseGrid.AlternatingRowsDefaultCellStyle.SelectionBackColor = selectedBackBrush.Color ;
-			responseGrid.AlternatingRowsDefaultCellStyle.SelectionForeColor = selectedInkBrush.Color ;
-			responseGrid.RowsDefaultCellStyle.SelectionBackColor = selectedBackBrush.Color ;
-			responseGrid.RowsDefaultCellStyle.SelectionForeColor = selectedInkBrush.Color ;
-
-			webServer = null ;
-			resourceAssembly = null ;
-			certificate = null ;
-
-			boldUnderlineFont = new Font ( uriLabel.Font.FontFamily , Font.Size , uriLabel.Font.Style ) ;
-			resourceLabel.Font = 
-			requestLabel.Font = 
-			uriLabel.Font = 
-			boldFont = new Font ( boldUnderlineFont , FontStyle.Regular ) ;
-			_searchBoxDemanded = getSearchBoxDemanded () ;
-			this.HandleCreated += FirstTime_HandleCreated ;
-		}
-
-		private void FirstTime_HandleCreated ( object? sender , EventArgs e )
-		{
-			this.HandleCreated -= FirstTime_HandleCreated ;
-
-			string startingMessage ;
-
-			serverMode = programStartParameters.mode ;
-			startingMessage = programStartParameters.errorMessage ;
-			setTextWidthHint ( null ) ;
-			loadSearchBoxWidth () ;
-			
-			/*
-				//	stack overflowww!@##@!@!!!
-				//	jerks
-			if ( string.IsNullOrEmpty ( startingMessage ) && programStartParameters.autoStart ) ShowInTaskbar = false ; //stack overflowww!@##@!@!!!
-			*/
-			if ( string.IsNullOrEmpty ( startingMessage ) )
+			if ( value )
 			{
-				if ( programStartParameters.autoStart )
-				{
-					if ( autoStarted = startWebServer ( programStartParameters , out startingMessage ) ) 
-					{
-						Visible = false ;
-						uriLabel.Text = string.IsNullOrWhiteSpace ( programStartParameters.sitename ) ? "" : ( ( string.IsNullOrWhiteSpace ( programStartParameters.certificate ) ? "http://" : "https://" ) + programStartParameters.sitename + ":" + programStartParameters.port.ToString () ) ;
-					}
-					else
-					{
-						Opacity = 1.0 ;
-						BeginInvoke ( () =>
-						{
-							showServerStarterForm ( programStartParameters , certificate ) ;
-							if ( !string.IsNullOrWhiteSpace ( startingMessage ) )
-								showMessage ( SimpleHttp.Properties.Resources.warningIcon , "Bad starting parameters" , 
-									startingMessage , "" , "" , "Continue" ) ;
-						} ) ;
-					}
-				}
-				else 
-				{
-					Opacity = 1.0 ;
-					BeginInvoke ( () => 
-					{
-						ShowInTaskbar = true ;
-					} ) ;
-				}					
+				_jsonEditorVisible = true ;
+				jsonEditor.Visible = true ;
+				midPanel.Visible = false ;
+				jsonEditor.BringToFront () ;
 			}
 			else 
 			{
-				Opacity = 1.0 ;
-				BeginInvoke ( () =>
-				{
-					showServerStarterForm ( programStartParameters , certificate ) ;
-					if ( !string.IsNullOrWhiteSpace ( startingMessage ) )
-						showMessage ( SimpleHttp.Properties.Resources.warningIcon , "Bad starting parameters" , 
-							startingMessage , "" , "" , "Continue" ) ;
-				} ) ;
-			}			
+				_jsonEditorVisible = false ;
+				jsonEditor.Visible = false ;
+				midPanel.Visible = true ;
+				midPanel.BringToFront () ;
+			}
+			viewSwitch.BackgroundImage = images24.Images [ value ? "monitor" : "json" ] ;
 		}
+		/// <summary>
+		/// Hides/shows json editor
+		/// </summary>
+		public bool jsonEditorVisible
+		{
+			get => _jsonEditorVisible ;
+			set => setJsonEditorVisible ( value ) ;
+		}
+
 		/// <summary>
 		/// Set method for the propertiesVisible porperty
 		/// </summary>
@@ -268,14 +275,19 @@ namespace SimpleHttp
 				logListSplitter.Visible = false ;
 			}
 		}
+		/// <summary>
+		/// Right panel visibility(request&amp;respond headers)
+		/// </summary>
 		public bool propertiesVisible
 		{
 			get => propertiesPanel.Visible ;
 			set => setPropertiesVisible ( value ) ;
 		}
-		protected override void OnShown ( EventArgs e )
+		/// <summary>
+		/// This starts pipe to reve
+		/// </summary>
+		protected bool startPipeRecieve ()
 		{
-			restoredWindowState = WindowState == FormWindowState.Minimized ? FormWindowState.Normal : WindowState ;
 			pipeSecurity = new PipeSecurity() ;
 			pipeSecurity.AddAccessRule ( new PipeAccessRule ( "Everyone" , PipeAccessRights.FullControl, AccessControlType.Allow ) ) ;
 			try
@@ -285,17 +297,111 @@ namespace SimpleHttp
 			catch 
 			{
 				BeginInvoke ( Close ) ;
-				return ;
+				return false ;
 			}
 			recivier.WaitForConnectionAsync ().ContinueWith ( onPipeConnected ) ;
+			return true ;
+		}
+		protected override void OnShown ( EventArgs e )
+		{
+			restoredWindowState = WindowState == FormWindowState.Minimized ? FormWindowState.Normal : WindowState ;
+			if ( !startPipeRecieve() ) return ;
+
+
+
 			
+
+			string startingMessage = programStartParameters.errorMessage ;
+			serverMode = programStartParameters.mode ;
+			setTextWidthHint ( null ) ;
+			loadSearchBoxWidth () ;
+			setTextWidthHint ( null ) ;
+			loadSearchBoxWidth () ;
+
 			responseGrid.Height = requestGrid.ColumnHeadersHeight * 4 + 6 ;
 
+			if ( jsonEditorVisible ) API.SetTabWidth ( jsonEditor.Handle , 8 ) ; //why 8?
 
 
 			propertiesVisible = false ;
-			if ( !isListening && ( messageForm == null ) )
-				if ( startServerForm == null ) loadServerStarterForm ( programStartParameters ) ;
+			try
+			{
+				reflectServerStatus ( programStartParameters.configData ) ;
+				jsonEditor.Text = json2string ( programStartParameters.configData ) ;
+			}
+			catch { }
+			_jsonConfigFile = programStartParameters.jsonConfigFile ;
+			if ( string.IsNullOrWhiteSpace ( startingMessage ) )
+			{
+				if ( string.IsNullOrWhiteSpace ( programStartParameters.jsonConfigFile ) )
+				{
+
+					if ( programStartParameters.autoStart )
+					{
+						//jsonEditorVisible = false ;
+						if ( autoStarted = startWebServer ( programStartParameters.configData , out startingMessage ) ) 
+						{
+							Visible = false ;
+						}
+						else
+						{
+							Opacity = 1.0 ;
+							restoreForm ( () =>
+							{
+								showQuickStartForm ( programStartParameters.configData ) ;
+								if ( !string.IsNullOrWhiteSpace ( startingMessage ) )
+									showMessage ( SimpleHttp.Properties.Resources.warningIcon , "Bad starting parameters" , 
+										startingMessage , "" , "" , "Continue" ) ;
+							} ) ;
+						}
+					}
+					else 
+					{
+						Opacity = 1.0 ;
+						restoreForm ( new ThreadStart ( showQuickStartForm ) ) ;
+					}	
+				}
+				else 
+				{
+					jsonEditorVisible = true ;
+					if ( autoStarted = startWebServer ( programStartParameters.configData , out startingMessage ) )
+					{
+						Visible = false ;
+						midPanel.Enabled = true ;
+					}
+					else
+					{
+						Opacity = 1.0 ;
+						BeginInvoke ( () =>
+						{
+							if ( !string.IsNullOrWhiteSpace ( startingMessage ) )
+								showMessage ( SimpleHttp.Properties.Resources.warningIcon , "Bad starting parameters" , 
+									startingMessage , "" , "" , "Continue" ) ;
+						} ) ;
+					}
+				}
+			}
+			else 
+			{
+				Opacity = 1.0 ;
+				BeginInvoke ( () =>
+				{
+					showQuickStartForm ( programStartParameters.configData ) ;
+					if ( !string.IsNullOrWhiteSpace ( startingMessage ) )
+						showMessage ( SimpleHttp.Properties.Resources.warningIcon , "Bad starting parameters" , 
+							startingMessage , "" , "" , "Continue" ) ;
+				} ) ;
+			}	
+
+			//	if ( string.IsNullOrWhiteSpace ( programStartParameters.jsonConfigFile ) )
+			//	{
+			//		if ( ( messageForm == null ) && ( quickStartForm == null ) )
+			//			loadQuickStartForm ( programStartParameters ) ;
+			//	}
+			//	else
+			//	{
+
+			//	}
 			OnResize ( e ) ;
 			base.OnShown ( e ) ;
         }
@@ -324,7 +430,7 @@ namespace SimpleHttp
 			}
 			catch { }
 			if ( line.Trim().ToLower () == "show" ) 
-				BeginInvoke ( iconMenu_ItemClicked , new object [ 2 ] { iconMenu , new ToolStripItemClickedEventArgs ( showMonitorMenuItem ) } )  ;
+				BeginInvoke ( iconMenu_ItemClicked , new object [ 2 ] { iconMenu , new ToolStripItemClickedEventArgs ( showMainWindowMenuItem ) } )  ;
 			try
 			{
 				recivier.Disconnect () ;
@@ -337,60 +443,155 @@ namespace SimpleHttp
 
 			}
 		}
-		
-		protected void showServerStarter ( )
+		protected void startJSONConfigMenuItemClick ( )
 		{
-			if ( startServerForm == null ) 
-				loadServerStarterForm ( currentStartParameters == null ? programStartParameters : currentStartParameters ) ;
-			else if ( !startServerForm.Visible )
-				startServerForm.Show ( this ) ;
+			if ( jsonEditorVisible ) 
+				startServerFromCurrentJSON () ;
+			else 
+			{
+				jsonEditorVisible = true ;
+				quickStartForm?.Hide () ;
+			}
 		}
-		protected void loadServerStarterForm ( HttpStartParameters startParameters )
+		protected void startServerFromCurrentJSON ( )
 		{
-			loadCertificate ( startParameters ) ;
-			showServerStarterForm ( startParameters , certificate ) ;
+			WebServerConfigData configData = new WebServerConfigData () ;
+			try
+			{
+				quickStartForm?.Close () ;
+				serverMode = StartServerMode.jsonConfig ;
+				Exception x2 = null ;
+				try
+				{
+					configData.loadFromJSON ( JsonConvert.DeserializeObject <JObject> ( jsonEditor.Text ) ) ;
+				}
+				catch ( Exception e ) 
+				{
+					x2 = e ;
+				}
+				if ( x2 != null ) throw ( x2 ) ;
+				
+			}
+			catch ( Exception x )
+			{
+				reflectServerStatus ( configData ) ;
+				jsonEditorVisible = true ;
+				showError ( "Error parsing JSON" , x ) ;
+				return ;
+			}
+			string errorMessage ;
+			if ( !startWebServer ( configData , out errorMessage ) )
+				showErrorMessage ( "Error starting server" , errorMessage ) ;
 		}
-		protected void showServerStarterForm ( HttpStartParameters startParameters , X509Certificate2 certificate )
+		protected void showQuickStartFormAndTakeConfigData ()
+		{
+			bool wasVisible = quickStartForm == null ? false : quickStartForm.Visible ;
+			showQuickStartForm () ;
+			if ( !wasVisible )
+				try
+				{ 
+					WebServerConfigData configData = new WebServerConfigData () ;
+					configData.loadFromJSON ( JsonConvert.DeserializeObject ( jsonEditor.Text ) as JObject ) ;
+					quickStartForm.configData = configData ;
+				}
+				catch { }
+		}
+		/// <summary>
+		/// Auxiliary variable for the jsonConfigFile 
+		/// </summary>
+		protected string _jsonConfigFile ;
+		public string jsonConfigFile 
+		{
+			get => _jsonConfigFile ;
+		}
+		protected WebServerConfigData getConfigData ()
+		{
+			if ( webServer == null )
+				try
+				{
+					JObject obj = JsonConvert.DeserializeObject ( jsonEditor.Text ) as JObject ;
+					WebServerConfigData configData = new WebServerConfigData () ;
+					configData.loadFromJSON ( obj ) ;
+					return configData ;
+				}
+				catch
+				{
+					return null ;
+				}
+			return webServer.configData ;
+		}
+		protected void showQuickStartForm ()
+		{
+				//try
+				//{ 
+				//	WebServerConfigData configData = new WebServerConfigData () ;
+				//	configData.loadFromJSON ( JsonConvert.DeserializeObject ( jsonEditor.Text ) as JObject ) ;
+				//	quickStartForm.configData = configData ;
+				//}
+				//catch { }
+
+			if ( quickStartForm == null ) 
+			{
+				showQuickStartForm ( getConfigData () ) ; //currentStartParameters == null ? programStartParameters : currentStartParameters ) ;
+			}
+				//showQuickStartForm ( currentStartParameters.configData , certificate ) ; //currentStartParameters == null ? programStartParameters : currentStartParameters ) ;
+			else if ( quickStartForm.Visible )
+				quickStartForm.Select () ;
+			else
+			{
+				quickStartForm.Show ( this ) ;
+				quickStartForm.configData = getConfigData() ;
+			}
+			quickStartForm.mode = serverMode ;
+		}
+		//protected void loadQuickStartForm ( HttpStartParameters startParameters )
+		//{
+		//	loadCertificate ( startParameters ) ;
+		//	loadQuickStartForm ( startParameters , certificate ) ;
+		//}
+		protected void showQuickStartForm ( WebServerConfigData configData )
 		{
 			midPanel.Enabled = false ;
-			if ( startServerForm == null )
+			if ( quickStartForm == null )
 			{
-				startServerForm = new StartServerForm ( ) ;
-				startServerForm.Icon = Properties.Resources.mainIcon ;
-				startServerForm.Owner = this ;
-				startServerForm.Show () ;
-				startServerForm.FormClosing += startServerForm_FormClosing ;	
-				startServerForm.FormClosed += startServerForm_FormClosed ;
-				startServerForm.paremetersChoosen += startServerForm_paremetersChoosen ;
-				startServerForm.invalidWebrootFolder += startServerForm_invalidWebrootFolder ;
-				startServerForm.assemblyLoadFailed += startServerForm_assemblyLoadFailed ;
-				startServerForm.UIErrorRaised += StartServerForm_UIErrorRaised;
-				startServerForm.certificateFailedOnClient += startServerForm_certificateFailedOnClient ;
-				startServerForm.certificateFailedOnServer += startServerForm_certificateFailedOnServer ;
-				startServerForm.invalidPortNumber += startServerForm_invalidPortNumber ;
-				startServerForm.certificateLoadFailure += startServerForm_certificateLoadFailure ;
-				startServerForm.certificateAccepted += startServerForm_certificateAccepted ;
-				startServerForm.openTcpTestFailed += startServerForm_openTcpTestFailed ;
-				startServerForm.resourceViewNeeded += startServerForm_resourceViewNeeded ;
-				startServerForm.showStartParameters += startServerForm_showStartParameters ;
-				//startServerForm.FormClosing += startServerForm_FormClosing ;
-				startServerForm.Disposed += startServerForm_Disposed ;
+				quickStartForm = new QuickStartForm ( ) ;
+				quickStartForm.Icon = Properties.Resources.mainIcon ;
+				quickStartForm.Owner = this ;
+				quickStartForm.Show () ;
+				quickStartForm.FormClosing += quickStartForm_FormClosing ;	
+				quickStartForm.FormClosed += quickStartForm_FormClosed ;
+				quickStartForm.paremetersChoosen += quickStartForm_paremetersChoosen ;
+				quickStartForm.invalidWebrootFolder += quickStartForm_invalidWebrootFolder ;
+				quickStartForm.invalidAssemblySelection += quickStartForm_invalidAssemblySelection ;
+				quickStartForm.assemblyLoadFailed += quickStartForm_assemblyLoadFailed ;
+				quickStartForm.UIErrorRaised += StartServerForm_UIErrorRaised;
+				quickStartForm.certificateFailedOnClient += quickStartForm_certificateFailedOnClient ;
+				quickStartForm.certificateFailedOnServer += quickStartForm_certificateFailedOnServer ;
+				quickStartForm.invalidPortNumber += quickStartForm_invalidPortNumber ;
+				quickStartForm.certificateLoadFailure += quickStartForm_certificateLoadFailure ;
+				quickStartForm.certificateAccepted += quickStartForm_certificateAccepted ;
+				quickStartForm.openTcpTestFailed += quickStartForm_openTcpTestFailed ;
+				quickStartForm.resourceViewNeeded += quickStartForm_resourceViewNeeded ;
+				quickStartForm.showStartParameters += quickStartForm_showStartParameters ;
+				//quickStartForm.FormClosing += quickStartForm_FormClosing ;
+				quickStartForm.Disposed += quickStartForm_Disposed ;
 			}
 			else 
 			{
-				startServerForm.Visible = true ;
-				startServerForm.BringToFront () ;
-				startServerForm.Select () ;
+				quickStartForm.Visible = true ;
+				quickStartForm.BringToFront () ;
+				quickStartForm.Select () ;
 			}
-			startServerForm.loadFromStartParameters ( startParameters , certificate ) ;
-			//startServerForm.mode = serverMode ;
+			quickStartForm.configData = configData ;
+			//quickStartForm.loadFromStartParameters ( startParameters , certificate ) ;
+			//quickStartForm.mode = serverMode ;
 			//if ( serverMode == StartServerMode.fileServer )
-			//	startServerForm.webroot = webroot ;
+			//	quickStartForm.webroot = webroot ;
 			//else
 			//{
 			//	if ( resourceAssembly != null )
 			//	{
-			//		if ( !startServerForm.setAssemblyListIndex ( resourceAssembly ) )
+			//		if ( !quickStartForm.setAssemblyListIndex ( resourceAssembly ) )
 			//		{
 			//			showMessage ( SimpleHttp.Properties.Resources.closeIcon ,
 			//				"Invalid assembly" ,
@@ -403,16 +604,16 @@ namespace SimpleHttp
 
 		
 
-		private void startServerForm_showStartParameters ( object sender, HttpStartParameters e )
+		private void quickStartForm_showStartParameters ( object sender, HttpStartParameters e )
 		{
 			showStartParameters ( "Command line parameters" , e ) ;
 		}
-
-		private void startServerForm_resourceViewNeeded ( object sender , Assembly e )
+		
+		private void quickStartForm_resourceViewNeeded ( object sender , Assembly assembly )
 		{
 			if ( resourcesForm == null )
 			{
-				resourcesForm = new ResourcesForm ( e ) ;
+				resourcesForm = new ResourcesForm ( assembly ) ;
 				resourcesForm.Opacity = 0 ;
 				resourcesForm.Disposed += resourcesForm_Disposed ;
 				resourcesForm.Shown += resourcesForm_Shown ;
@@ -422,7 +623,7 @@ namespace SimpleHttp
 			}
 			else 
 			{
-				resourcesForm.resourceAssembly = resourceAssembly ;
+				resourcesForm.resourceAssembly = assembly ;
 				resourcesForm.Show () ;
 				resourcesForm.BringToFront () ;
 				resourcesForm.Select () ;
@@ -452,76 +653,112 @@ namespace SimpleHttp
 							ex == null ? "Unknow error" : ex.InnerException == null ? ex.Message : ex.InnerException.Message , "" , "" , "Continue" ) ;
 		}
 
-		private void startServerForm_FormClosing ( object? sender, FormClosingEventArgs e )
+		private void quickStartForm_FormClosing ( object? sender, FormClosingEventArgs e )
 		{
 			if ( e.CloseReason == CloseReason.UserClosing )
 			{
 				e.Cancel = true ;
-				startServerForm.Hide () ;
+				quickStartForm.Hide () ;
+				restoreForm () ;
 			}
 		}
+		private void quickStartForm_FormClosed ( object? sender , FormClosedEventArgs e )
+		{
+			if ( quickStartForm.IsDisposed ) return ;
+			quickStartForm.FormClosed -= quickStartForm_FormClosed ; //ah govnari
+			quickStartForm.Dispose () ;
+			midPanel.Enabled = true ;
+			if ( Visible && !IsDisposed && ( WindowState != FormWindowState.Minimized ) )
+				restoreForm () ;
+			//{
+			//	BringToFront () ;
+			//	Select () ;
+			//}
+		}
 
-		private void startServerForm_certificateAccepted ( object? sender , X509Certificate2 e )
+		private void quickStartForm_certificateAccepted ( object? sender , X509Certificate2 e )
 		{
 			showMessage ( SimpleHttp.Properties.Resources.greenCheck , "Certificate accepted" , 
 					"Client server comunication commited, certificate accepted." , "" , "" , "    OK    " ) ;
 		}
 
-		private void startServerForm_invalidPortNumber ( object? sender , ErrorEventArgs e )
+		private void quickStartForm_invalidPortNumber ( object? sender , ErrorEventArgs e )
 		{
 			InvokeShowErrorMessage ( "Invalid port number" , e.GetException() ) ;
 		}
 
-		private void startServerForm_certificateLoadFailure ( object? sender , ErrorEventArgs e )
+		private void quickStartForm_certificateLoadFailure ( object? sender , ErrorEventArgs e )
 		{
 			InvokeShowErrorMessage ( "Cannot load certificate" , e.GetException() ) ;
 		}
 
-		private void startServerForm_Disposed ( object? sender , EventArgs e )
+		private void quickStartForm_Disposed ( object? sender , EventArgs e )
 		{
-			if ( startServerForm == ( StartServerForm ) sender ) startServerForm = null ;
+			if ( quickStartForm == ( QuickStartForm ) sender ) quickStartForm = null ;
 		}
 
-		private void startServerForm_invalidWebrootFolder ( object? sender , string folder )
+		private void quickStartForm_invalidWebrootFolder ( object? sender , string folder )
 		{
 			showMessage ( SimpleHttp.Properties.Resources.textIcon , "Invalid folder" , 
 					folder.Trim () == "" ? 
 					"No webroot folder specified" :				
 					( "Folder not found:\r\n" + folder ) , " Close " , "" , "" ) ;
 		}
+		private void quickStartForm_invalidAssemblySelection ( object? sender , string assemblyName )
+		{
+			showMessage ( SimpleHttp.Properties.Resources.textIcon , "Invalid assembly selection" ,
+					assemblyName.Trim () == "" ? 
+					"Empty assembly selection." :
+					"Invalid assembly \"" + assemblyName + "\"." , " Close " , "" , "" ) ;
+		}
+		protected void setSiteUri ( WebServerConfigData configData )
+		{
+			try
+			{
+				siteUri = configData.getSiteUri () ;
+				uriLabel.Text = siteUri.ToString () ;
+			}
+			catch 
+			{ 
+				uriLabel.Text = "?" ;
+			}
+		}
 		protected void setSiteUri ( bool secure , string siteName , int port )
 		{
 			try
 			{
-				siteUri = new Uri ( ( secure ? "https://" : "http://" ) + siteName + ":" + port.ToString() ) ;
+				siteUri = new Uri ( ( secure ? "https://" : "http://" ) + ( string.IsNullOrWhiteSpace ( siteName ) ? "127.0.0.1" : siteName ) + ":" + port.ToString() ) ;
 				uriLabel.Text = siteUri.ToString () ;
 			}
-			catch { }
+			catch 
+			{ 
+				uriLabel.Text = "?" ;
+			}
 		}
-		protected void setSiteUri ()
-		{
-			siteUri = startServerForm == null ? null : startServerForm.siteUri ;
-			uriLabel.Text = siteUri == null ? "" : siteUri.ToString () ;
-		}
-		private void startServerForm_paremetersChoosen ( object? sender, HttpStartParameters e )
+		private void quickStartForm_paremetersChoosen ( object? sender, HttpStartParameters e )
 		{
 			string errorMessage ;
-			if ( startWebServer ( e , startServerForm.certificate , startServerForm.resourceAssembly , out errorMessage ) )
+			if ( startWebServer ( e.configData , out errorMessage ) )
 			{
-				startServerForm.Hide () ;
+				quickStartForm.Hide () ;
 				restoreForm () ;
 			}
-			else showErrorMessage ( "Error starting " + ( startServerForm.mode == StartServerMode.fileServer ? "file" : "resource" ) + " based server" , errorMessage ) ;
+			else 
+				BeginInvoke ( ()=>
+				{
+					showErrorMessage ( "Error starting " + ( quickStartForm.mode == StartServerMode.fileServer ? "file" : "resource" ) + " based server" , errorMessage ) ;
+				} ) ;
+
 		}
-		private void startServerForm_assemblyLoadFailed ( object sender , ErrorEventArgs e )
+		private void quickStartForm_assemblyLoadFailed ( object sender , ErrorEventArgs e )
 		{
 			InvokeShowErrorMessage ( "Error loading assembly" , e.GetException() ) ;
 		}
-		private void startServerForm_openTcpTestFailed ( object? sender, ErrorEventArgs e )
+		private void quickStartForm_openTcpTestFailed ( object? sender, ErrorEventArgs e )
 		{
 			InvokeShowErrorMessage ( "Cannot make test tpc connection" , e.GetException() ) ;
 		}
-		private void startServerForm_certificateFailedOnServer ( object sender , ErrorEventArgs e )
+		private void quickStartForm_certificateFailedOnServer ( object sender , ErrorEventArgs e )
 		{
 			BeginInvoke ( ()=>
 			{
@@ -539,7 +776,7 @@ namespace SimpleHttp
 			} ) ;
 		}
 		
-		private void startServerForm_certificateFailedOnClient ( object sender , ErrorEventArgs e )
+		private void quickStartForm_certificateFailedOnClient ( object sender , ErrorEventArgs e )
 		{
 			BeginInvoke ( ()=>
 			{
@@ -556,124 +793,206 @@ namespace SimpleHttp
 				showError ( "Certificate failed on client side" , e.GetException() ) ;
 			} ) ;
 		}
-		private bool startWebServer ( HttpStartParameters startParameters , out string errorMessage )
-		{
-			errorMessage = "" ;
-			if ( serverMode == StartServerMode.resourceServer )
-			{
-				Exception ex = null ;
-				if ( File.Exists ( source = programStartParameters.source ) )
-					try
-					{
-						resourceAssembly = Assembly.LoadFrom ( programStartParameters.source ) ;
-					}
-					catch ( Exception x )
-					{ 
-						ex = x ;
-					}
-				if ( ex == null )
-				{
-					foreach ( Assembly assembly in AppDomain.CurrentDomain.GetAssemblies () )
-						if ( ( assembly.GetName().Name == programStartParameters.source ) || ( assembly.FullName == programStartParameters.source ) ) 
-						{
-							resourceAssembly = assembly ;
-							break ;
-						}
-					if ( ( resourceAssembly == null ) && string.IsNullOrEmpty ( errorMessage ) ) errorMessage = "Assembly not found:\r\n\"" + programStartParameters.source + "\"" ;
-				}
-				else if ( string.IsNullOrEmpty ( errorMessage ) )
-					errorMessage = "Cannot load assembly:\r\n\"" + programStartParameters.source + "\"\r\n" + ( ex.InnerException == null ? ex.Message : ex.InnerException.Message ) ;
-			}
-			else 
-			{
-				serverMode = StartServerMode.fileServer ; //!!!!
-				source = webroot = string.IsNullOrEmpty ( programStartParameters.source ) ? Program.ExecutableFolder () : programStartParameters.source ;
-			}
-			return string.IsNullOrEmpty ( errorMessage ) && loadCertificate ( startParameters , out errorMessage ) ?
-						startWebServer ( startParameters , certificate , resourceAssembly , out errorMessage ) : false ;
-		}
-		private bool loadCertificate ( HttpStartParameters startParameters ) 
-		{
-			string errorMessage ;
-			return loadCertificate ( startParameters , out errorMessage ) ;
-		}
-		private bool loadCertificate ( HttpStartParameters startParameters , out string errorMessage ) 
-		{
-			errorMessage = "" ;
-			try
-			{
-				if ( !string.IsNullOrEmpty ( programStartParameters.certificate ) )
-					if ( File.Exists ( programStartParameters.certificate ) )
-						certificate = new X509Certificate2 ( programStartParameters.certificate , programStartParameters.password ) ;
-			}
-			catch ( Exception x )
-			{ 
-				errorMessage = "Certifacate file error:\r\n" + ( x.InnerException == null ? x.Message : x.InnerException.Message ) ;
-				return false ;
-			}
-			return true ;
-		}
+		//private bool loadCertificate ( HttpStartParameters startParameters ) 
+		//{
+		//	string errorMessage ;
+		//	return loadCertificate ( startParameters , out errorMessage ) ;
+		//}
+		//private bool loadCertificate ( HttpStartParameters startParameters , out string errorMessage ) 
+		//{
+		//	errorMessage = "" ;
+		//	try
+		//	{
+		//		if ( !string.IsNullOrEmpty ( programStartParameters.sslCertificateSource ) )
+		//			if ( File.Exists ( programStartParameters.sslCertificateSource ) )
+		//				certificate = new X509Certificate2 ( programStartParameters.sslCertificateSource , programStartParameters.sslCertificatePassword ) ;
+		//	}
+		//	catch ( Exception x )
+		//	{ 
+		//		errorMessage = "Certifacate file error:\r\n" + ( x.InnerException == null ? x.Message : x.InnerException.Message ) ;
+		//		return false ;
+		//	}
+		//	return true ;
+		//}
+		//private bool startWebServer1 ( HttpStartParameters startParameters , out string errorMessage )
+		//{
+		//	errorMessage = "" ;
+		//	//currentStartParameters = startParameters ;
+		//	serverMode = startParameters.mode ;
+		//	switch ( serverMode )
+		//	{
+		//		case StartServerMode.resourceServer :
+		//			webroot = "" ;
+		//			return startWebServer ( new ResourceWebConfigData ( source = startParameters.source , startParameters.sitename , startParameters.port , startParameters.sslCertificateSource , startParameters.sslCertificatePassword , startParameters.sslProtocol ) , out errorMessage ) ;
+		//		case StartServerMode.fileServer :
+		//			resourceAssembly = null ;
+		//			return startWebServer ( new FileWebConfigData ( source = webroot = startParameters.source , startParameters.sitename , startParameters.port , startParameters.sslCertificateSource , startParameters.sslCertificatePassword , startParameters.sslProtocol ) , out errorMessage ) ;
+		//		case StartServerMode.jsonConfig :
+		//			try
+		//			{ 
+		//				WebServerConfigData configData = new WebServerConfigData () ;
+		//				configData.loadFromJSONFile ( startParameters.jsonConfigFile ) ;
+		//				if ( startParameters.jsonConfigFile != configData.jsonConfigFile )
+		//					startParameters = new HttpStartParameters ( configData ) ;
+		//				return startWebServer ( configData , out errorMessage ) ;
+		//			}
+		//			catch ( Exception x )
+		//			{
+		//				errorMessage = x.Message ;
+		//			}
+		//		break ;
+		//	}
+		//			/*
+		//	if ( string.IsNullOrEmpty ( currentStartParameters.jsonConfigFile ) )
+		//	{
+		//		if ( serverMode == StartServerMode.resourceServer )
+		//		{
+		//			Exception ex = null ;
+		//			if ( File.Exists ( source = programStartParameters.source ) )
+		//				try
+		//				{
+		//					resourceAssembly = Assembly.LoadFrom ( programStartParameters.source ) ;
+		//				}
+		//				catch ( Exception x )
+		//				{ 
+		//					ex = x ;
+		//				}
+		//			if ( ex == null )
+		//			{
+		//				foreach ( Assembly assembly in AppDomain.CurrentDomain.GetAssemblies () )
+		//					if ( ( assembly.GetName().Name == programStartParameters.source ) || ( assembly.FullName == programStartParameters.source ) ) 
+		//					{
+		//						resourceAssembly = assembly ;
+		//						break ;
+		//					}
+		//				if ( ( resourceAssembly == null ) && string.IsNullOrEmpty ( errorMessage ) ) errorMessage = "Assembly not found:\r\n\"" + programStartParameters.source + "\"" ;
+		//			}
+		//			else if ( string.IsNullOrEmpty ( errorMessage ) )
+		//				errorMessage = "Cannot load assembly:\r\n\"" + programStartParameters.source + "\"\r\n" + ( ex.InnerException == null ? ex.Message : ex.InnerException.Message ) ;
+		//		}
+		//		else source = webroot = string.IsNullOrEmpty ( programStartParameters.source ) ? Program.ExecutableFolder () : programStartParameters.source ;
+		//	}
+		//	else
+		//	{
+		//		source = webroot = "" ;
+		//		resourceAssembly = null ;
+		//		try
+		//		{ 
+		//			WebServerConfigData configData = new WebServerConfigData () ;
+		//			configData.loadFromJSONFile ( currentStartParameters.jsonConfigFile ) ;
+		//			if ( currentStartParameters.jsonConfigFile != configData.jsonConfigFile )
+		//				currentStartParameters = new HttpStartParameters ( configData ) ;
+		//			return startWebServer ( configData , out errorMessage ) ;
+		//		}
+		//		catch ( Exception x )
+		//		{
+		//			errorMessage = x.Message ;
+		//		}
+		//	}
+		//			*/
+		//	//return string.IsNullOrEmpty ( errorMessage ) && loadCertificate ( startParameters , out errorMessage ) ?
+		//	//			startWebServer ( startParameters , certificate , resourceAssembly , out errorMessage ) : false ;
+		//	errorMessage = "Unknown server mode (" + serverMode.ToString () + ")" ;
+		//	return false ;
+		//}
+		//private bool startWebServer1 ( HttpStartParameters startParameters , X509Certificate2 certificate , Assembly assembly , out string errorMessage )
+		//{
+		//	isCriticalError = false ;
+		//	currentStartParameters = startParameters ;
+		//	source = startParameters.source ;
+		//	serverMode = startParameters.mode ;
+		//	port = startParameters.port ;
+		//	protocol = startParameters.sslProtocol ;
+		//	resourceAssembly = assembly ;
+		//	this.certificate = certificate ;
+		//	errorMessage = "" ;
+		//	setSiteUri ( !string.IsNullOrEmpty ( startParameters.sslCertificateSource ) , startParameters.sitename , startParameters.port ) ;
+		//	if ( resourcesForm != null ) resourcesForm.Hide () ;
+		//	try
+		//	{
+		//		if ( serverMode == StartServerMode.fileServer )
+		//		{
+		//			this.webroot = source ;
+		//			if ( Directory.Exists ( webroot ) )
+		//			{
+		//				webServer = new WebServer ( 
+		//											webServer_clientConnected , webServer_serverResponded ,
+		//											webServer_started , webServer_stoped , 
+		//											webServer_connectionErrorRaised , 
+		//											webServer_criticalErrorRaised , webServer_disposed ) ;
+		//				//X509Certificate2 cert = StartServerForm.GenerateSelfSignedCertificate () ; // new  X509Certificate2 ( "C:\\Code\\localhost.pfx" ) ;
 
-		private bool startWebServer ( HttpStartParameters startParameters , X509Certificate2 certificate , Assembly assembly , out string errorMessage )
+		//				//HttpServiceActivator service = new HttpServiceActivator ( typeof ( FileHttpService ) , new FileHttpService.FileHttpServiceData ( webroot ) ) ;
+		//				//webServer.addPath ( "/*" , 0 , service ) ;
+		//				//webServer.addPath ( "/*/*" , 0 , service ) ;
+		//				//webServer.addPath ( "/*/*/*" , 0 , service ) ;
+		//				//webServer.Listen ( port , startParameters.sitename , startParameters.certificate , startParameters.password , certificate , protocol ) ;
+
+
+		//				webServer.Listen ( new FileWebConfigData ( webroot , startParameters.sitename , startParameters.port , startParameters.sslCertificateSource , startParameters.sslCertificatePassword , startParameters.sslProtocol ) ) ;
+						
+		//				jsonEditor.Text = json2string ( webServer.configData ) ;
+		//				jsonEditor.SelectionLength = 0 ;
+		//				return true ;
+		//			}
+		//			else throw new ApplicationException ( "Folder not found(or inaccessible):\r\n\"" + webroot + "\"" ) ;
+		//		}
+		//		else 
+		//		{
+		//			if ( resourceAssembly == null )
+		//				throw new Exception ( "Null resource assembly" ) ;
+		//			else 
+		//			{
+		//				webServer = new WebServer ( 
+		//										webServer_clientConnected , webServer_serverResponded ,
+		//										webServer_started , webServer_stoped , webServer_connectionErrorRaised , 
+		//										webServer_criticalErrorRaised , webServer_disposed ) ;
+		//				HttpServiceActivator service = new HttpServiceActivator ( typeof ( ResourcesHttpService ) , new ResourcesHttpService.ResourcesHttpServiceData ( resourceAssembly ) ) ;
+
+		//				//webServer.addPath ( "/*" , 0 , service ) ;
+		//				//webServer.addPath ( "/*/*" , 0 , service ) ;
+		//				//webServer.addPath ( "/*/*/*" , 0 , service ) ;
+		//				//webServer.Listen ( port , startParameters.sitename , startParameters.certificate , startParameters.password , certificate , protocol ) ;
+
+		//				webServer.Listen ( new ResourceWebConfigData ( resourceAssembly.Location , startParameters.sitename , startParameters.port , startParameters.sslCertificateSource , startParameters.sslCertificatePassword , startParameters.sslProtocol ) ) ;
+		//				jsonEditor.Text = json2string ( webServer.configData ) ;
+		//				jsonEditor.SelectionLength = 0 ;
+		//				return true ;
+		//			}
+		//		}
+		//	}
+		//	catch ( Exception x )
+		//	{ 
+		//		errorMessage = "Error starting " + ( serverMode == StartServerMode.fileServer ? "file" : "resource" ) + " based server.\r\n" + 
+		//						( x.InnerException == null ? x.Message : x.InnerException.Message  ) ;
+		//	}
+		//	return false ;
+		//}
+		private bool startWebServer ( WebServerConfigData configData , out string errorMessage )
 		{
 			isCriticalError = false ;
-			currentStartParameters = startParameters ;
-			source = startParameters.source ;
-			serverMode = startParameters.mode ;
-			port = startParameters.port ;
-			protocol = startParameters.protocol ;
-			resourceAssembly = assembly ;
-			this.certificate = certificate ;
-			setSiteUri ( !string.IsNullOrEmpty ( startParameters.certificate ) , startParameters.sitename , startParameters.port ) ;
-			if ( resourcesForm != null ) resourcesForm.Hide () ;
+			errorMessage = "" ;
 			try
 			{
-				if ( serverMode == StartServerMode.fileServer )
-				{
-					this.webroot = source ;
-					if ( Directory.Exists ( webroot ) )
-					{
-						webServer = new WebServer ( new HttpServiceFactory ( webroot , null ) , 
+				setSiteUri ( configData ) ;
+				//setSiteUri ( !string.IsNullOrEmpty ( configData.sslCertificateSource ) , configData.sitename , port = configData.port ) ;
+				protocol = configData.sslProtocol ;
+				//certificate = configData.sslCertificate ;
+				webServer = new WebServer ( 
 													webServer_clientConnected , webServer_serverResponded ,
 													webServer_started , webServer_stoped , 
 													webServer_connectionErrorRaised , 
 													webServer_criticalErrorRaised , webServer_disposed ) ;
-						//X509Certificate2 cert = StartServerForm.GenerateSelfSignedCertificate () ; // new  X509Certificate2 ( "C:\\Code\\localhost.pfx" ) ;
-
-						webServer.Listen ( port , certificate , protocol ) ;
-						midPanel.Enabled = true ;
-						currentStartParameters = startParameters ;
-						errorMessage = "" ;
-						return true ;
-					}
-					else throw new ApplicationException ( "Folder not found(or inaccessible):\r\n\"" + webroot + "\"" ) ;
-				}
-				else 
-				{
-					if ( resourceAssembly == null )
-						throw new Exception ( "Null resource assembly" ) ;
-					else 
-					{
-						webServer = new WebServer ( new HttpServiceFactory ( resourceAssembly , null ) , 
-												webServer_clientConnected , webServer_serverResponded ,
-												webServer_started , webServer_stoped , webServer_connectionErrorRaised , 
-												webServer_criticalErrorRaised , webServer_disposed ) ;
-						webServer.Listen ( port , certificate , protocol ) ;
-						midPanel.Enabled = true ;
-						errorMessage = "" ;
-						currentStartParameters = startParameters ;
-						return true ;
-					}
-				}
+				webServer.Listen ( configData ) ;
+				return true ;
 			}
 			catch ( Exception x )
 			{ 
-				errorMessage = "Error starting " + ( serverMode == StartServerMode.fileServer ? "file" : "resource" ) + " based server.\r\n" + 
+				errorMessage = "Error starting server.\r\n" + 
 								( x.InnerException == null ? x.Message : x.InnerException.Message  ) ;
 			}
 			return false ;
 		}
-
 		
 		protected void webServer_started ( object sender , EventArgs e )
 		{
@@ -687,43 +1006,11 @@ namespace SimpleHttp
 					Thread.Sleep ( 500 ) ;
 				}
 				if ( IsDisposed ) return ;
-				BeginInvoke ( () =>
-				{
-					if ( IsDisposed ) return ;
-					if ( webServer == null ) return ;
-					if ( webServer == sender as WebServer ) 
-					{
-						if ( autoStarted ) Visible = false ;
-						HttpServiceFactory httpServiceFactory  = ( HttpServiceFactory ) webServer.serviceFactory ;
-						notifyIcon.Icon = SimpleHttp.Properties.Resources.mainIcon ;
-						string t = ( webServer.isSecure ? StartServerForm.getProtocolName ( webServer.sslProtocol ) : "Flat http" ) + " on port " +  webServer.port.ToString () ;
-
-						if ( httpServiceFactory.isResourceBased )
-						{
-							resourceLabel.Text = httpServiceFactory.resourceAssembly.GetName().Name ;
-							statusLabel.Text = uriLabel.Text == "" ? ( t + ", assembly:") : "assembly:" ;
-							t = t + ", assembly:\r\n" + resourceLabel.Text ;
-							notifyIcon.Text = t.Substring ( 0 , Math.Min ( 127 , t.Length ) ) ;
-						}
-						else 
-						{
-							resourceLabel.Text = httpServiceFactory.webroot ;
-							statusLabel.Text = uriLabel.Text == "" ? ( t + ", webroot:" ) : "webroot:" ;
-							t = t + ", webroot:\r\n" + httpServiceFactory.webroot ;
-							notifyIcon.Text = t.Substring ( 0 , Math.Min ( 127 , t.Length ) ) ;
-						}
-						setActiveStateIcon () ;
-						stopServerMenuItem.Text = "Stop http server" ;
-						notifyIcon.ShowBalloonTip ( 3000 , "Http server is working" , statusLabel.Text , ToolTipIcon.Info ) ;
-					}
-				} ) ;
+				BeginInvoke ( new Action<WebServerConfigData>(reflectServerStatus) , new object [ 1 ] { webServer.configData } ) ;
 			}
 		}
-		protected void setActiveStateIcon ()
-		{
-			Icon =
-			notifyIcon.Icon = monitorActive ? SimpleHttp.Properties.Resources.activeMonitorIcon : SimpleHttp.Properties.Resources.activeIcon ;
-		}
+		
+		
 		protected void webServer_stoped ( object sender , EventArgs e )
 		{
 			if ( IsDisposed ) return ;
@@ -732,30 +1019,186 @@ namespace SimpleHttp
 			{
 				if ( IsDisposed ) return ;
 				if ( isCriticalError ) return ;
-				if ( webServer == null ) return ;
-				if ( webServer == sender as WebServer )
-				{
-					
-					string p = webServer.port.ToString () ;
-					HttpServiceFactory httpServiceFactory  = ( HttpServiceFactory ) webServer.serviceFactory ;
-					if ( httpServiceFactory.isResourceBased )
-					{
-						string a = httpServiceFactory.resourceAssembly.GetName().Name ;
-						statusLabel.Text = "Stoped on port " + p + ", assembly: " + a ;
-						p = "Stoped on port " + p + ", assembly:\r\n" + a ;
-						notifyIcon.Text = p.Substring ( 0 , Math.Min ( 127 , p.Length ) ) ;
-					}
-					else 
-					{
-						statusLabel.Text = "Stoped on port " + p + ", webroot: " + httpServiceFactory.webroot ;
-						p = "Stoped on port " + p + ", webroot:\r\n" + httpServiceFactory.webroot ;
-						notifyIcon.Text = p.Substring ( 0 , Math.Min ( 127 , p.Length ) ) ;
-					}
-					Icon = notifyIcon.Icon = SimpleHttp.Properties.Resources.mainIcon ;
-					stopServerMenuItem.Visible = false ;
-					showStartDialogMenuItem.Visible = true ;
-				}
+				reflectServerStatus ( webServer.configData ) ;
 			} ) ;
+		}
+		//protected void reflectServerStatus1 ( WebServer webServer ) 
+		//{
+		//	if ( IsDisposed ) return ;
+		//	if ( webServer == null ) return ;
+		//	if ( webServer != this.webServer ) return ;
+		//	//if ( autoStarted ) Visible = false ;
+		//	string serverStatus = isListening ? "working" : "stoped" ; 
+		//	midPanel.Enabled = true ;
+		//	configFileNameLabel.Text = currentStartParameters == null ? "<not saved>" :
+		//								fileNameOnly ( currentStartParameters.jsonConfigFile ) ;
+		//	string t = ( webServer.isSecure ? QuickStartForm.getProtocolName ( webServer.sslProtocol ) : "Flat http" ) + " on port " +  webServer.port.ToString () ;
+		//	HttpServiceActivator service = string.IsNullOrEmpty ( currentStartParameters.jsonConfigFile ) ? webServer.getservice ( "/*" ).Value : null ;
+		//	setSiteUri ( webServer.configData ) ;
+		//	if ( service == null )
+		//	{
+		//		//setSiteUri ( !string.IsNullOrEmpty ( webServer.configData.sslCertificateSource ) , 
+		//		//			webServer.configData.sitename , 
+		//		//			port = webServer.configData.port ) ;
+		//		if ( webServer.isListening )
+		//		{
+		//			jsonEditor.Text = json2string ( webServer.configData ) ;
+		//			jsonEditor.SelectionLength = 0 ;
+		//		}
+		//		resourceLabel.Text = "" ;
+		//		notifyIcon.Text = ( webServer.isSecure ? QuickStartForm.getProtocolName ( webServer.sslProtocol ) : "Flat http" ) + " on port " +  webServer.port.ToString () ;
+		//		resourceTypeLabel.Text = "" ;
+				
+		//		notifyIcon.ShowBalloonTip ( 3000 , "Http server is " + serverStatus , resourceTypeLabel.Text + " " + resourceLabel.Text  , ToolTipIcon.Info ) ;
+		//	}
+		//	else 
+		//	{
+							
+		//		notifyIcon.Icon = SimpleHttp.Properties.Resources.mainIcon ;
+		//		//setSiteUri ( !string.IsNullOrEmpty ( currentStartParameters.sslCertificateSource ) , currentStartParameters.sitename , currentStartParameters.port ) ;
+		//		Type serviceType = service.serviceType ;
+		//		if ( serviceType == typeof ( ResourcesHttpService ) )
+		//		{
+		//			resourceLabel.Text = service.configData [ "assemblyPath" ].ToString() ;
+		//			resourceTypeLabel.Text = uriLabel.Text == "" ? ( t + ", assembly:") : "assembly:" ;
+		//			t = t + ", assembly:\r\n" + resourceLabel.Text ;
+		//			notifyIcon.ShowBalloonTip ( 3000 , "Resource based http server is " + serverStatus , "Assembly: " + resourceLabel.Text , ToolTipIcon.Info ) ;
+		//		}
+		//		else if ( serviceType == typeof ( FileHttpService ) )
+		//		{
+
+		//			resourceLabel.Text = service.configData [ "webroot" ].ToString() ;
+		//			resourceTypeLabel.Text = uriLabel.Text == "" ? ( t + ", webroot:" ) : "webroot:" ;
+		//			t = t + ", webroot:\r\n" + resourceLabel.Text ;
+		//			notifyIcon.ShowBalloonTip ( 3000 , "File based http server is " + serverStatus , "Web root folder:\r\n" + resourceLabel.Text , ToolTipIcon.Info ) ;
+		//		}
+		//		else 
+		//		{
+		//			resourceLabel.Text = "" ;
+		//			resourceTypeLabel.Text = uriLabel.Text == "" ? t : "" ;
+		//			notifyIcon.ShowBalloonTip ( 3000 , "Http server is working is " + ( isListening ? "working" : "stoped" ) , "Unknown configuartion" , ToolTipIcon.Info ) ;
+		//		}
+		//		notifyIcon.Text = t.Substring ( 0 , Math.Min ( 127 , t.Length ) ) ;
+		//	}
+		//	setActiveStateIcon () ;
+		//}
+		protected void reflectServerStatus ( WebServerConfigData configData )
+		{
+			string t = ( string.IsNullOrWhiteSpace ( configData.sslCertificateSource ) ? "Flat http" : 
+				QuickStartForm.getProtocolName ( configData.sslProtocol ) ) + " on port " + configData.port.ToString () ;
+			notifyIcon.Icon = SimpleHttp.Properties.Resources.mainIcon ;
+			setSiteUri ( configData ) ;
+			//!string.IsNullOrEmpty ( currentStartParameters.sslCertificateSource ) , currentStartParameters.sitename , currentStartParameters.port ) ;
+			bool isListeningActive = isListening ;
+			string serverStatus = isListeningActive ? "working" : "stoped" ; 
+			//configFileNameLabel.Text = fileNameOnly ( parameters.jsonConfigFile ) ;
+			ResourceWebConfigData resourceConfigData = configData as ResourceWebConfigData ;
+			if ( resourceConfigData == null ) 
+			{ 
+				try
+				{
+					HttpServiceActivator service = configData.services [ "resourceHttpService" ] ;
+					if ( service.serviceType == typeof ( ResourcesHttpService ) ) 
+					{ 
+						resourceConfigData = new ResourceWebConfigData ( 
+							service.configData [ "resourceAssemblySource" ].ToString() ,
+														configData.sitename , configData.port , 
+														configData.sslCertificateSource ,
+														configData.sslCertificatePassword ,
+														configData.sslProtocol ) ;
+						resourceConfigData.loadFromJSON ( configData ) ;
+					}
+				}
+				catch { }
+			}
+			if ( resourceConfigData == null ) 
+			{
+				FileWebConfigData fileConfigData = configData as FileWebConfigData ;
+				if ( fileConfigData == null ) 
+				{ 
+					try
+					{
+						HttpServiceActivator service = configData.services [ "fileHttpService" ] ;
+						if ( service.serviceType == typeof ( FileHttpService ) ) 
+						{ 
+							fileConfigData = new FileWebConfigData ( "" , "" , configData.port , 
+															configData.sslCertificateSource ,
+															configData.sslCertificatePassword ,
+															configData.sslProtocol ) ;
+							fileConfigData.loadFromJSON ( configData ) ;
+						}
+					}
+					catch { }
+				}
+				if ( fileConfigData == null ) 
+				{
+					//jsonEditor.Text = json2string ( configData ) ;
+					resourceLabel.Text = "" ;
+					resourceTypeLabel.Text = "" ;
+					notifyIcon.ShowBalloonTip ( 3000 , "Http server is " + serverStatus , "Config: " + configFileNameLabel.Text , ToolTipIcon.Info ) ;
+				}
+				else
+				{
+					resourceLabel.Text = fileConfigData.webroot ;
+					resourceTypeLabel.Text = uriLabel.Text == "" ? ( t + ", webroot:" ) : "webroot:" ;
+					t = t + ", webroot:\r\n" + resourceLabel.Text ;
+					notifyIcon.ShowBalloonTip ( 3000 , "File based http server is " + serverStatus , "Web root folder:\r\n" + resourceLabel.Text , ToolTipIcon.Info ) ;
+					if ( ( webServer != null ) && !isListeningActive )
+						restoreForm ( new Action<FileWebConfigData> ( showQuickStartForm ) , new object [ 1 ] { fileConfigData } ) ;
+						
+				}
+			}
+			else 
+			{
+				resourceLabel.Text = resourceAssemblyName = resourceConfigData.assemblySource ;
+				resourceTypeLabel.Text = uriLabel.Text == "" ? ( t + ", assembly:") : "assembly:" ;
+				t = t + ", assembly:\r\n" + resourceLabel.Text ;
+				notifyIcon.ShowBalloonTip ( 3000 , "Resource based http server is " + serverStatus , "Assembly: " + resourceLabel.Text , ToolTipIcon.Info ) ;
+				if ( ( webServer != null ) && !isListeningActive )
+					restoreForm ( new Action<ResourceWebConfigData> ( showQuickStartForm ) , new object [ 1 ] { resourceConfigData } ) ;
+			}
+			notifyIcon.Text = t.Substring ( 0 , Math.Min ( 127 , t.Length ) ) ;
+			setActiveStateIcon () ;
+		}
+		public static string fileNameOnly ( string path )
+		{
+			return ( string.IsNullOrWhiteSpace ( path ) ) ? "<not saved>" : Path.GetFileName ( path ) ;
+		}
+		/// <summary>
+		/// It is always good to have a StringBuilder.
+		/// </summary>
+		protected StringBuilder stringBuilder ; 
+		protected string json2string ( JObject obj )
+		{
+			if ( stringBuilder  == null ) 
+				stringBuilder = new StringBuilder () ;
+			else stringBuilder.Clear () ;
+			StringWriter sw = new StringWriter ( stringBuilder ) ;
+			JsonTextWriter jsonTextWriter = new JsonTextWriter ( sw ) ;
+			jsonTextWriter.Formatting = Formatting.Indented ;
+			jsonTextWriter.Indentation = 1 ;
+			jsonTextWriter.IndentChar = '\t' ;
+			jsonSerializer.Serialize ( jsonTextWriter , obj ) ;
+			jsonTextWriter.Close () ;
+			sw.Dispose () ;
+			return stringBuilder.ToString() ;
+		}
+		protected void setActiveStateIcon ()
+		{
+			if ( isListening )
+			{
+				Icon =
+				notifyIcon.Icon = monitorActive ? SimpleHttp.Properties.Resources.activeMonitorIcon : SimpleHttp.Properties.Resources.activeIcon ;
+				startStopSwitch.BackgroundImage = images24.Images [ "stop" ] ;
+
+				monitorSwitch.BackgroundImage = images24.Images [ monitorActive ? "monYellow" : "monGreen" ] ;
+
+			}
+			else 
+			{
+				startStopSwitch.BackgroundImage = images24.Images [ "play" ] ;
+				monitorSwitch.BackgroundImage = images24.Images [ monitorActive ? "monWhiteCheck" : "monWhite" ] ;
+			}
 		}
 		protected bool isCriticalError ;
 		protected void webServer_criticalErrorRaised ( object sender , HttpConnectionDetails e )
@@ -814,11 +1257,11 @@ namespace SimpleHttp
 				{
 					if ( messageForm == null )
 					{
-						if ( startServerForm != null )
+						if ( quickStartForm != null )
 							BeginInvoke ( () =>
 							{
-								startServerForm.BringToFront () ;
-								startServerForm.Select () ;
+								quickStartForm.BringToFront () ;
+								quickStartForm.Select () ;
 							} ) ;				
 					}
 					else 
@@ -833,15 +1276,7 @@ namespace SimpleHttp
 			base.OnResize ( e ) ;
 		}
 
-		private void startServerForm_FormClosed ( object? sender , FormClosedEventArgs e )
-		{
-			startServerForm.FormClosed -= startServerForm_FormClosed ; //ah govnari
-			startServerForm.Dispose () ;
-			if ( isListening ) 
-				midPanel.Enabled = true ;
-			else Close () ;
-		}
-
+		
 		
 		/// <summary>
 		/// Get method for the selectedConnection property
@@ -955,7 +1390,7 @@ namespace SimpleHttp
 		}
 		protected void setClosePropertiesButtonLocation ()
 		{
-			int h = statusLabel.Height - 2 ;
+			int h = resourceTypeLabel.Height - 2 ;
 			closePropertiesButton.Size = menuButton.Size ;
 			closePropertiesButton.Location = new Point ( closePropertiesButton.Parent.Width - closePropertiesButton.Width , 4 ) ;
 			closePropertiesButton.BringToFront () ;
@@ -965,7 +1400,7 @@ namespace SimpleHttp
 			if ( line == "" ) return ;
 			int i = line.IndexOf ( ':' ) ;
 			if ( i == -1 )
-				grid.Rows.Add ( new object [ 2 ] { line , "" } ) ;
+				grid.Rows.Add ( new object [ 2 ] { "" , line } ) ;
 			else grid.Rows.Add ( new object [ 2 ] { line.Substring ( 0 , i ) , line.Substring ( i + 1 ) } ) ;
 		}
 		private void webServer_clientConnected ( object sender , HttpConnectionDetails connectionDetails )
@@ -1396,29 +1831,36 @@ namespace SimpleHttp
 					messageForm.BringToFront () ;
 					return ;
 				}
-			if ( startServerForm != null )
-				if ( startServerForm.Visible )
-					startServerForm.BringToFront () ;
+			if ( quickStartForm != null )
+				if ( quickStartForm.Visible )
+					quickStartForm.BringToFront () ;
 		}
 		private void messageFormOK_Click ( object sender , EventArgs e )
 		{
-			( ( Form ) sender ).Dispose () ;
+			( ( Form ) sender ).Dispose () ; //?
+			if ( webServer == null ) return ;
 			try
 			{
-				if ( webServer != null ) webServer.Dispose () ;
+				webServer.Stop ( true ) ;
 			}
 			catch { }
 			notifyIcon.Text = "Http server is down" ;
 			Icon =
 			notifyIcon.Icon = SimpleHttp.Properties.Resources.mainIcon ;
-			statusLabel.Text = "Closed" ;
+			//resourceTypeLabel.Text = "Closed" ;
 			if ( closeProgramDemand ) 
 			{
 				closeProgramConfirmed = true ;
 				Close () ;
 			}
-			else showServerStarter ( ) ;
-			focusTopForm () ;
+			else if ( serverMode == StartServerMode.jsonConfig )
+				BringToFront () ;
+			//else
+			//{
+			//	showQuickStartForm () ;
+			//	quickStartForm.configData = webServer.configData ;
+			//	focusTopForm () ;
+			//}
 		}
 		 
 		private void messageFormNo_Click ( object sender , EventArgs e )
@@ -1446,8 +1888,8 @@ namespace SimpleHttp
 			midPanel.Enabled = c == 1 ;
 			if ( WindowState == FormWindowState.Minimized ) return ; 
 			if ( !ShowInTaskbar ) return ; 
-			if ( startServerForm == null ) return ;
-			if ( startServerForm.Visible ) startServerForm.Focus () ;
+			if ( quickStartForm == null ) return ;
+			if ( quickStartForm.Visible ) quickStartForm.Focus () ;
 		}
 		private void messageForm_Disposed ( object sender , EventArgs e )
 		{
@@ -1469,10 +1911,8 @@ namespace SimpleHttp
 			else 
 			{
 				if ( wasVisible ) Opacity = 1.0 ;
-				if ( startServerForm == null )
-					loadServerStarterForm ( currentStartParameters == null ? programStartParameters : currentStartParameters ) ;
-				else if ( !startServerForm.Visible )
-					loadServerStarterForm ( currentStartParameters == null ? programStartParameters : currentStartParameters ) ;
+				if ( StartServerMode.jsonConfig != serverMode )
+					showQuickStartForm () ;
 						
 				showErrorMessage ( title , message ) ;
 			}
@@ -1495,7 +1935,7 @@ namespace SimpleHttp
 				{
 					showMessage ( SimpleHttp.Properties.Resources.closeIcon ,
 									"Closing program" , "              Do you want to close http server?" ,
-									"Close program and server" , "Just stop server" , "Keep sever working" ) ;
+									"Close program and server" , "Just stop server" , "Keep server working" ) ;
 					
 				}
 				else
@@ -1505,6 +1945,13 @@ namespace SimpleHttp
 					resourcesForm?.Hide () ;
 					aboutForm?.Hide () ;
 				}
+			}
+			else 
+			{
+				quickStartForm?.Dispose () ;
+				resourcesForm?.Dispose () ;
+				aboutForm?.Dispose () ;
+				messageForm?.Dispose () ;
 			}
 			base.OnFormClosing ( e ) ;
 		}
@@ -1528,6 +1975,28 @@ namespace SimpleHttp
 		{
 			get => getIsListening () ;
 		}
+		/// <summary>
+		/// Get method for the isJSONConfig property
+		/// </summary>
+		/// <returns>
+		/// Returns true if web server has the configData property value diferent then null.
+		/// </returns>
+		public bool getIsJSONConfig () 
+		{
+			if ( webServer != null )
+				if ( webServer.configData != null ) 
+					return true ;
+			return false ;
+		}
+		/// <summary>
+		/// Returns true if web server has the configData property value diferent then null.
+		/// </summary>
+		public bool isJSONConfig 
+		{
+			get => getIsJSONConfig () ;
+		}
+
+		
 		/// <summary>
 		///  Clean up any resources being used.
 		/// </summary>
@@ -1579,6 +2048,7 @@ namespace SimpleHttp
 			{
 				ShowInTaskbar = true ;
 				Visible = true ;
+				_jsonEditorVisible = jsonEditor.Visible ;
 				if ( WindowState == FormWindowState.Minimized ) 
 				{
 					previousWindowState = FormWindowState.Minimized ;
@@ -1587,28 +2057,38 @@ namespace SimpleHttp
 				Activate () ;
 				API.BringWindowToTop ( Handle ) ;
 				calculateItemHeight () ;
-				if ( continueWidth != null ) continueWidth.DynamicInvoke ( args ) ;
+				if ( continueWidth == null ) 
+					midPanel.Enabled = true ;
+				else continueWidth.DynamicInvoke ( args ) ;
 			} ) ;
 		}
 		private void iconMenu_Opening ( object sender , System.ComponentModel.CancelEventArgs e )
 		{
-			bool showStartDialogMenuItemVisible = showStartDialogMenuItem.Visible = !isListening ;
-			//jebo im pas mater
-			showMonitorMenuItem.Visible = !Visible ;
-			monitorEventsMenuItem.Checked = monitorActive ;
-			createCommandParametersMenuItem.Visible =
-			toolStripSeparator2.Visible =
-			monitorEventsMenuItem.Visible =
-			stopServerMenuItem.Visible = isListening ;
 			if ( isListening )
 			{
-				toolStripSeparator0.Visible = showStartDialogMenuItemVisible || !Visible ;
-				toolStripSeparator3.Visible = true ;
+				showQuickStartMenuItem.Visible = false ;
+				startJSONConfigMenuItem.Visible = false ;
+				toolStripSeparator1.Visible = false ;
+				stopServerMenuItem.Visible = true ;
 			}
 			else 
 			{
-				toolStripSeparator0.Visible = showStartDialogMenuItemVisible || !Visible ;
-				toolStripSeparator3.Visible = false ;
+				showQuickStartMenuItem.Visible = true ;
+				startJSONConfigMenuItem.Visible = true ;
+				toolStripSeparator1.Visible = true ;
+				stopServerMenuItem.Visible = false ;
+			}
+			//if ( 
+			showMainWindowMenuItem.Visible = !Visible || WindowState == FormWindowState.Minimized ;
+			
+			
+			if ( jsonEditorVisible )
+			{
+				startJSONConfigMenuItem.Text = "Start current configuration" ;
+			}
+			else 
+			{
+				startJSONConfigMenuItem.Text = "Show current configuration" ;
 			}
 			closeProgramMenuItem.Text = isListening ? "Close http server and program" : "Close program" ;
 		}
@@ -1638,24 +2118,42 @@ namespace SimpleHttp
 		{
 			if ( ( ( Form ) sender ) == aboutForm ) aboutForm = null ;
 		}
-
+		private void showMonitorMenuItemClick ()
+		{
+			jsonEditorVisible = false ;
+			try
+			{
+				if ( jsonEditor.Visible )
+					jsonEditor.Focus () ;
+				else if ( logPanel.Visible )
+					logList.Focus () ;
+			}
+			catch { }
+		}
+		private void switchMonitorMenuItemClick ()
+		{
+			jsonEditorVisible = !jsonEditorVisible ;
+			try
+			{
+				if ( jsonEditor.Visible )
+					jsonEditor.Focus () ;
+				else if ( logPanel.Visible )
+					logList.Focus () ;
+			}
+			catch { }
+		}
 		private void iconMenu_ItemClicked ( object sender , ToolStripItemClickedEventArgs e )
 		{
 			if ( e.ClickedItem == aboutMenuItem )
 				restoreForm ( showAboutForm ) ;
 			else if ( e.ClickedItem == showStartParametersMenuItem )
 				restoreForm ( showStartParameters , new object [ 2 ] { "Starting parameters" , programStartParameters } ) ;
-			else if ( e.ClickedItem == createCommandParametersMenuItem )
-				restoreForm ( showStartParameters , new object [ 2 ] { "Current parameters" , currentStartParameters } ) ;
-			else if ( e.ClickedItem == showMonitorMenuItem )
+			else if ( e.ClickedItem == showMainWindowMenuItem )
 				restoreForm () ;
-			else if ( e.ClickedItem == showStartDialogMenuItem )
-				restoreForm ( showServerStarter ) ;
-			else if ( e.ClickedItem == monitorEventsMenuItem )
-			{
-				monitorActive = !monitorEventsMenuItem.Checked ;
-				setActiveStateIcon () ;
-			}
+			else if ( e.ClickedItem == showQuickStartMenuItem )
+				restoreForm ( showQuickStartFormAndTakeConfigData ) ;
+			else if ( e.ClickedItem == startJSONConfigMenuItem )
+				restoreForm ( startJSONConfigMenuItemClick ) ;
 			else if ( e.ClickedItem == stopServerMenuItem )
 			{
 				if ( isListening )
@@ -1665,7 +2163,7 @@ namespace SimpleHttp
 						closeProgramConfirmed = false ;
 						showMessage ( SimpleHttp.Properties.Resources.warningIcon ,
 												"Stoping server" , "Do you want to stop http server?" ,
-												"Stop server" , "" , "Keep sever working" ) ;
+												"Stop server" , "" , "Keep server working" ) ;
 
 					} ) ;
 				else Close () ;
@@ -1705,7 +2203,7 @@ namespace SimpleHttp
 			if ( message == null ) return ;
 			if ( message.Trim().ToLower () == "show" )
 			{
-				iconMenu_ItemClicked ( iconMenu , new ToolStripItemClickedEventArgs ( showMonitorMenuItem ) ) ;
+				iconMenu_ItemClicked ( iconMenu , new ToolStripItemClickedEventArgs ( showMainWindowMenuItem ) ) ;
 			}
 		}
 
@@ -1804,7 +2302,6 @@ namespace SimpleHttp
 					TextRenderer.MeasureText ( deviceContext , s.Substring ( searchPosition , searchLength ) , logList.Font ).Width - 
 								( searchPosition > 0 ? textWidthRightHint : textWidthLeftHint ) , 
 					e.Bounds.Height - ( t << 1 ) ) ;
-
 			TextRenderer.DrawText ( deviceContext , s , logList.Font , new Point ( e.Bounds.Left , e.Bounds.Top + t ) , ink.Color , Color.Transparent ) ;
 		}
 		
@@ -1845,11 +2342,32 @@ namespace SimpleHttp
 				showErrorStackTrace () ;
 			else linkContextMenu.Tag = errorLabel ;
 		}
+
+		
+		private void configFileNameLabel_MouseEnter ( object sender , EventArgs e )
+		{
+			configFileNameLabel.Font =  boldUnderlineFont ;
+		}
+
+		private void configFileNameLabel_MouseLeave ( object sender , EventArgs e )
+		{
+			configFileNameLabel.Font =  boldFont ;
+		}
+		private void configFileNameLabel_MouseDown ( object sender , MouseEventArgs e )
+		{
+			if ( e.Button != MouseButtons.Right )
+			{
+				API.APIPoint po = new API.APIPoint () ;
+				API.GetCursorPos ( ref po ) ;
+				configContextMenu.Show ( po.x , po.y ) ;
+			}
+		}
+
 		private void showErrorStackTrace ()
 		{
 			try
 			{
-				HttpConnectionDetails connectionDetails = ( HttpConnectionDetails ) logList.Items [ logList.SelectedIndex ] ;
+				HttpConnectionDetails connectionDetails = selectedConnection ;
 				if ( string.IsNullOrEmpty ( connectionDetails.error.StackTrace ) ) return ;
 				showErrorMessage ( "Stack trace" , connectionDetails.error.StackTrace ) ;
 			}
@@ -1859,7 +2377,7 @@ namespace SimpleHttp
 		{
 			try
 			{
-				HttpConnectionDetails connectionDetails = ( HttpConnectionDetails ) logList.Items [ logList.SelectedIndex ] ;
+				HttpConnectionDetails connectionDetails = selectedConnection ;
 				if ( string.IsNullOrEmpty ( connectionDetails.error.StackTrace ) ) 
 					Clipboard.SetText ( connectionDetails.error.Message ) ;
 				else Clipboard.SetText ( connectionDetails.error.Message + "\r\n" + connectionDetails.error.StackTrace ) ;
@@ -1879,6 +2397,7 @@ namespace SimpleHttp
 		{
 			int c = logList.Items.Count ;
 			int t = logList.TopIndex ;
+			logList.SelectedIndexChanged -= logList_SelectedIndexChanged ;
 			API.LockWindowUpdate ( logList.Handle ) ; // this is stupid
 			logList.SuspendLayout () ;
 			for ( int i = 0 ; i < c ; i++ )
@@ -1886,9 +2405,11 @@ namespace SimpleHttp
 			logList.TopIndex = t ;
 			logList.ResumeLayout () ;
 			API.LockWindowUpdate ( IntPtr.Zero ) ; //0 for unlock		
+			logList.SelectedIndexChanged += logList_SelectedIndexChanged ;
 		}
 		public void deleteSelectedLogItems ()
 		{
+			logList.SelectedIndexChanged -= logList_SelectedIndexChanged ;
 			ListBox.ObjectCollection items = logList.Items ;
 			int c = items.Count ;
 			searchLength = 0 ;
@@ -1897,6 +2418,7 @@ namespace SimpleHttp
 			for ( int i = c - 1  ; i >= 0 ; i-- )
 				if ( logList.GetSelected ( i ) ) items.RemoveAt ( i ) ;
 			searchBoxVisible = searchBoxDemanded && searchBoxCanBeVisible ;			
+			logList.SelectedIndexChanged += logList_SelectedIndexChanged ;
 		}
 		private void logListMenu_Opening ( object sender , System.ComponentModel.CancelEventArgs e)
 		{
@@ -2052,14 +2574,57 @@ namespace SimpleHttp
 		{
 			resourceLabel.Font = boldFont ;
 		}
+		public static Assembly FindAssemblyBySource ( string assemblySource )
+		{
+			Assembly assembly = GetAssemblyByName ( assemblySource ) ;
+			if ( assembly == null )
+			{
+				if ( !Path.IsPathRooted ( assemblySource ) )
+				{
+					string path = Application.StartupPath ;
+					assemblySource = string.Concat ( path , path [ path.Length - 1 ] == '\\' ? "" : "\\" ,  assemblySource ) ;
+				}
+				AssemblyName assemblyName = AssemblyName.GetAssemblyName ( assemblySource ) ;
+				assembly = GetAssemblyByFullName ( assemblyName.FullName ) ;
+				if ( assembly == null ) return Assembly.LoadFrom ( assemblySource ) ;
+			}
+			return assembly ;
+		}
+		public static Assembly GetOtherAssemblyByName ( Assembly firstAssembly )
+		{
+			string name = firstAssembly.FullName ;
+			return AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault ( assembly => ( firstAssembly != assembly ) && ( assembly.FullName == name ) ) ;
+		}
+		public static Assembly GetAssemblyByFullName ( string fullName )
+		{
+			return AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault ( assembly => assembly.FullName == fullName ) ;
+		}
+		public static Assembly GetAssemblyByName ( string name )
+		{
+			return AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault ( assembly =>
+			{
+				string fullName = assembly.GetName().FullName ;
+				if ( fullName == name ) return true ;
+				return fullName.IndexOf ( name + "," ) != -1 ;
+			} ) ;
+		}
 		private void resourceLabel_MouseDown ( object sender , MouseEventArgs e )
 		{
 			try
 			{
 				if ( e.Button == MouseButtons.Left )
-					if ( serverMode == StartServerMode.fileServer )
-						openWebrootFolder () ;
-					else startServerForm_resourceViewNeeded ( sender , resourceAssembly ) ;
+					switch ( serverMode )
+					{
+						case StartServerMode.fileServer :
+							openWebrootFolder () ;
+						break ;
+						case StartServerMode.resourceServer:
+							quickStartForm_resourceViewNeeded ( sender , FindAssemblyBySource ( resourceAssemblyName ) ) ;
+						break ;
+						default:
+							jsonEditorVisible = !jsonEditorVisible ;
+						break ;
+					}
 				else linkContextMenu.Tag = resourceLabel ;
 			}
 			catch { }
@@ -2067,7 +2632,21 @@ namespace SimpleHttp
 		protected void openWebrootFolder ()
 		{
 			Exception error ;
-			if ( !openLink ( resourceLabel.Text , out error ) )
+			if ( resourceLabel.Text == "<not saved>" )
+				jsonEditorVisible = !jsonEditorVisible ;
+			else if ( !openLink ( resourceLabel.Text , out error ) )
+				showError ( "Cannot open uri" , error ) ;
+		}
+		protected void openConfigFolder ()
+		{
+			Exception error ;
+			if ( webServer == null )
+				showError ( "Cannot open uri" , new Exception ( "WebServer instance is null" ) ) ;
+			else if ( webServer.configData == null ) 
+				showError ( "Cannot open uri" , new Exception ( "No WebServer JSON configuration" ) ) ;
+			else if ( string.IsNullOrWhiteSpace ( webServer.configData.jsonConfigFile ) )
+				showError ( "Cannot open uri" , new Exception ( "WebServer JSON configuration file name is empty" ) ) ;
+			else if ( !openFolder ( webServer.configData.jsonConfigFile , out error ) )
 				showError ( "Cannot open uri" , error ) ;
 		}
 		protected void openHostUri ()
@@ -2095,12 +2674,31 @@ namespace SimpleHttp
 			}
 			if ( error != null ) showError ( "Error" , error ) ;
 		}
-		
+		public static bool openFolder ( string uri , out Exception error )
+		{
+			int i = uri.LastIndexOf ( '\\' ) ;
+			if ( i == -1 ) 
+			{
+				error = new IOException ( "No path in \"" + uri + "\"" ) ;
+				return false ;
+			}
+			//else
+			//{
+			//	error = null ;
+			//	IntPtr mainWindowHandle = Process.Start ( "explorer.exe", "/select,\"" + uri + "\"" ).MainWindowHandle ;
+			//	return mainWindowHandle != IntPtr.Zero  ;
+			//}
+			else return openLink ( uri.Substring ( 0 , i ) , out error ) ;
+		}
 		public static bool openLink ( string uri , out Exception error )
 		{
 			error = null ;
 			if ( string.IsNullOrEmpty ( uri ) )
 				error = new ApplicationException ( "Empty or null uri" ) ;
+			else if ( uri == "<not saved>" )
+			{
+				return true ;
+			}
 			else 
 			try
 			{
@@ -2134,6 +2732,8 @@ namespace SimpleHttp
 				else if ( linkContextMenu.Tag == errorLabel )
 					showErrorStackTrace () ;
 			}
+			else if ( e.ClickedItem == folderOpenMenuItem )
+				openConfigFolder () ;
 			else if ( e.ClickedItem == linkCopyMenuItem )
 				if ( linkContextMenu.Tag == errorLabel )
 					copyErrorWithStackTrace () ;
@@ -2141,6 +2741,95 @@ namespace SimpleHttp
 					Clipboard.SetText ( selectedConnection.request.uri.ToString () ) ;
 				else if ( ( ( Control ) linkContextMenu.Tag ).Text.Trim() != "" ) 
 					Clipboard.SetText ( ( ( Control ) linkContextMenu.Tag ).Text ) ;
+		}
+		
+		private void configContextMenu_Opening ( object sender , System.ComponentModel.CancelEventArgs e )
+		{
+			browseConfigFileMenuItem.Enabled = !isListening ;
+			copyConfigNameMenuItem.Enabled = !string.IsNullOrWhiteSpace ( jsonConfigFile ) ;
+		}
+		private void configContextMenu_ItemClicked ( object sender, ToolStripItemClickedEventArgs e )
+		{
+			configContextMenu.Close () ;
+			if ( e.ClickedItem == browseConfigFileMenuItem )
+			{
+				try
+				{
+					openFileDialog.InitialDirectory = Path.GetDirectoryName ( jsonConfigFile ) ;
+					openFileDialog.FileName = Path.GetFileName ( jsonConfigFile ) ;
+				}
+				catch { }
+				if ( openFileDialog.ShowDialog ( this ) == DialogResult.OK )
+					if ( tryLoadConfigAs ( openFileDialog.FileName ) )
+					{
+						int i = openFileDialog.FileName.LastIndexOf ( '\\' ) ;
+						configFileNameLabel.Text = i == -1 ? openFileDialog.FileName : openFileDialog.FileName.Substring ( i + 1 ) ;
+					}
+			}
+			else if ( e.ClickedItem == saveConfigFileMenuItem )
+			{
+				try
+				{
+					saveFileDialog.InitialDirectory = Path.GetDirectoryName ( jsonConfigFile ) ;
+					saveFileDialog.FileName = Path.GetFileName ( jsonConfigFile ) ;
+				}
+				catch { }
+				if ( saveFileDialog.ShowDialog ( this ) == DialogResult.OK )
+					if ( trySaveConfigAs ( saveFileDialog.FileName ) )
+					{
+						int i = saveFileDialog.FileName.LastIndexOf ( '\\' ) ;
+						configFileNameLabel.Text = i == -1 ? saveFileDialog.FileName : saveFileDialog.FileName.Substring ( i + 1 ) ;
+					}
+			}
+			else if ( e.ClickedItem == copyConfigNameMenuItem )
+				if ( !string.IsNullOrWhiteSpace ( jsonConfigFile ) )
+					Clipboard.SetText ( jsonConfigFile ) ;
+		}
+		public bool tryLoadConfigAs ( string fileName )
+		{
+			FileStream fileStream = null ;
+			TextReader reader = null ;
+			bool ret = false ;
+			try
+			{
+				reader = new StreamReader ( fileName ) ;
+				jsonEditor.Text = reader.ReadToEnd () ;
+				_jsonConfigFile = fileName ;
+				ret = true ;
+			}
+			catch ( Exception x )
+			{
+				showError ( "File read error" , x ) ;
+			}
+			try
+			{ 
+				if ( fileStream != null ) fileStream.Dispose () ;
+				if ( reader != null ) reader.Dispose () ;
+			}
+			catch { }
+			return ret ;
+		}
+		public bool trySaveConfigAs ( string fileName )
+		{
+			FileStream fileStream = null ;
+			bool ret = false ;
+			try
+			{
+				fileStream = File.OpenWrite ( fileName ) ;
+				fileStream.Write ( Encoding.UTF8.GetBytes ( jsonEditor.Text ) ) ;
+				_jsonConfigFile = fileName ;
+				ret = true ;
+			}
+			catch ( Exception x )
+			{
+				showError ( "File not saved" , x ) ;
+			}
+			try
+			{ 
+				if ( fileStream != null ) fileStream.Dispose () ;
+			}
+			catch { }
+			return ret ;
 		}
 
 		private void requestGrid_Enter ( object sender , EventArgs e )
@@ -2154,9 +2843,9 @@ namespace SimpleHttp
 		}
 
 
-		private void statusLabel_MouseDown ( object sender , MouseEventArgs e )
+		private void resourceTypeLabel_MouseDown ( object sender , MouseEventArgs e )
 		{
-			labelContextMenu.Tag = statusLabel ;
+			labelContextMenu.Tag = resourceTypeLabel ;
 		}
 
 		private void originLabel_MouseDown ( object sender , MouseEventArgs e )
@@ -2209,6 +2898,23 @@ namespace SimpleHttp
 				e.Cancel = true ;
 			else if ( ( ( Control ) linkContextMenu.Tag ).Text == "" )
 				e.Cancel = true ;
+			if ( ( serverMode == StartServerMode.jsonConfig ) && ( linkContextMenu.Tag == resourceLabel ) )
+			{
+				folderOpenMenuItem.Visible = true ;
+				linkContextMenuLine1.Visible = true ;
+				linkOpenMenuItem.Text = "&Open file" ;
+			}
+			else 
+			{
+				folderOpenMenuItem.Visible = false ;
+				linkContextMenuLine1.Visible = false ;
+				if ( isListening )
+				{
+					linkOpenMenuItem.Text = "&Open link" ;
+					linkOpenMenuItem.Visible = true ;
+				}
+				else linkOpenMenuItem.Visible = false ;
+			}
 		}
 
 		public static string exeName ( )
@@ -2231,20 +2937,31 @@ namespace SimpleHttp
         private void topPanel_Resize ( object sender , EventArgs e )
         {
 			searchBox_Resize ( sender , e ) ;
-			if ( IsHandleCreated )  BeginInvoke ( statusPanel.PerformLayout  ) ;
+			statusPanel.MaximumSize = new Size ( buttonPanel.Left , 0 ) ; 
+			if ( IsHandleCreated ) BeginInvoke ( statusPanel.PerformLayout  ) ;
         }
 
 		private void searchBox_Resize ( object sender, EventArgs e )
 		{
+			//topPanel.SuspendLayout () ;
 			statusPanel.SuspendLayout() ;
 
-			//topPanel.Height = Math.Max ( se searchBox.Height ;
-			statusPanel.MaximumSize = new Size ( topPanel.Width - menuButton.Width , 0 ) ;
-			statusPanel.Width = statusPanel.MaximumSize.Width ;
-			menuButton.Size = new Size ( searchBox.Height , searchBox.Height ) ;
-			menuButton.Location = new Point ( topPanel.Width - menuButton.Width , 0 ) ;
-			menuButton.Anchor = AnchorStyles.Top | AnchorStyles.Right ;
 
+			//topPanel.Height = Math.Max ( se searchBox.Height ;
+			//statusPanel.Width = statusPanel.MaximumSize.Width ;
+			startStopSwitch.Size =
+			monitorSwitch.Size =
+			viewSwitch.Size =
+			menuButton.Size = new Size ( searchBox.Height , searchBox.Height ) ;
+			
+			//menuButton.Location = new Point ( topPanel.Width - menuButton.Width , 0 ) ;
+			//monitorSwitch.Location = new Point ( menuButton.Left - viewSwitch.Width - midPanel.Left , 0 ) ;
+			//viewSwitch.Location = new Point ( monitorSwitch.Left - viewSwitch.Width - midPanel.Left , 0 ) ;
+			//startStopSwitch.Location = new Point ( monitorSwitch.Left - viewSwitch.Width - midPanel.Left , 0 ) ;
+			//statusPanel.MaximumSize = new Size ( startStopSwitch.Left , 0 ) ;
+			//viewSwitch.Anchor = 
+			//menuButton.Anchor = AnchorStyles.Top | AnchorStyles.Right ;
+			errorLabel.Margin = new Padding ( 0 , 0 , Math.Max ( 0 , closePropertiesButton.Width - 2 ) , 0 ) ;
 			closePropertiesButton.Size = new Size ( searchBox.Height , searchBox.Height ) ;
 			searchButton.Size = new Size ( searchBox.Height , searchBox.Height ) ;
 			int h = searchBox.Height - resourceLabel.Height + resourceLabel.Padding.Vertical ;
@@ -2253,10 +2970,23 @@ namespace SimpleHttp
 			h = ( h + 1 ) >> 1 ;
 			searchLabel.Padding = new Padding ( searchLabel.Padding.Left , h , searchLabel.Padding.Right , h2 ) ;
 			uriLabel.Padding = new Padding ( uriLabel.Padding.Left , h , uriLabel.Padding.Right , h2 ) ;
-			statusLabel.Padding = new Padding ( statusLabel.Padding.Left , h , statusLabel.Padding.Right , h2 ) ;
+			resourceTypeLabel.Padding = new Padding ( resourceTypeLabel.Padding.Left , h , resourceTypeLabel.Padding.Right , h2 ) ;
 			resourceLabel.Padding = new Padding ( resourceLabel.Padding.Left , h , resourceLabel.Padding.Right , h2 ) ;
 			
+			//h = searchBox.Bottom ;
+			//h2 = buttonPanel.Height - buttonPanel.Padding.Vertical ;
+			////topPanel.AutoSize = false ;
+			//if ( h2 >= h )
+			//	buttonPanel.Padding = 
+			//	statusPanel.Padding = Padding.Empty ;
+			//else 
+			//{
+			//	buttonPanel.Padding = Padding.Empty ;
+			//	statusPanel.Padding = new Padding ( 0 , h - h2 , 0 , 0 ) ;
+			//}
+			//topPanel.AutoSize = true ;
 			statusPanel.ResumeLayout () ;
+			//topPanel.ResumeLayout () ;
 			
 		}
 		/// <summary>
@@ -2496,5 +3226,58 @@ namespace SimpleHttp
 			}
 		}
 
+		private void jsonEditor_Click(object sender, EventArgs e)
+		{
+			//API.SetTabWidth ( jsonEditor.Handle , 8 ) ;
+		}
+
+		private void viewSwitch_Click (object sender, EventArgs e)
+		{
+			if ( jsonEditorVisible = !jsonEditorVisible )
+				quickStartForm?.Hide () ;
+		}
+
+		private void monitorSwitch_Click ( object sender, EventArgs e )
+		{
+			monitorActive = !monitorActive ;
+		}
+
+		private void startStopSwitch_Click ( object sender, EventArgs e )
+		{
+			if ( isListening )
+			{
+				closeProgramDemand = false ;
+				closeProgramConfirmed = false ;
+				showMessage ( SimpleHttp.Properties.Resources.warningIcon ,
+										"Stoping server" , "Do you want to stop http server?" ,
+										"Stop server" , "" , "Keep server working" ) ;
+
+			} 
+			else 
+			if ( quickStartForm == null )
+				startJSONConfigMenuItemClick() ;
+			else if ( quickStartForm.Visible )
+			{
+				quickStartForm_paremetersChoosen ( quickStartForm , quickStartForm.getStartParameters () ) ;
+				quickStartForm.BringToFront () ;
+				quickStartForm.Select () ;
+			}
+			else startJSONConfigMenuItemClick() ;
+		}
+
+		private void jsonEditor_VisibleChanged ( object sender , EventArgs e )
+		{
+			if ( jsonEditor.Visible ) API.SetTabWidth ( jsonEditor.Handle , 8 ) ; //why 8?
+
+		}
+		private void viewSwitch_MouseEnter ( object sender , EventArgs e )
+		{
+			if ( jsonEditorVisible ) viewSwitch.BackgroundImage = images24.Images [ "monitorHover" ] ;
+		}
+
+		private void viewSwitch_MouseLeave ( object sender , EventArgs e )
+		{
+			if ( jsonEditorVisible ) viewSwitch.BackgroundImage = images24.Images [ "monitor" ] ;
+		}
 	}
 }

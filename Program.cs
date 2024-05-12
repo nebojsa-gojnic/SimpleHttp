@@ -4,6 +4,8 @@ using System.IO.Pipes ;
 using System.Text ;
 using System.Diagnostics ;
 using System.Security.Authentication ;
+using Newtonsoft.Json.Linq ;
+using Newtonsoft.Json ;
 namespace SimpleHttp
 {
 	public static class Program
@@ -20,6 +22,24 @@ namespace SimpleHttp
 		[STAThread]
 		static void Main( string[] args )
 		{
+			//{
+			//	//SimpleHttp.MonitorForm.PipeManiaHttpService sr = new MonitorForm.PipeManiaHttpService () ;
+			//	//string name =  sr.GetType().AssemblyQualifiedName ;
+			//	Type tp = System.Type.GetType ( "SimpleHttp.MonitorForm+PipeManiaHttpService" , true , true ) ;
+			//	WebSockets.WebServerConfigData wb = new WebSockets.WebServerConfigData () ;
+			//	string ds = "{ 'services':[ { 'name':'act1' , 'source':'SimpleHttp.MonitorForm+PipeManiaHttpService,SimpleHttp' } , 2 , '2' , [ 1 , 2 , 3 ] ] , 'paths':[ { 'path':'/*' , 'service':'act1' } ] } " ;
+			//	wb.loadFromJSON ( JsonConvert.DeserializeObject <JObject> ( ds ) ) ;
+			//}
+
+			//MonitorForm.PipeManiaHttpService.PipeManiaHttpServiceData data = new MonitorForm.PipeManiaHttpService.PipeManiaHttpServiceData (  ) ;
+			//data.loadFromJSON ( "{ \"saveFolder\":\"c:\\filder\",\"kata\":1}") ;
+			//string s ;
+			//data.saveToJSON ( out s ) ;
+			//data.loadFromJSON ( s ) ;
+			//WebSockets.ResourcesHttpService.ResourcesHttpServiceData da2 = new WebSockets.ResourcesHttpService.ResourcesHttpServiceData ( ) ;
+			//da2.loadFromJSON ( "{ \"assemblyPath\":\"PipeMania.dll\" }" ) ;
+			//da2.saveToJSON ( out s ) ;
+			//da2.loadFromJSON ( s ) ;
 			Process currentProcess = Process.GetCurrentProcess () ;
 			//PipeMania.App.dummy = "" ;
 			foreach ( Process process in Process.GetProcessesByName ( "SimpleHttp" ) )

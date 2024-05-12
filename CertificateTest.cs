@@ -10,8 +10,10 @@ using System.Security.Authentication ;
 using System.Security.Cryptography ;
 using System.Security.Cryptography.X509Certificates ;
 using WebSockets ;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace WebSockets
+namespace SimpleHttp
 {
 	/// <summary>
 	/// Site SSL certificate tester
@@ -243,21 +245,18 @@ namespace WebSockets
 			{
 				if ( webServer == null )
 				{
-					webServer = new WebServer ( HttpServiceFactory.createTestFactory ( "you are connected" , null ) , null ) ;
+					webServer = new WebServer () ;
+					webServer.addPath ( "*", 0 , "Tester" , typeof ( TestHttpService ) , ( JObject ) JsonConvert.DeserializeObject ( "{ 'message':'evo ga ovde' }" ) ) ;
 					webServer.connectionErrorRaised += webServer_connectionErrorRaised ;
 					webServer.criticalErrorRaised += webServer_criticalErrorRaised;
 					webServer.disposed += webServer_disposed ;
 				}
 				else webServer.Stop () ;
-				//tcpListener.Start () ;
-				//tcpListener.BeginAcceptTcpClient ( OnAcceptTcpClient , new AcceptTcpClienState ( tcpListener , certificate , certificateFilePath ) ) ;
+				webServer.addPath ( "/*" , 0 , new HttpServiceActivator ( typeof ( TestHttpService ) , new TestHttpService.TestHttpServiceData ( "Certificate Test Message" ) ) ) ;
 
-				webServer.Listen ( _port , certificate , sslProtocol ) ;
+				webServer.Listen ( new TestWebConfigData ( "Connectin OK" , siteName , _port , "" , "" , sslProtocol ) ) ;
 				httpClient = new HttpClient () ;
-				//httpClient.BaseAddress = new Uri ( "https:50080//localhost/" ) ;
-				//
 				httpClient.GetStringAsync ( "https://" + siteName + ":" + webServer.port.ToString () + "/" ).ContinueWith ( onHttpClient ) ;
-				//_certificate = GenerateSelfSignedCertificate () ;
 			}
 			catch ( Exception x )
 			{ 

@@ -7,13 +7,29 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>Resources\mainIcon.ico</ApplicationIcon>
-    <AssemblyVersion>2.0.0.1</AssemblyVersion>
-    <FileVersion>2.0.0.1</FileVersion>
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <FileVersion>3.0.0.0</FileVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="old\**" />
+    <EmbeddedResource Remove="old\**" />
+    <None Remove="old\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="MultipartFormBinaryDataParser.cs" />
+    <Compile Remove="MultipartFormDataParser.cs" />
+    <Compile Remove="MultipartParseException.cs" />
+    <Compile Remove="SimpleHttpServiceFactory - Copy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="pinger.html" />
+    <None Remove="PipeManiaService.dll" />
     <None Remove="Resources\rightRewind.png" />
+    <None Remove="Resources\Untitled-1.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,11 +60,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="pinger.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="PipeMania.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Update="webConfig.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

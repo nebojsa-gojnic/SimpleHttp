@@ -1,4 +1,9 @@
 ﻿using System.Security.Authentication ;
+using System.Security.Cryptography.X509Certificates ;
+using System.Reflection ;
+using Newtonsoft.Json.Linq ;
+using Newtonsoft.Json ;
+using WebSockets ;
 namespace SimpleHttp
 {
 	/// <summary>
@@ -22,11 +27,11 @@ namespace SimpleHttp
 		/// <summary>
 		/// Certificate file path. If empty or null flat HTTP is used.
 		/// </summary>
-		public string certificate { get ; protected set ; }
+		public string sslCertificateSource { get ; protected set ; }
 		/// <summary>
 		/// Certificate file password
 		/// </summary>
-		public string password { get ; protected set ; }
+		public string sslCertificatePassword { get ; protected set ; }
 		/// <summary>
 		/// Auto start or not
 		/// </summary>
@@ -38,11 +43,19 @@ namespace SimpleHttp
 		/// <summary>
 		/// SSL protocol (Tls 1.1, Tls 1.2, Tls 1.3), default is SslProtocols.Tls12
 		/// </summary>
-		public SslProtocols protocol { get ; protected set ; }
+		public SslProtocols sslProtocol { get ; protected set ; }
 		/// <summary>
 		/// File or resource based server
 		/// </summary>
 		public StartServerMode mode { get ; protected set ; }
+		/// <summary>
+		/// Path to JSON configuration file
+		/// </summary>
+		public string jsonConfigFile { get ; protected set ; }
+		/// <summary>
+		/// JObject instance, deserialized from JSON text
+		/// </summary>
+		public WebServerConfigData configData { get ; protected set ; }
 		/// <summary>
 		/// Enum for argument parser
 		/// </summary>
@@ -67,15 +80,38 @@ namespace SimpleHttp
 			port = 80 ;
 			autoStart = args.Length > 0 ;
 			source = "" ;
-			certificate = "" ;
+			sslCertificateSource = "" ;
 			sitename = "" ;
-			password = "" ;
+			sslCertificatePassword = "" ;
 			errorMessage = "" ;
-			protocol = SslProtocols.Tls12 ;
+			jsonConfigFile = null ;
+			sslProtocol = SslProtocols.Tls12 ;
+			configData = new WebServerConfigData () ;
 			commandEnum command = commandEnum.none ;
 			string fileSource ;
 			string assemblyName ;
 			string badWord = "" ;
+			if ( args.Length == 1 )
+			{
+				if ( char.IsLetter ( args [ 0 ] [ 0 ] ) )
+				{
+					jsonConfigFile = args [ 0 ] ;
+					mode = StartServerMode.jsonConfig ;
+					if ( File.Exists ( jsonConfigFile ) )
+						try
+						{ 
+							configData = new WebServerConfigData () ;
+							configData.loadFromJSONFile ( jsonConfigFile ) ;
+						}
+						catch ( Exception x )
+						{
+							errorMessage = "Cannot parse json file \"" + jsonConfigFile + "\".\r\n" + x.Message ;
+						}
+
+					return ;
+				}
+			}
+
 			foreach ( string param in args )
 			{
 				switch ( param [ 0 ] )
@@ -117,26 +153,31 @@ namespace SimpleHttp
 								autoStart = false ;
 							break ;
 							case "tls" :
-								protocol = SslProtocols.Tls ;
+								sslProtocol = SslProtocols.Tls ;
+								configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
 								command = commandEnum.none ;
 							break ;
 							case "tls1" :
-								protocol = SslProtocols.Tls ;
+								sslProtocol = SslProtocols.Tls ;
+								configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
 								command = commandEnum.none ;
 							break ;
 							case "tls1.1" :
 							case "tls11" :
-								protocol = SslProtocols.Tls11 ;
+								sslProtocol = SslProtocols.Tls11 ;
+								configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
 								command = commandEnum.none ;
 							break ;
 							case "tls1.2" :
 							case "tls12" :
-								protocol = SslProtocols.Tls12 ;
+								sslProtocol = SslProtocols.Tls12 ;
+								configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
 								command = commandEnum.none ;
 							break ;
 							case "tls1.3" :
 							case "tls13" :
-								protocol = SslProtocols.Tls13 ;
+								sslProtocol = SslProtocols.Tls13 ;
+								configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
 								command = commandEnum.none ;
 							break ;
 							default :
@@ -162,16 +203,16 @@ namespace SimpleHttp
 							break ;
 							case commandEnum.port :
 								int p ;
-								if ( int.TryParse ( param , out p ) ) port = p ;
+								if ( int.TryParse ( param , out p ) ) configData [ "port" ] = port = p ;
 							break ;
 							case commandEnum.certificate :
-								certificate = param ;
+								configData [ "sslCertificateSource" ] = sslCertificateSource = param ;
 							break ;
 							case commandEnum.sitename :
-								sitename = param ;
+								configData [ "sitename" ] = sitename = param ;
 							break ;
 							case commandEnum.password :
-								password = param ;
+								configData [ "sslCertificatePassword" ] = sslCertificatePassword = param ;
 							break ;
 							default :
 								badWord = param ;
@@ -184,7 +225,7 @@ namespace SimpleHttp
 			}
 			if ( startFileServer && startResourceServer )
 			{
-				errorMessage = "Cannot use both file system and assemlby resources as source.\r\n" + getGeneralSyntaxText () ;
+				errorMessage = "Cannot use both file system and Assemblyresources as source.\r\n" + getGeneralSyntaxText () ;
 			}
 			else if ( !startFileServer && !startResourceServer )
 			{
@@ -193,6 +234,15 @@ namespace SimpleHttp
 			else if ( badWord != "" )
 			{
 				errorMessage = "Invalid syntax at \"" + badWord + "\".\r\n" + getGeneralSyntaxText () ;
+			}
+			switch ( mode )
+			{
+				case StartServerMode.fileServer :
+					configData = new FileWebConfigData ( source , sitename , port , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
+				break ;
+				case StartServerMode.resourceServer :
+					configData = new ResourceWebConfigData ( source , sitename , port , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
+				break ;
 			}
 		}
 		/// <summary>
@@ -208,17 +258,40 @@ namespace SimpleHttp
 		/// <param name="password">Certificate file password</param>
 		/// <param name="protocol">SSL protocol (Tls 1.1, Tls 1.2, Tls 1.3), default is SslProtocols.Tls12</param>
 		/// <param name="autoStart">Auto start or not</param>
-		public HttpStartParameters ( StartServerMode mode , int port , string source , string sitename , string certificate , string password , SslProtocols protocol , bool autoStart  )
+		public HttpStartParameters ( StartServerMode mode , int port , string source , string sitename , string certificate , string password , SslProtocols protocol , bool autoStart )
 		{
 			errorMessage = "" ;
 			this.port = port ;
 			this.mode = mode ;
 			this.source = source ;
 			this.sitename = sitename ;
-			this.certificate = certificate ;
-			this.password = password ;
-			this.protocol = protocol ;
-			this.autoStart = this.autoStart ;
+			this.sslCertificateSource = certificate ;
+			this.sslCertificatePassword = password ;
+			this.sslProtocol = protocol ;
+			this.autoStart = autoStart ;
+			switch ( mode )
+			{
+				case StartServerMode.fileServer :
+					configData = new FileWebConfigData ( source , sitename , port , certificate , password , protocol ) ;
+				break ;
+				case StartServerMode.resourceServer :
+					configData = new ResourceWebConfigData ( source , sitename , port , certificate , password , protocol ) ;
+				break ;
+			}
+		}
+		public HttpStartParameters ( WebServerConfigData configData , string jsonConfigFile ):
+			this ( StartServerMode.jsonConfig , configData.port , "" , configData.sitename , configData.sslCertificateSource , "" , configData.sslProtocol , true )
+		{
+			this.jsonConfigFile = jsonConfigFile ;
+		}
+		public HttpStartParameters ( HttpStartParameters prms , string jsonConfigFile ) :
+			this ( StartServerMode.jsonConfig , prms.port , prms.source , prms.sitename , prms.source , prms.sslCertificatePassword , prms.sslProtocol , true )
+		{
+			this.jsonConfigFile = jsonConfigFile ;
+		}
+		public HttpStartParameters ( WebServerConfigData configData ):
+			this ( configData , string.IsNullOrWhiteSpace ( configData.jsonConfigFile ) ? "<not saved>" : configData.jsonConfigFile.Trim () )
+		{
 		}
 		public string getGeneralSyntaxText ( )
 		{
@@ -247,11 +320,12 @@ namespace SimpleHttp
 		}
 		public override string ToString()
 		{
-			return ( ( mode == StartServerMode.resourceServer ? "/r" : "/f" ) + " \"" + source + "\" /p " + port.ToString() + " " +
-							( string.IsNullOrWhiteSpace ( certificate ) ? "" :
-							( "/c \"" + certificate + "\" " + 
-							( string.IsNullOrWhiteSpace ( password ) ? "" : ( "/pw \"" + password + "\" " ) ) + 
-							"/" + TlsShort ( protocol ) + " " ) 
+			return mode == StartServerMode.jsonConfig ? jsonConfigFile :
+				( ( mode == StartServerMode.resourceServer ? "/r" : "/f" ) + " \"" + source + "\" /p " + port.ToString() + " " +
+							( string.IsNullOrEmpty ( sslCertificateSource ) ? "" :
+							( "/c \"" + sslCertificateSource + "\" " + 
+							( string.IsNullOrWhiteSpace ( sslCertificatePassword ) ? "" : ( "/pw \"" + sslCertificatePassword + "\" " ) ) + 
+							"/" + TlsShort ( sslProtocol ) + " " ) 
 							) + 
 							( string.IsNullOrWhiteSpace ( sitename ) ? "" : ( "/s \"" + sitename + "\"" ) )
 							).Trim() ;

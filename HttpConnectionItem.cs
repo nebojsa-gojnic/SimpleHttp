@@ -232,9 +232,11 @@ namespace SimpleHttp
 			{
 				_datePart = _connectionDetails.created.ToString ( "yyyy-MM-hh dd:HH:ss" ) + "   "  ;
 				_responsePart = _connectionDetails.responseHeader.Replace ( "\r\n" , " " ).Trim () ; //!!!! first
-				_originPart = ( _connectionDetails.origin == null ? "?" : _connectionDetails.origin.ToString () ) + ( _responsePart == "" ? "" : "  ->  " ) ;
+				_originPart = ( _connectionDetails.origin == null ? "?" : _connectionDetails.origin.ToString () ) + ( _responsePart == "" ? " " : "  ->  " ) ;
 				_originPartStart = _datePart.Length ;
-				_requestPart = ( _connectionDetails.request == null ? "!" : _connectionDetails.request.header.Replace ( "\r\n" , " " ) ) + " " ;
+				_requestPart = ( _connectionDetails.request == null ? " !" : 
+					_connectionDetails.request.connectionType == HttpConnectionType.Unknown ?
+					" !" : _connectionDetails.request.header.Replace ( "\r\n" , " " ) ) + " " ;
 				_requestPartStart = _originPartStart + _originPart.Length ; 
 				_requestFirstLineEnd = _requestPartStart + ( _connectionDetails.request == null ? 0 : _connectionDetails.request.header.IndexOf ( '\r' ) ) ;
 				_errorPart = ( _connectionDetails.error == null ? "" : _connectionDetails.error.InnerException == null ? ( _connectionDetails.error.Message + " " ) : ( _connectionDetails.error.InnerException.Message + " " ) ) ;

@@ -7,7 +7,7 @@
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
 
-		
+
 
 		#region Windows Form Designer generated code
 
@@ -17,940 +17,1129 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			this.components = new System.ComponentModel.Container();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+			components = new System.ComponentModel.Container();
+			DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+			DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+			DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+			DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+			DataGridViewCellStyle dataGridViewCellStyle5 = new DataGridViewCellStyle();
+			DataGridViewCellStyle dataGridViewCellStyle6 = new DataGridViewCellStyle();
+			DataGridViewCellStyle dataGridViewCellStyle7 = new DataGridViewCellStyle();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MonitorForm));
-			this.logList = new System.Windows.Forms.ListBox();
-			this.logPanel = new System.Windows.Forms.Panel();
-			this.logListSplitter = new System.Windows.Forms.Splitter();
-			this.requestGrid = new System.Windows.Forms.DataGridView();
-			this.colName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.colValue = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.gridContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.gridCopyMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.gridLine0 = new System.Windows.Forms.ToolStripSeparator();
-			this.gridSearchMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.gridLine1 = new System.Windows.Forms.ToolStripSeparator();
-			this.gridSelectAllMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.midPanel = new System.Windows.Forms.Panel();
-			this.propertiesPanel = new System.Windows.Forms.Panel();
-			this.propertiesSplitter = new System.Windows.Forms.Splitter();
-			this.responsePanel = new System.Windows.Forms.Panel();
-			this.responseGrid = new System.Windows.Forms.DataGridView();
-			this.dataGridViewTextBoxColumn1 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.dataGridViewTextBoxColumn2 = new System.Windows.Forms.DataGridViewTextBoxColumn();
-			this.responseTopPanel = new System.Windows.Forms.FlowLayoutPanel();
-			this.responseLabel = new System.Windows.Forms.Label();
-			this.labelContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.labelCopyMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.requestPanel = new System.Windows.Forms.Panel();
-			this.closePropertiesButton = new System.Windows.Forms.Button();
-			this.requestTopPanel = new System.Windows.Forms.FlowLayoutPanel();
-			this.errorLabel = new System.Windows.Forms.Label();
-			this.linkContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.linkOpenMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.line4 = new System.Windows.Forms.ToolStripSeparator();
-			this.linkCopyMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.originLabel = new System.Windows.Forms.Label();
-			this.methodLabel = new System.Windows.Forms.Label();
-			this.requestLabel = new System.Windows.Forms.Label();
-			this.httpLabel = new System.Windows.Forms.Label();
-			this.requestBottomPanel = new System.Windows.Forms.Panel();
-			this.statusLabel = new System.Windows.Forms.Label();
-			this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
-			this.iconMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.showStartDialogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.showMonitorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripSeparator0 = new System.Windows.Forms.ToolStripSeparator();
-			this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.createCommandParametersMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.showStartParametersMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-			this.monitorEventsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-			this.stopServerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-			this.closeProgramMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.menuButton = new System.Windows.Forms.Button();
-			this.statusPanel = new System.Windows.Forms.FlowLayoutPanel();
-			this.searchButton = new System.Windows.Forms.Button();
-			this.searchLabel = new System.Windows.Forms.Label();
-			this.searchBox = new System.Windows.Forms.TextBox();
-			this.searchSplitter = new System.Windows.Forms.Splitter();
-			this.uriLabel = new System.Windows.Forms.Label();
-			this.resourceLabel = new System.Windows.Forms.Label();
-			this.logListMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.openLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.logMenuLine0 = new System.Windows.Forms.ToolStripSeparator();
-			this.deleteItemLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.logMenuLine1 = new System.Windows.Forms.ToolStripSeparator();
-			this.selectAllLogMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.testLabel = new System.Windows.Forms.Label();
-			this.topPanel = new System.Windows.Forms.Panel();
-			this.logPanel.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.requestGrid)).BeginInit();
-			this.gridContextMenu.SuspendLayout();
-			this.midPanel.SuspendLayout();
-			this.propertiesPanel.SuspendLayout();
-			this.responsePanel.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.responseGrid)).BeginInit();
-			this.responseTopPanel.SuspendLayout();
-			this.labelContextMenu.SuspendLayout();
-			this.requestPanel.SuspendLayout();
-			this.requestTopPanel.SuspendLayout();
-			this.linkContextMenu.SuspendLayout();
-			this.iconMenu.SuspendLayout();
-			this.statusPanel.SuspendLayout();
-			this.logListMenu.SuspendLayout();
-			this.topPanel.SuspendLayout();
-			this.SuspendLayout();
+			logList = new ListBox();
+			logListMenu = new ContextMenuStrip(components);
+			openLogMenuItem = new ToolStripMenuItem();
+			logMenuLine0 = new ToolStripSeparator();
+			deleteItemLogMenuItem = new ToolStripMenuItem();
+			logMenuLine1 = new ToolStripSeparator();
+			selectAllLogMenuItem = new ToolStripMenuItem();
+			logPanel = new Panel();
+			logListSplitter = new Splitter();
+			requestGrid = new DataGridView();
+			colName = new DataGridViewTextBoxColumn();
+			colValue = new DataGridViewTextBoxColumn();
+			gridContextMenu = new ContextMenuStrip(components);
+			gridCopyMenuItem = new ToolStripMenuItem();
+			gridLine0 = new ToolStripSeparator();
+			gridSearchMenuItem = new ToolStripMenuItem();
+			gridLine1 = new ToolStripSeparator();
+			gridSelectAllMenuItem = new ToolStripMenuItem();
+			labelCopyMenuItem = new ToolStripMenuItem();
+			labelContextMenu = new ContextMenuStrip(components);
+			midPanel = new Panel();
+			propertiesPanel = new Panel();
+			propertiesSplitter = new Splitter();
+			responsePanel = new Panel();
+			responseGrid = new DataGridView();
+			dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
+			dataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
+			responseTopPanel = new FlowLayoutPanel();
+			responseLabel = new Label();
+			requestPanel = new Panel();
+			closePropertiesButton = new Button();
+			requestTopPanel = new FlowLayoutPanel();
+			errorLabel = new Label();
+			linkContextMenu = new ContextMenuStrip(components);
+			linkOpenMenuItem = new ToolStripMenuItem();
+			folderOpenMenuItem = new ToolStripMenuItem();
+			linkContextMenuLine1 = new ToolStripSeparator();
+			linkCopyMenuItem = new ToolStripMenuItem();
+			originLabel = new Label();
+			methodLabel = new Label();
+			requestLabel = new Label();
+			httpLabel = new Label();
+			requestBottomPanel = new Panel();
+			jsonEditor = new CodeTextBox();
+			resourceTypeLabel = new Label();
+			notifyIcon = new NotifyIcon(components);
+			iconMenu = new ContextMenuStrip(components);
+			aboutMenuItem = new ToolStripMenuItem();
+			toolStripSeparator0 = new ToolStripSeparator();
+			startJSONConfigMenuItem = new ToolStripMenuItem();
+			showQuickStartMenuItem = new ToolStripMenuItem();
+			toolStripSeparator1 = new ToolStripSeparator();
+			showMainWindowMenuItem = new ToolStripMenuItem();
+			showStartParametersMenuItem = new ToolStripMenuItem();
+			toolStripSeparator2 = new ToolStripSeparator();
+			stopServerMenuItem = new ToolStripMenuItem();
+			closeProgramMenuItem = new ToolStripMenuItem();
+			menuButton = new Button();
+			statusPanel = new FlowLayoutPanel();
+			searchButton = new Button();
+			searchLabel = new Label();
+			searchBox = new TextBox();
+			searchSplitter = new Splitter();
+			uriLabel = new Label();
+			resourceLabel = new Label();
+			testLabel = new Label();
+			topPanel = new Panel();
+			buttonPanel = new FlowLayoutPanel();
+			viewSwitch = new Button();
+			monitorSwitch = new Button();
+			startStopSwitch = new Button();
+			configFileNameLabel = new Label();
+			configContextMenu = new ContextMenuStrip(components);
+			browseConfigFileMenuItem = new ToolStripMenuItem();
+			toolStripSeparator4 = new ToolStripSeparator();
+			saveConfigFileMenuItem = new ToolStripMenuItem();
+			toolStripSeparator5 = new ToolStripSeparator();
+			copyConfigNameMenuItem = new ToolStripMenuItem();
+			configLabel = new Label();
+			saveFileDialog = new SaveFileDialog();
+			images24 = new ImageList(components);
+			openFileDialog = new OpenFileDialog();
+			logListMenu.SuspendLayout();
+			logPanel.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)requestGrid).BeginInit();
+			gridContextMenu.SuspendLayout();
+			labelContextMenu.SuspendLayout();
+			midPanel.SuspendLayout();
+			propertiesPanel.SuspendLayout();
+			responsePanel.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)responseGrid).BeginInit();
+			responseTopPanel.SuspendLayout();
+			requestPanel.SuspendLayout();
+			requestTopPanel.SuspendLayout();
+			linkContextMenu.SuspendLayout();
+			iconMenu.SuspendLayout();
+			statusPanel.SuspendLayout();
+			topPanel.SuspendLayout();
+			buttonPanel.SuspendLayout();
+			configContextMenu.SuspendLayout();
+			SuspendLayout();
 			// 
 			// logList
 			// 
-			this.logList.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.logList.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-			this.logList.FormattingEnabled = true;
-			this.logList.IntegralHeight = false;
-			this.logList.ItemHeight = 15;
-			this.logList.Location = new System.Drawing.Point(0, 0);
-			this.logList.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.logList.Name = "logList";
-			this.logList.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-			this.logList.Size = new System.Drawing.Size(682, 525);
-			this.logList.TabIndex = 0;
-			this.logList.Click += new System.EventHandler(this.logList_Click);
-			this.logList.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.logList_DrawItem);
-			this.logList.SelectedIndexChanged += new System.EventHandler(this.logList_SelectedIndexChanged);
-			this.logList.DoubleClick += new System.EventHandler(this.logList_DoubleClick);
-			this.logList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.logList_KeyDown);
-			this.logList.MouseUp += new System.Windows.Forms.MouseEventHandler(this.logList_MouseUp);
-			// 
-			// logPanel
-			// 
-			this.logPanel.Controls.Add(this.logList);
-			this.logPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.logPanel.Location = new System.Drawing.Point(0, 0);
-			this.logPanel.Margin = new System.Windows.Forms.Padding(0);
-			this.logPanel.Name = "logPanel";
-			this.logPanel.Padding = new System.Windows.Forms.Padding(0, 0, 2, 0);
-			this.logPanel.Size = new System.Drawing.Size(684, 525);
-			this.logPanel.TabIndex = 0;
-			// 
-			// logListSplitter
-			// 
-			this.logListSplitter.Dock = System.Windows.Forms.DockStyle.Right;
-			this.logListSplitter.Location = new System.Drawing.Point(684, 0);
-			this.logListSplitter.MinExtra = 200;
-			this.logListSplitter.MinSize = 150;
-			this.logListSplitter.Name = "logListSplitter";
-			this.logListSplitter.Size = new System.Drawing.Size(4, 525);
-			this.logListSplitter.TabIndex = 1;
-			this.logListSplitter.TabStop = false;
-			this.logListSplitter.Visible = false;
-			this.logListSplitter.MouseEnter += new System.EventHandler(this.splitter_MouseEnter);
-			this.logListSplitter.MouseLeave += new System.EventHandler(this.splitter_MouseLeave);
-			// 
-			// requestGrid
-			// 
-			this.requestGrid.AllowUserToAddRows = false;
-			this.requestGrid.AllowUserToDeleteRows = false;
-			this.requestGrid.AllowUserToResizeRows = false;
-			dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.ButtonFace;
-			dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-			this.requestGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-			this.requestGrid.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
-			this.requestGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.requestGrid.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleVertical;
-			this.requestGrid.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
-			this.requestGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
-			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.ButtonFace;
-			dataGridViewCellStyle2.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-			dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-			dataGridViewCellStyle2.Padding = new System.Windows.Forms.Padding(4, 2, 4, 2);
-			dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-			dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-			dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.requestGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
-			this.requestGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.requestGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.colName,
-            this.colValue});
-			this.requestGrid.ContextMenuStrip = this.gridContextMenu;
-			dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
-			dataGridViewCellStyle3.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-			dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
-			dataGridViewCellStyle3.Padding = new System.Windows.Forms.Padding(4, 2, 4, 2);
-			dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-			dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-			dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-			this.requestGrid.DefaultCellStyle = dataGridViewCellStyle3;
-			this.requestGrid.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.requestGrid.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-			this.requestGrid.EnableHeadersVisualStyles = false;
-			this.requestGrid.Location = new System.Drawing.Point(0, 69);
-			this.requestGrid.Margin = new System.Windows.Forms.Padding(0);
-			this.requestGrid.Name = "requestGrid";
-			this.requestGrid.ReadOnly = true;
-			this.requestGrid.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-			this.requestGrid.RowHeadersVisible = false;
-			this.requestGrid.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-			this.requestGrid.RowTemplate.Height = 25;
-			this.requestGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-			this.requestGrid.ShowCellErrors = false;
-			this.requestGrid.Size = new System.Drawing.Size(269, 164);
-			this.requestGrid.TabIndex = 1;
-			this.requestGrid.CellMouseDown += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.requestGrid_CellMouseDown);
-			this.requestGrid.Enter += new System.EventHandler(this.requestGrid_Enter);
-			// 
-			// colName
-			// 
-			this.colName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-			this.colName.FillWeight = 40F;
-			this.colName.HeaderText = "Name";
-			this.colName.Name = "colName";
-			this.colName.ReadOnly = true;
-			// 
-			// colValue
-			// 
-			this.colValue.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-			this.colValue.FillWeight = 60F;
-			this.colValue.HeaderText = "Value";
-			this.colValue.Name = "colValue";
-			this.colValue.ReadOnly = true;
-			// 
-			// gridContextMenu
-			// 
-			this.gridContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.gridCopyMenuItem,
-            this.gridLine0,
-            this.gridSearchMenuItem,
-            this.gridLine1,
-            this.gridSelectAllMenuItem});
-			this.gridContextMenu.Name = "gridContextMenu";
-			this.gridContextMenu.Size = new System.Drawing.Size(163, 82);
-			this.gridContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.gridContextMenu_Opening);
-			this.gridContextMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.gridContextMenu_ItemClicked);
-			// 
-			// gridCopyMenuItem
-			// 
-			this.gridCopyMenuItem.Name = "gridCopyMenuItem";
-			this.gridCopyMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
-			this.gridCopyMenuItem.Size = new System.Drawing.Size(162, 22);
-			this.gridCopyMenuItem.Text = "&Copy";
-			// 
-			// gridLine0
-			// 
-			this.gridLine0.Name = "gridLine0";
-			this.gridLine0.Size = new System.Drawing.Size(159, 6);
-			// 
-			// gridSearchMenuItem
-			// 
-			this.gridSearchMenuItem.Name = "gridSearchMenuItem";
-			this.gridSearchMenuItem.Size = new System.Drawing.Size(162, 22);
-			this.gridSearchMenuItem.Text = "&Search internet";
-			// 
-			// gridLine1
-			// 
-			this.gridLine1.Name = "gridLine1";
-			this.gridLine1.Size = new System.Drawing.Size(159, 6);
-			// 
-			// gridSelectAllMenuItem
-			// 
-			this.gridSelectAllMenuItem.Name = "gridSelectAllMenuItem";
-			this.gridSelectAllMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
-			this.gridSelectAllMenuItem.Size = new System.Drawing.Size(162, 22);
-			this.gridSelectAllMenuItem.Text = "Select &all";
-			// 
-			// midPanel
-			// 
-			this.midPanel.Controls.Add(this.logPanel);
-			this.midPanel.Controls.Add(this.logListSplitter);
-			this.midPanel.Controls.Add(this.propertiesPanel);
-			this.midPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.midPanel.Location = new System.Drawing.Point(8, 39);
-			this.midPanel.Margin = new System.Windows.Forms.Padding(0);
-			this.midPanel.Name = "midPanel";
-			this.midPanel.Size = new System.Drawing.Size(958, 525);
-			this.midPanel.TabIndex = 8;
-			this.midPanel.Resize += new System.EventHandler(this.midPanel_Resize);
-			// 
-			// propertiesPanel
-			// 
-			this.propertiesPanel.Controls.Add(this.propertiesSplitter);
-			this.propertiesPanel.Controls.Add(this.responsePanel);
-			this.propertiesPanel.Controls.Add(this.requestPanel);
-			this.propertiesPanel.Dock = System.Windows.Forms.DockStyle.Right;
-			this.propertiesPanel.Location = new System.Drawing.Point(688, 0);
-			this.propertiesPanel.Margin = new System.Windows.Forms.Padding(0);
-			this.propertiesPanel.Name = "propertiesPanel";
-			this.propertiesPanel.Padding = new System.Windows.Forms.Padding(1, 0, 0, 0);
-			this.propertiesPanel.Size = new System.Drawing.Size(270, 525);
-			this.propertiesPanel.TabIndex = 1;
-			this.propertiesPanel.Visible = false;
-			// 
-			// propertiesSplitter
-			// 
-			this.propertiesSplitter.Dock = System.Windows.Forms.DockStyle.Top;
-			this.propertiesSplitter.Location = new System.Drawing.Point(1, 237);
-			this.propertiesSplitter.Margin = new System.Windows.Forms.Padding(0);
-			this.propertiesSplitter.Name = "propertiesSplitter";
-			this.propertiesSplitter.Size = new System.Drawing.Size(269, 4);
-			this.propertiesSplitter.TabIndex = 7;
-			this.propertiesSplitter.TabStop = false;
-			this.propertiesSplitter.MouseEnter += new System.EventHandler(this.splitter_MouseEnter);
-			this.propertiesSplitter.MouseLeave += new System.EventHandler(this.splitter_MouseLeave);
-			// 
-			// responsePanel
-			// 
-			this.responsePanel.Controls.Add(this.responseGrid);
-			this.responsePanel.Controls.Add(this.responseTopPanel);
-			this.responsePanel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.responsePanel.Location = new System.Drawing.Point(1, 237);
-			this.responsePanel.Name = "responsePanel";
-			this.responsePanel.Size = new System.Drawing.Size(269, 288);
-			this.responsePanel.TabIndex = 5;
-			// 
-			// responseGrid
-			// 
-			this.responseGrid.AllowUserToAddRows = false;
-			this.responseGrid.AllowUserToDeleteRows = false;
-			this.responseGrid.AllowUserToResizeRows = false;
-			dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.ButtonFace;
-			dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText;
-			this.responseGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
-			this.responseGrid.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
-			this.responseGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
-			this.responseGrid.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleVertical;
-			this.responseGrid.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
-			dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
-			dataGridViewCellStyle5.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-			dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
-			dataGridViewCellStyle5.Padding = new System.Windows.Forms.Padding(4, 2, 4, 2);
-			dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-			dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-			dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.responseGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
-			this.responseGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.responseGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.dataGridViewTextBoxColumn1,
-            this.dataGridViewTextBoxColumn2});
-			this.responseGrid.ContextMenuStrip = this.gridContextMenu;
-			dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
-			dataGridViewCellStyle6.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-			dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
-			dataGridViewCellStyle6.Padding = new System.Windows.Forms.Padding(4, 2, 4, 2);
-			dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-			dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-			dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-			this.responseGrid.DefaultCellStyle = dataGridViewCellStyle6;
-			this.responseGrid.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.responseGrid.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
-			this.responseGrid.EnableHeadersVisualStyles = false;
-			this.responseGrid.Location = new System.Drawing.Point(0, 36);
-			this.responseGrid.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.responseGrid.Name = "responseGrid";
-			this.responseGrid.ReadOnly = true;
-			this.responseGrid.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-			dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-			dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Window;
-			dataGridViewCellStyle7.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-			dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
-			dataGridViewCellStyle7.Padding = new System.Windows.Forms.Padding(8, 2, 8, 2);
-			dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-			dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-			dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.responseGrid.RowHeadersDefaultCellStyle = dataGridViewCellStyle7;
-			this.responseGrid.RowHeadersVisible = false;
-			this.responseGrid.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-			this.responseGrid.RowTemplate.Height = 25;
-			this.responseGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.CellSelect;
-			this.responseGrid.Size = new System.Drawing.Size(269, 252);
-			this.responseGrid.TabIndex = 4;
-			this.responseGrid.Enter += new System.EventHandler(this.responseGrid_Enter);
-			// 
-			// dataGridViewTextBoxColumn1
-			// 
-			this.dataGridViewTextBoxColumn1.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-			this.dataGridViewTextBoxColumn1.FillWeight = 40F;
-			this.dataGridViewTextBoxColumn1.HeaderText = "Name";
-			this.dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-			this.dataGridViewTextBoxColumn1.ReadOnly = true;
-			// 
-			// dataGridViewTextBoxColumn2
-			// 
-			this.dataGridViewTextBoxColumn2.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-			this.dataGridViewTextBoxColumn2.FillWeight = 60F;
-			this.dataGridViewTextBoxColumn2.HeaderText = "Value";
-			this.dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
-			this.dataGridViewTextBoxColumn2.ReadOnly = true;
-			// 
-			// responseTopPanel
-			// 
-			this.responseTopPanel.AutoSize = true;
-			this.responseTopPanel.Controls.Add(this.responseLabel);
-			this.responseTopPanel.Dock = System.Windows.Forms.DockStyle.Top;
-			this.responseTopPanel.Location = new System.Drawing.Point(0, 0);
-			this.responseTopPanel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.responseTopPanel.Name = "responseTopPanel";
-			this.responseTopPanel.Padding = new System.Windows.Forms.Padding(0, 6, 0, 5);
-			this.responseTopPanel.Size = new System.Drawing.Size(269, 36);
-			this.responseTopPanel.TabIndex = 3;
-			// 
-			// responseLabel
-			// 
-			this.responseLabel.AutoSize = true;
-			this.responseLabel.ContextMenuStrip = this.labelContextMenu;
-			this.responseTopPanel.SetFlowBreak(this.responseLabel, true);
-			this.responseLabel.Location = new System.Drawing.Point(0, 11);
-			this.responseLabel.Margin = new System.Windows.Forms.Padding(0, 5, 0, 0);
-			this.responseLabel.Name = "responseLabel";
-			this.responseLabel.Size = new System.Drawing.Size(75, 20);
-			this.responseLabel.TabIndex = 1;
-			this.responseLabel.Text = "Response:";
-			this.responseLabel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.responseLabel_MouseDown);
-			// 
-			// labelContextMenu
-			// 
-			this.labelContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.labelCopyMenuItem});
-			this.labelContextMenu.Name = "gridContextMenu";
-			this.labelContextMenu.Size = new System.Drawing.Size(103, 26);
-			this.labelContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.labelContextMenu_Opening);
-			this.labelContextMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.labelContextMenu_ItemClicked);
-			// 
-			// labelCopyMenuItem
-			// 
-			this.labelCopyMenuItem.Name = "labelCopyMenuItem";
-			this.labelCopyMenuItem.Size = new System.Drawing.Size(102, 22);
-			this.labelCopyMenuItem.Text = "&Copy";
-			// 
-			// requestPanel
-			// 
-			this.requestPanel.Controls.Add(this.requestGrid);
-			this.requestPanel.Controls.Add(this.closePropertiesButton);
-			this.requestPanel.Controls.Add(this.requestTopPanel);
-			this.requestPanel.Controls.Add(this.requestBottomPanel);
-			this.requestPanel.Dock = System.Windows.Forms.DockStyle.Top;
-			this.requestPanel.Location = new System.Drawing.Point(1, 0);
-			this.requestPanel.Name = "requestPanel";
-			this.requestPanel.Size = new System.Drawing.Size(269, 237);
-			this.requestPanel.TabIndex = 6;
-			this.requestPanel.Layout += new System.Windows.Forms.LayoutEventHandler(this.requestPanel_Layout);
-			// 
-			// closePropertiesButton
-			// 
-			this.closePropertiesButton.BackgroundImage = global::SimpleHttp.Properties.Resources.rightDoubleArrow;
-			this.closePropertiesButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-			this.closePropertiesButton.FlatAppearance.BorderSize = 0;
-			this.closePropertiesButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.closePropertiesButton.Location = new System.Drawing.Point(176, 4);
-			this.closePropertiesButton.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.closePropertiesButton.Name = "closePropertiesButton";
-			this.closePropertiesButton.Size = new System.Drawing.Size(18, 21);
-			this.closePropertiesButton.TabIndex = 6;
-			this.closePropertiesButton.TabStop = false;
-			this.closePropertiesButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.closePropertiesButton.UseVisualStyleBackColor = false;
-			this.closePropertiesButton.Click += new System.EventHandler(this.closePropertiesButton_Click);
-			// 
-			// requestTopPanel
-			// 
-			this.requestTopPanel.AutoSize = true;
-			this.requestTopPanel.Controls.Add(this.errorLabel);
-			this.requestTopPanel.Controls.Add(this.originLabel);
-			this.requestTopPanel.Controls.Add(this.methodLabel);
-			this.requestTopPanel.Controls.Add(this.requestLabel);
-			this.requestTopPanel.Controls.Add(this.httpLabel);
-			this.requestTopPanel.Dock = System.Windows.Forms.DockStyle.Top;
-			this.requestTopPanel.Location = new System.Drawing.Point(0, 0);
-			this.requestTopPanel.Margin = new System.Windows.Forms.Padding(0);
-			this.requestTopPanel.Name = "requestTopPanel";
-			this.requestTopPanel.Padding = new System.Windows.Forms.Padding(0, 0, 0, 5);
-			this.requestTopPanel.Size = new System.Drawing.Size(269, 69);
-			this.requestTopPanel.TabIndex = 2;
-			// 
-			// errorLabel
-			// 
-			this.errorLabel.AutoSize = true;
-			this.errorLabel.ContextMenuStrip = this.linkContextMenu;
-			this.requestTopPanel.SetFlowBreak(this.errorLabel, true);
-			this.errorLabel.ForeColor = System.Drawing.Color.DarkRed;
-			this.errorLabel.Location = new System.Drawing.Point(0, 0);
-			this.errorLabel.Margin = new System.Windows.Forms.Padding(0, 0, 5, 0);
-			this.errorLabel.Name = "errorLabel";
-			this.errorLabel.Size = new System.Drawing.Size(0, 20);
-			this.errorLabel.TabIndex = 2;
-			this.errorLabel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.errorLabel_MouseDown);
-			this.errorLabel.MouseEnter += new System.EventHandler(this.errorLabel_MouseEnter);
-			this.errorLabel.MouseLeave += new System.EventHandler(this.errorLabel_MouseLeave);
-			// 
-			// linkContextMenu
-			// 
-			this.linkContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.linkOpenMenuItem,
-            this.line4,
-            this.linkCopyMenuItem});
-			this.linkContextMenu.Name = "gridContextMenu";
-			this.linkContextMenu.Size = new System.Drawing.Size(126, 54);
-			this.linkContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.linkContextMenu_Opening);
-			this.linkContextMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.linkContextMenu_ItemClicked);
-			// 
-			// linkOpenMenuItem
-			// 
-			this.linkOpenMenuItem.Name = "linkOpenMenuItem";
-			this.linkOpenMenuItem.Size = new System.Drawing.Size(125, 22);
-			this.linkOpenMenuItem.Text = "&Open link";
-			// 
-			// line4
-			// 
-			this.line4.Name = "line4";
-			this.line4.Size = new System.Drawing.Size(122, 6);
-			// 
-			// linkCopyMenuItem
-			// 
-			this.linkCopyMenuItem.Name = "linkCopyMenuItem";
-			this.linkCopyMenuItem.Size = new System.Drawing.Size(125, 22);
-			this.linkCopyMenuItem.Text = "&Copy";
-			// 
-			// originLabel
-			// 
-			this.originLabel.AutoSize = true;
-			this.originLabel.ContextMenuStrip = this.labelContextMenu;
-			this.requestTopPanel.SetFlowBreak(this.originLabel, true);
-			this.originLabel.Location = new System.Drawing.Point(0, 20);
-			this.originLabel.Margin = new System.Windows.Forms.Padding(0);
-			this.originLabel.Name = "originLabel";
-			this.originLabel.Size = new System.Drawing.Size(64, 20);
-			this.originLabel.TabIndex = 0;
-			this.originLabel.Text = "Origin: ?";
-			this.originLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.originLabel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.originLabel_MouseDown);
-			// 
-			// methodLabel
-			// 
-			this.methodLabel.AutoSize = true;
-			this.methodLabel.ContextMenuStrip = this.labelContextMenu;
-			this.methodLabel.Location = new System.Drawing.Point(0, 44);
-			this.methodLabel.Margin = new System.Windows.Forms.Padding(0, 2, 0, 0);
-			this.methodLabel.Name = "methodLabel";
-			this.methodLabel.Size = new System.Drawing.Size(16, 20);
-			this.methodLabel.TabIndex = 3;
-			this.methodLabel.Text = "?";
-			this.methodLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.methodLabel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.methodLabel_MouseDown);
-			// 
-			// requestLabel
-			// 
-			this.requestLabel.AutoSize = true;
-			this.requestLabel.ContextMenuStrip = this.linkContextMenu;
-			this.requestLabel.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.requestLabel.Location = new System.Drawing.Point(16, 44);
-			this.requestLabel.Margin = new System.Windows.Forms.Padding(0, 2, 0, 0);
-			this.requestLabel.Name = "requestLabel";
-			this.requestLabel.Padding = new System.Windows.Forms.Padding(2, 0, 2, 0);
-			this.requestLabel.Size = new System.Drawing.Size(19, 20);
-			this.requestLabel.TabIndex = 1;
-			this.requestLabel.Text = "/";
-			this.requestLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.requestLabel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.requestLabel_MouseDown);
-			this.requestLabel.MouseEnter += new System.EventHandler(this.requestLabel_MouseEnter);
-			this.requestLabel.MouseLeave += new System.EventHandler(this.requestLabel_Mouseleave);
-			// 
-			// httpLabel
-			// 
-			this.httpLabel.AutoSize = true;
-			this.httpLabel.ContextMenuStrip = this.labelContextMenu;
-			this.requestTopPanel.SetFlowBreak(this.httpLabel, true);
-			this.httpLabel.Location = new System.Drawing.Point(35, 44);
-			this.httpLabel.Margin = new System.Windows.Forms.Padding(0, 2, 0, 0);
-			this.httpLabel.Name = "httpLabel";
-			this.httpLabel.Size = new System.Drawing.Size(16, 20);
-			this.httpLabel.TabIndex = 4;
-			this.httpLabel.Text = "?";
-			this.httpLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.httpLabel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.httpLabel_MouseDown);
-			// 
-			// requestBottomPanel
-			// 
-			this.requestBottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.requestBottomPanel.Location = new System.Drawing.Point(0, 233);
-			this.requestBottomPanel.Margin = new System.Windows.Forms.Padding(0);
-			this.requestBottomPanel.Name = "requestBottomPanel";
-			this.requestBottomPanel.Size = new System.Drawing.Size(269, 4);
-			this.requestBottomPanel.TabIndex = 9;
-			// 
-			// statusLabel
-			// 
-			this.statusLabel.AutoSize = true;
-			this.statusLabel.ContextMenuStrip = this.labelContextMenu;
-			this.statusLabel.Location = new System.Drawing.Point(225, 0);
-			this.statusLabel.Margin = new System.Windows.Forms.Padding(0);
-			this.statusLabel.Name = "statusLabel";
-			this.statusLabel.Padding = new System.Windows.Forms.Padding(0, 2, 0, 2);
-			this.statusLabel.Size = new System.Drawing.Size(88, 24);
-			this.statusLabel.TabIndex = 4;
-			this.statusLabel.Text = "Not started ";
-			this.statusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			this.statusLabel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.statusLabel_MouseDown);
-			// 
-			// notifyIcon
-			// 
-			this.notifyIcon.ContextMenuStrip = this.iconMenu;
-			this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
-			this.notifyIcon.Text = "...";
-			this.notifyIcon.Visible = true;
-			this.notifyIcon.MouseDown += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseDown);
-			this.notifyIcon.MouseUp += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_MouseUp);
-			// 
-			// iconMenu
-			// 
-			this.iconMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.showStartDialogMenuItem,
-            this.showMonitorMenuItem,
-            this.toolStripSeparator0,
-            this.aboutMenuItem,
-            this.createCommandParametersMenuItem,
-            this.showStartParametersMenuItem,
-            this.toolStripSeparator1,
-            this.monitorEventsMenuItem,
-            this.toolStripSeparator2,
-            this.stopServerMenuItem,
-            this.toolStripSeparator3,
-            this.closeProgramMenuItem});
-			this.iconMenu.Name = "iconMenu";
-			this.iconMenu.Size = new System.Drawing.Size(209, 196);
-			this.iconMenu.Opening += new System.ComponentModel.CancelEventHandler(this.iconMenu_Opening);
-			this.iconMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.iconMenu_ItemClicked);
-			// 
-			// showStartDialogMenuItem
-			// 
-			this.showStartDialogMenuItem.Name = "showStartDialogMenuItem";
-			this.showStartDialogMenuItem.Padding = new System.Windows.Forms.Padding(0);
-			this.showStartDialogMenuItem.Size = new System.Drawing.Size(208, 20);
-			this.showStartDialogMenuItem.Text = "Start http server";
-			// 
-			// showMonitorMenuItem
-			// 
-			this.showMonitorMenuItem.Name = "showMonitorMenuItem";
-			this.showMonitorMenuItem.Padding = new System.Windows.Forms.Padding(0);
-			this.showMonitorMenuItem.Size = new System.Drawing.Size(208, 20);
-			this.showMonitorMenuItem.Text = "Show";
-			// 
-			// toolStripSeparator0
-			// 
-			this.toolStripSeparator0.Name = "toolStripSeparator0";
-			this.toolStripSeparator0.Size = new System.Drawing.Size(205, 6);
-			// 
-			// aboutMenuItem
-			// 
-			this.aboutMenuItem.Name = "aboutMenuItem";
-			this.aboutMenuItem.Size = new System.Drawing.Size(208, 22);
-			this.aboutMenuItem.Text = "About the program";
-			// 
-			// createCommandParametersMenuItem
-			// 
-			this.createCommandParametersMenuItem.Name = "createCommandParametersMenuItem";
-			this.createCommandParametersMenuItem.Size = new System.Drawing.Size(208, 22);
-			this.createCommandParametersMenuItem.Text = "Show current parameters";
-			// 
-			// showStartParametersMenuItem
-			// 
-			this.showStartParametersMenuItem.Name = "showStartParametersMenuItem";
-			this.showStartParametersMenuItem.Size = new System.Drawing.Size(208, 22);
-			this.showStartParametersMenuItem.Text = "Show starting parameters";
-			// 
-			// toolStripSeparator1
-			// 
-			this.toolStripSeparator1.Name = "toolStripSeparator1";
-			this.toolStripSeparator1.Size = new System.Drawing.Size(205, 6);
-			// 
-			// monitorEventsMenuItem
-			// 
-			this.monitorEventsMenuItem.CheckOnClick = true;
-			this.monitorEventsMenuItem.Name = "monitorEventsMenuItem";
-			this.monitorEventsMenuItem.Size = new System.Drawing.Size(208, 22);
-			this.monitorEventsMenuItem.Text = "Monitor events";
-			// 
-			// toolStripSeparator2
-			// 
-			this.toolStripSeparator2.Name = "toolStripSeparator2";
-			this.toolStripSeparator2.Size = new System.Drawing.Size(205, 6);
-			// 
-			// stopServerMenuItem
-			// 
-			this.stopServerMenuItem.Name = "stopServerMenuItem";
-			this.stopServerMenuItem.Padding = new System.Windows.Forms.Padding(0);
-			this.stopServerMenuItem.Size = new System.Drawing.Size(208, 20);
-			this.stopServerMenuItem.Text = "Stop http server";
-			// 
-			// toolStripSeparator3
-			// 
-			this.toolStripSeparator3.Name = "toolStripSeparator3";
-			this.toolStripSeparator3.Size = new System.Drawing.Size(205, 6);
-			// 
-			// closeProgramMenuItem
-			// 
-			this.closeProgramMenuItem.Name = "closeProgramMenuItem";
-			this.closeProgramMenuItem.Padding = new System.Windows.Forms.Padding(0);
-			this.closeProgramMenuItem.Size = new System.Drawing.Size(208, 20);
-			this.closeProgramMenuItem.Text = "Close program";
-			// 
-			// menuButton
-			// 
-			this.menuButton.BackgroundImage = global::SimpleHttp.Properties.Resources.settings;
-			this.menuButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-			this.menuButton.FlatAppearance.BorderSize = 0;
-			this.menuButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.menuButton.Location = new System.Drawing.Point(932, 0);
-			this.menuButton.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.menuButton.Name = "menuButton";
-			this.menuButton.Size = new System.Drawing.Size(26, 27);
-			this.menuButton.TabIndex = 5;
-			this.menuButton.TabStop = false;
-			this.menuButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.menuButton.UseVisualStyleBackColor = false;
-			this.menuButton.MouseDown += new System.Windows.Forms.MouseEventHandler(this.stopButton_MouseDown);
-			// 
-			// statusPanel
-			// 
-			this.statusPanel.AutoSize = true;
-			this.statusPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.statusPanel.Controls.Add(this.searchButton);
-			this.statusPanel.Controls.Add(this.searchLabel);
-			this.statusPanel.Controls.Add(this.searchBox);
-			this.statusPanel.Controls.Add(this.searchSplitter);
-			this.statusPanel.Controls.Add(this.uriLabel);
-			this.statusPanel.Controls.Add(this.statusLabel);
-			this.statusPanel.Controls.Add(this.resourceLabel);
-			this.statusPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.statusPanel.Location = new System.Drawing.Point(0, 0);
-			this.statusPanel.Margin = new System.Windows.Forms.Padding(0);
-			this.statusPanel.MaximumSize = new System.Drawing.Size(400, 0);
-			this.statusPanel.Name = "statusPanel";
-			this.statusPanel.Size = new System.Drawing.Size(400, 31);
-			this.statusPanel.TabIndex = 6;
-			// 
-			// searchButton
-			// 
-			this.searchButton.BackgroundImage = global::SimpleHttp.Properties.Resources.searchIcon;
-			this.searchButton.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
-			this.searchButton.FlatAppearance.BorderSize = 0;
-			this.searchButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.searchButton.Location = new System.Drawing.Point(0, 0);
-			this.searchButton.Margin = new System.Windows.Forms.Padding(0);
-			this.searchButton.Name = "searchButton";
-			this.searchButton.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-			this.searchButton.Size = new System.Drawing.Size(25, 27);
-			this.searchButton.TabIndex = 10;
-			this.searchButton.TabStop = false;
-			this.searchButton.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText;
-			this.searchButton.UseVisualStyleBackColor = false;
-			this.searchButton.Visible = false;
-			this.searchButton.Click += new System.EventHandler(this.searchButton_Click);
-			// 
-			// searchLabel
-			// 
-			this.searchLabel.AutoSize = true;
-			this.searchLabel.ContextMenuStrip = this.labelContextMenu;
-			this.searchLabel.Location = new System.Drawing.Point(25, 0);
-			this.searchLabel.Margin = new System.Windows.Forms.Padding(0);
-			this.searchLabel.Name = "searchLabel";
-			this.searchLabel.Padding = new System.Windows.Forms.Padding(0, 2, 0, 2);
-			this.searchLabel.Size = new System.Drawing.Size(56, 24);
-			this.searchLabel.TabIndex = 8;
-			this.searchLabel.Text = "Search:";
-			this.searchLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			this.searchLabel.Visible = false;
-			// 
-			// searchBox
-			// 
-			this.searchBox.Location = new System.Drawing.Point(81, 0);
-			this.searchBox.Margin = new System.Windows.Forms.Padding(0);
-			this.searchBox.MaximumSize = new System.Drawing.Size(330, 0);
-			this.searchBox.MinimumSize = new System.Drawing.Size(50, 0);
-			this.searchBox.Name = "searchBox";
-			this.searchBox.Size = new System.Drawing.Size(140, 27);
-			this.searchBox.TabIndex = 0;
-			this.searchBox.Visible = false;
-			this.searchBox.TextChanged += new System.EventHandler(this.searchBox_TextChanged);
-			this.searchBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.searchBox_KeyDown);
-			this.searchBox.Resize += new System.EventHandler(this.searchBox_Resize);
-			// 
-			// searchSplitter
-			// 
-			this.searchSplitter.Location = new System.Drawing.Point(221, 0);
-			this.searchSplitter.Margin = new System.Windows.Forms.Padding(0);
-			this.searchSplitter.MinExtra = 0;
-			this.searchSplitter.MinSize = 0;
-			this.searchSplitter.Name = "searchSplitter";
-			this.searchSplitter.Size = new System.Drawing.Size(4, 27);
-			this.searchSplitter.TabIndex = 9;
-			this.searchSplitter.TabStop = false;
-			this.searchSplitter.Visible = false;
-			this.searchSplitter.SplitterMoving += new System.Windows.Forms.SplitterEventHandler(this.searchSplitter_SplitterMoving);
-			this.searchSplitter.SplitterMoved += new System.Windows.Forms.SplitterEventHandler(this.searchSplitter_SplitterMoved);
-			this.searchSplitter.MouseDown += new System.Windows.Forms.MouseEventHandler(this.searchSplitter_MouseDown);
-			this.searchSplitter.MouseEnter += new System.EventHandler(this.splitter_MouseEnter);
-			this.searchSplitter.MouseLeave += new System.EventHandler(this.splitter_MouseLeave);
-			this.searchSplitter.MouseUp += new System.Windows.Forms.MouseEventHandler(this.searchSplitter_MouseUp);
-			// 
-			// uriLabel
-			// 
-			this.uriLabel.AutoSize = true;
-			this.uriLabel.ContextMenuStrip = this.linkContextMenu;
-			this.uriLabel.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.uriLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 9F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Underline))), System.Drawing.GraphicsUnit.Point);
-			this.uriLabel.Location = new System.Drawing.Point(225, 0);
-			this.uriLabel.Margin = new System.Windows.Forms.Padding(0);
-			this.uriLabel.Name = "uriLabel";
-			this.uriLabel.Padding = new System.Windows.Forms.Padding(0, 2, 0, 2);
-			this.uriLabel.Size = new System.Drawing.Size(0, 19);
-			this.uriLabel.TabIndex = 5;
-			this.uriLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.uriLabel.TextChanged += new System.EventHandler(this.uriLabel_TextChanged);
-			this.uriLabel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.uriLabel_MouseDown);
-			this.uriLabel.MouseEnter += new System.EventHandler(this.uriLabel_MouseEnter);
-			this.uriLabel.MouseLeave += new System.EventHandler(this.uriLabel_MouseLeave);
-			// 
-			// resourceLabel
-			// 
-			this.resourceLabel.AutoSize = true;
-			this.resourceLabel.ContextMenuStrip = this.linkContextMenu;
-			this.resourceLabel.Cursor = System.Windows.Forms.Cursors.Hand;
-			this.resourceLabel.Location = new System.Drawing.Point(313, 0);
-			this.resourceLabel.Margin = new System.Windows.Forms.Padding(0);
-			this.resourceLabel.Name = "resourceLabel";
-			this.resourceLabel.Padding = new System.Windows.Forms.Padding(0, 2, 0, 2);
-			this.resourceLabel.Size = new System.Drawing.Size(0, 24);
-			this.resourceLabel.TabIndex = 6;
-			this.resourceLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.resourceLabel.MouseDown += new System.Windows.Forms.MouseEventHandler(this.resourceLabel_MouseDown);
-			this.resourceLabel.MouseEnter += new System.EventHandler(this.resourceLabel_MouseEnter);
-			this.resourceLabel.MouseLeave += new System.EventHandler(this.resourceLabel_MouseLeave);
+			logList.BackColor = SystemColors.ButtonFace;
+			logList.ContextMenuStrip = logListMenu;
+			logList.Dock = DockStyle.Fill;
+			logList.DrawMode = DrawMode.OwnerDrawFixed;
+			logList.FormattingEnabled = true;
+			logList.IntegralHeight = false;
+			logList.ItemHeight = 15;
+			logList.Location = new Point(0, 0);
+			logList.Margin = new Padding(3, 4, 3, 4);
+			logList.Name = "logList";
+			logList.SelectionMode = SelectionMode.MultiExtended;
+			logList.Size = new Size(711, 525);
+			logList.TabIndex = 0;
+			logList.Click += logList_Click;
+			logList.DrawItem += logList_DrawItem;
+			logList.SelectedIndexChanged += logList_SelectedIndexChanged;
+			logList.DoubleClick += logList_DoubleClick;
+			logList.KeyDown += logList_KeyDown;
+			logList.MouseUp += logList_MouseUp;
 			// 
 			// logListMenu
 			// 
-			this.logListMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openLogMenuItem,
-            this.logMenuLine0,
-            this.deleteItemLogMenuItem,
-            this.logMenuLine1,
-            this.selectAllLogMenuItem});
-			this.logListMenu.Name = "logListMenu";
-			this.logListMenu.Size = new System.Drawing.Size(181, 82);
-			this.logListMenu.Opening += new System.ComponentModel.CancelEventHandler(this.logListMenu_Opening);
-			this.logListMenu.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.logListMenu_ItemClicked);
+			logListMenu.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
+			logListMenu.Items.AddRange(new ToolStripItem[] { openLogMenuItem, logMenuLine0, deleteItemLogMenuItem, logMenuLine1, selectAllLogMenuItem });
+			logListMenu.Name = "logListMenu";
+			logListMenu.Size = new Size(199, 82);
+			logListMenu.Opening += logListMenu_Opening;
+			logListMenu.ItemClicked += logListMenu_ItemClicked;
 			// 
 			// openLogMenuItem
 			// 
-			this.openLogMenuItem.Name = "openLogMenuItem";
-			this.openLogMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.openLogMenuItem.Text = "Open target address";
+			openLogMenuItem.Name = "openLogMenuItem";
+			openLogMenuItem.Size = new Size(198, 22);
+			openLogMenuItem.Text = "Open target address";
 			// 
 			// logMenuLine0
 			// 
-			this.logMenuLine0.Name = "logMenuLine0";
-			this.logMenuLine0.Size = new System.Drawing.Size(177, 6);
+			logMenuLine0.Name = "logMenuLine0";
+			logMenuLine0.Size = new Size(195, 6);
 			// 
 			// deleteItemLogMenuItem
 			// 
-			this.deleteItemLogMenuItem.Name = "deleteItemLogMenuItem";
-			this.deleteItemLogMenuItem.ShortcutKeys = System.Windows.Forms.Keys.Delete;
-			this.deleteItemLogMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.deleteItemLogMenuItem.Text = "Delete";
+			deleteItemLogMenuItem.Name = "deleteItemLogMenuItem";
+			deleteItemLogMenuItem.ShortcutKeys = Keys.Delete;
+			deleteItemLogMenuItem.Size = new Size(198, 22);
+			deleteItemLogMenuItem.Text = "Delete";
 			// 
 			// logMenuLine1
 			// 
-			this.logMenuLine1.Name = "logMenuLine1";
-			this.logMenuLine1.Size = new System.Drawing.Size(177, 6);
+			logMenuLine1.Name = "logMenuLine1";
+			logMenuLine1.Size = new Size(195, 6);
 			// 
 			// selectAllLogMenuItem
 			// 
-			this.selectAllLogMenuItem.Name = "selectAllLogMenuItem";
-			this.selectAllLogMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
-			this.selectAllLogMenuItem.Size = new System.Drawing.Size(180, 22);
-			this.selectAllLogMenuItem.Text = "Select all";
+			selectAllLogMenuItem.Name = "selectAllLogMenuItem";
+			selectAllLogMenuItem.ShortcutKeys = Keys.Control | Keys.A;
+			selectAllLogMenuItem.Size = new Size(198, 22);
+			selectAllLogMenuItem.Text = "Select all";
+			// 
+			// logPanel
+			// 
+			logPanel.Controls.Add(logList);
+			logPanel.Dock = DockStyle.Fill;
+			logPanel.Location = new Point(0, 0);
+			logPanel.Margin = new Padding(0);
+			logPanel.Name = "logPanel";
+			logPanel.Padding = new Padding(0, 0, 2, 0);
+			logPanel.Size = new Size(713, 525);
+			logPanel.TabIndex = 0;
+			// 
+			// logListSplitter
+			// 
+			logListSplitter.Dock = DockStyle.Right;
+			logListSplitter.Location = new Point(713, 0);
+			logListSplitter.MinExtra = 200;
+			logListSplitter.MinSize = 150;
+			logListSplitter.Name = "logListSplitter";
+			logListSplitter.Size = new Size(4, 525);
+			logListSplitter.TabIndex = 1;
+			logListSplitter.TabStop = false;
+			logListSplitter.Visible = false;
+			logListSplitter.MouseEnter += splitter_MouseEnter;
+			logListSplitter.MouseLeave += splitter_MouseLeave;
+			// 
+			// requestGrid
+			// 
+			requestGrid.AllowUserToAddRows = false;
+			requestGrid.AllowUserToDeleteRows = false;
+			requestGrid.AllowUserToResizeRows = false;
+			dataGridViewCellStyle1.BackColor = SystemColors.ButtonFace;
+			dataGridViewCellStyle1.ForeColor = SystemColors.ControlText;
+			requestGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+			requestGrid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+			requestGrid.BorderStyle = BorderStyle.None;
+			requestGrid.CellBorderStyle = DataGridViewCellBorderStyle.SingleVertical;
+			requestGrid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
+			requestGrid.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single;
+			dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle2.BackColor = SystemColors.ButtonFace;
+			dataGridViewCellStyle2.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+			dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
+			dataGridViewCellStyle2.Padding = new Padding(4, 2, 4, 2);
+			dataGridViewCellStyle2.SelectionBackColor = SystemColors.Highlight;
+			dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+			dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+			requestGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+			requestGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			requestGrid.Columns.AddRange(new DataGridViewColumn[] { colName, colValue });
+			requestGrid.ContextMenuStrip = gridContextMenu;
+			dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle3.BackColor = SystemColors.Window;
+			dataGridViewCellStyle3.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+			dataGridViewCellStyle3.ForeColor = SystemColors.ControlText;
+			dataGridViewCellStyle3.Padding = new Padding(4, 2, 4, 2);
+			dataGridViewCellStyle3.SelectionBackColor = SystemColors.Highlight;
+			dataGridViewCellStyle3.SelectionForeColor = SystemColors.HighlightText;
+			dataGridViewCellStyle3.WrapMode = DataGridViewTriState.False;
+			requestGrid.DefaultCellStyle = dataGridViewCellStyle3;
+			requestGrid.Dock = DockStyle.Fill;
+			requestGrid.EditMode = DataGridViewEditMode.EditProgrammatically;
+			requestGrid.EnableHeadersVisualStyles = false;
+			requestGrid.Location = new Point(0, 69);
+			requestGrid.Margin = new Padding(0);
+			requestGrid.Name = "requestGrid";
+			requestGrid.ReadOnly = true;
+			requestGrid.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+			requestGrid.RowHeadersVisible = false;
+			requestGrid.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+			requestGrid.RowTemplate.Height = 25;
+			requestGrid.SelectionMode = DataGridViewSelectionMode.CellSelect;
+			requestGrid.ShowCellErrors = false;
+			requestGrid.Size = new Size(269, 164);
+			requestGrid.TabIndex = 1;
+			requestGrid.CellMouseDown += requestGrid_CellMouseDown;
+			requestGrid.Enter += requestGrid_Enter;
+			// 
+			// colName
+			// 
+			colName.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+			colName.FillWeight = 40F;
+			colName.HeaderText = "Name";
+			colName.Name = "colName";
+			colName.ReadOnly = true;
+			// 
+			// colValue
+			// 
+			colValue.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+			colValue.FillWeight = 60F;
+			colValue.HeaderText = "Value";
+			colValue.Name = "colValue";
+			colValue.ReadOnly = true;
+			// 
+			// gridContextMenu
+			// 
+			gridContextMenu.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
+			gridContextMenu.Items.AddRange(new ToolStripItem[] { gridCopyMenuItem, gridLine0, gridSearchMenuItem, gridLine1, gridSelectAllMenuItem });
+			gridContextMenu.Name = "gridContextMenu";
+			gridContextMenu.Size = new Size(173, 82);
+			gridContextMenu.Opening += gridContextMenu_Opening;
+			gridContextMenu.ItemClicked += gridContextMenu_ItemClicked;
+			// 
+			// gridCopyMenuItem
+			// 
+			gridCopyMenuItem.Name = "gridCopyMenuItem";
+			gridCopyMenuItem.ShortcutKeys = Keys.Control | Keys.C;
+			gridCopyMenuItem.Size = new Size(172, 22);
+			gridCopyMenuItem.Text = "&Copy";
+			// 
+			// gridLine0
+			// 
+			gridLine0.Name = "gridLine0";
+			gridLine0.Size = new Size(169, 6);
+			// 
+			// gridSearchMenuItem
+			// 
+			gridSearchMenuItem.Name = "gridSearchMenuItem";
+			gridSearchMenuItem.Size = new Size(172, 22);
+			gridSearchMenuItem.Text = "&Search internet";
+			// 
+			// gridLine1
+			// 
+			gridLine1.Name = "gridLine1";
+			gridLine1.Size = new Size(169, 6);
+			// 
+			// gridSelectAllMenuItem
+			// 
+			gridSelectAllMenuItem.Name = "gridSelectAllMenuItem";
+			gridSelectAllMenuItem.ShortcutKeys = Keys.Control | Keys.A;
+			gridSelectAllMenuItem.Size = new Size(172, 22);
+			gridSelectAllMenuItem.Text = "Select &all";
+			// 
+			// labelCopyMenuItem
+			// 
+			labelCopyMenuItem.Name = "labelCopyMenuItem";
+			labelCopyMenuItem.Size = new Size(106, 22);
+			labelCopyMenuItem.Text = "&Copy";
+			// 
+			// labelContextMenu
+			// 
+			labelContextMenu.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
+			labelContextMenu.Items.AddRange(new ToolStripItem[] { labelCopyMenuItem });
+			labelContextMenu.Name = "gridContextMenu";
+			labelContextMenu.Size = new Size(107, 26);
+			labelContextMenu.Opening += labelContextMenu_Opening;
+			labelContextMenu.ItemClicked += labelContextMenu_ItemClicked;
+			// 
+			// midPanel
+			// 
+			midPanel.Controls.Add(logPanel);
+			midPanel.Controls.Add(logListSplitter);
+			midPanel.Controls.Add(propertiesPanel);
+			midPanel.Dock = DockStyle.Fill;
+			midPanel.Location = new Point(8, 39);
+			midPanel.Margin = new Padding(0);
+			midPanel.Name = "midPanel";
+			midPanel.Size = new Size(987, 525);
+			midPanel.TabIndex = 8;
+			midPanel.Visible = false;
+			midPanel.Resize += midPanel_Resize;
+			// 
+			// propertiesPanel
+			// 
+			propertiesPanel.Controls.Add(propertiesSplitter);
+			propertiesPanel.Controls.Add(responsePanel);
+			propertiesPanel.Controls.Add(requestPanel);
+			propertiesPanel.Dock = DockStyle.Right;
+			propertiesPanel.Location = new Point(717, 0);
+			propertiesPanel.Margin = new Padding(0);
+			propertiesPanel.Name = "propertiesPanel";
+			propertiesPanel.Padding = new Padding(1, 0, 0, 0);
+			propertiesPanel.Size = new Size(270, 525);
+			propertiesPanel.TabIndex = 1;
+			propertiesPanel.Visible = false;
+			// 
+			// propertiesSplitter
+			// 
+			propertiesSplitter.Dock = DockStyle.Top;
+			propertiesSplitter.Location = new Point(1, 237);
+			propertiesSplitter.Margin = new Padding(0);
+			propertiesSplitter.Name = "propertiesSplitter";
+			propertiesSplitter.Size = new Size(269, 4);
+			propertiesSplitter.TabIndex = 7;
+			propertiesSplitter.TabStop = false;
+			propertiesSplitter.MouseEnter += splitter_MouseEnter;
+			propertiesSplitter.MouseLeave += splitter_MouseLeave;
+			// 
+			// responsePanel
+			// 
+			responsePanel.Controls.Add(responseGrid);
+			responsePanel.Controls.Add(responseTopPanel);
+			responsePanel.Dock = DockStyle.Fill;
+			responsePanel.Location = new Point(1, 237);
+			responsePanel.Name = "responsePanel";
+			responsePanel.Size = new Size(269, 288);
+			responsePanel.TabIndex = 5;
+			// 
+			// responseGrid
+			// 
+			responseGrid.AllowUserToAddRows = false;
+			responseGrid.AllowUserToDeleteRows = false;
+			responseGrid.AllowUserToResizeRows = false;
+			dataGridViewCellStyle4.BackColor = SystemColors.ButtonFace;
+			dataGridViewCellStyle4.ForeColor = SystemColors.ControlText;
+			responseGrid.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle4;
+			responseGrid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+			responseGrid.BorderStyle = BorderStyle.None;
+			responseGrid.CellBorderStyle = DataGridViewCellBorderStyle.SingleVertical;
+			responseGrid.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText;
+			dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle5.BackColor = SystemColors.Control;
+			dataGridViewCellStyle5.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+			dataGridViewCellStyle5.ForeColor = SystemColors.WindowText;
+			dataGridViewCellStyle5.Padding = new Padding(4, 2, 4, 2);
+			dataGridViewCellStyle5.SelectionBackColor = SystemColors.Highlight;
+			dataGridViewCellStyle5.SelectionForeColor = SystemColors.HighlightText;
+			dataGridViewCellStyle5.WrapMode = DataGridViewTriState.True;
+			responseGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+			responseGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			responseGrid.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2 });
+			responseGrid.ContextMenuStrip = gridContextMenu;
+			dataGridViewCellStyle6.Alignment = DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle6.BackColor = SystemColors.Window;
+			dataGridViewCellStyle6.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+			dataGridViewCellStyle6.ForeColor = SystemColors.ControlText;
+			dataGridViewCellStyle6.Padding = new Padding(4, 2, 4, 2);
+			dataGridViewCellStyle6.SelectionBackColor = SystemColors.Highlight;
+			dataGridViewCellStyle6.SelectionForeColor = SystemColors.HighlightText;
+			dataGridViewCellStyle6.WrapMode = DataGridViewTriState.False;
+			responseGrid.DefaultCellStyle = dataGridViewCellStyle6;
+			responseGrid.Dock = DockStyle.Fill;
+			responseGrid.EditMode = DataGridViewEditMode.EditProgrammatically;
+			responseGrid.EnableHeadersVisualStyles = false;
+			responseGrid.Location = new Point(0, 36);
+			responseGrid.Margin = new Padding(3, 4, 3, 4);
+			responseGrid.Name = "responseGrid";
+			responseGrid.ReadOnly = true;
+			responseGrid.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+			dataGridViewCellStyle7.Alignment = DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle7.BackColor = SystemColors.Window;
+			dataGridViewCellStyle7.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+			dataGridViewCellStyle7.ForeColor = SystemColors.WindowText;
+			dataGridViewCellStyle7.Padding = new Padding(8, 2, 8, 2);
+			dataGridViewCellStyle7.SelectionBackColor = SystemColors.Highlight;
+			dataGridViewCellStyle7.SelectionForeColor = SystemColors.HighlightText;
+			dataGridViewCellStyle7.WrapMode = DataGridViewTriState.True;
+			responseGrid.RowHeadersDefaultCellStyle = dataGridViewCellStyle7;
+			responseGrid.RowHeadersVisible = false;
+			responseGrid.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+			responseGrid.RowTemplate.Height = 25;
+			responseGrid.SelectionMode = DataGridViewSelectionMode.CellSelect;
+			responseGrid.Size = new Size(269, 252);
+			responseGrid.TabIndex = 4;
+			responseGrid.Enter += responseGrid_Enter;
+			// 
+			// dataGridViewTextBoxColumn1
+			// 
+			dataGridViewTextBoxColumn1.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+			dataGridViewTextBoxColumn1.FillWeight = 40F;
+			dataGridViewTextBoxColumn1.HeaderText = "Name";
+			dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
+			dataGridViewTextBoxColumn1.ReadOnly = true;
+			// 
+			// dataGridViewTextBoxColumn2
+			// 
+			dataGridViewTextBoxColumn2.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+			dataGridViewTextBoxColumn2.FillWeight = 60F;
+			dataGridViewTextBoxColumn2.HeaderText = "Value";
+			dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
+			dataGridViewTextBoxColumn2.ReadOnly = true;
+			// 
+			// responseTopPanel
+			// 
+			responseTopPanel.AutoSize = true;
+			responseTopPanel.Controls.Add(responseLabel);
+			responseTopPanel.Dock = DockStyle.Top;
+			responseTopPanel.Location = new Point(0, 0);
+			responseTopPanel.Margin = new Padding(3, 4, 3, 4);
+			responseTopPanel.Name = "responseTopPanel";
+			responseTopPanel.Padding = new Padding(0, 6, 0, 5);
+			responseTopPanel.Size = new Size(269, 36);
+			responseTopPanel.TabIndex = 3;
+			// 
+			// responseLabel
+			// 
+			responseLabel.AutoSize = true;
+			responseTopPanel.SetFlowBreak(responseLabel, true);
+			responseLabel.Location = new Point(0, 11);
+			responseLabel.Margin = new Padding(0, 5, 0, 0);
+			responseLabel.Name = "responseLabel";
+			responseLabel.Size = new Size(75, 20);
+			responseLabel.TabIndex = 1;
+			responseLabel.Text = "Response:";
+			responseLabel.MouseDown += responseLabel_MouseDown;
+			// 
+			// requestPanel
+			// 
+			requestPanel.Controls.Add(requestGrid);
+			requestPanel.Controls.Add(closePropertiesButton);
+			requestPanel.Controls.Add(requestTopPanel);
+			requestPanel.Controls.Add(requestBottomPanel);
+			requestPanel.Dock = DockStyle.Top;
+			requestPanel.Location = new Point(1, 0);
+			requestPanel.Name = "requestPanel";
+			requestPanel.Size = new Size(269, 237);
+			requestPanel.TabIndex = 6;
+			requestPanel.Layout += requestPanel_Layout;
+			// 
+			// closePropertiesButton
+			// 
+			closePropertiesButton.BackgroundImage = Properties.Resources.rightDoubleArrow;
+			closePropertiesButton.BackgroundImageLayout = ImageLayout.Stretch;
+			closePropertiesButton.FlatAppearance.BorderSize = 0;
+			closePropertiesButton.FlatStyle = FlatStyle.Flat;
+			closePropertiesButton.Location = new Point(177, 4);
+			closePropertiesButton.Margin = new Padding(3, 4, 3, 4);
+			closePropertiesButton.Name = "closePropertiesButton";
+			closePropertiesButton.Size = new Size(18, 21);
+			closePropertiesButton.TabIndex = 6;
+			closePropertiesButton.TabStop = false;
+			closePropertiesButton.TextImageRelation = TextImageRelation.ImageAboveText;
+			closePropertiesButton.UseVisualStyleBackColor = false;
+			closePropertiesButton.Click += closePropertiesButton_Click;
+			// 
+			// requestTopPanel
+			// 
+			requestTopPanel.AutoSize = true;
+			requestTopPanel.Controls.Add(errorLabel);
+			requestTopPanel.Controls.Add(originLabel);
+			requestTopPanel.Controls.Add(methodLabel);
+			requestTopPanel.Controls.Add(requestLabel);
+			requestTopPanel.Controls.Add(httpLabel);
+			requestTopPanel.Dock = DockStyle.Top;
+			requestTopPanel.Location = new Point(0, 0);
+			requestTopPanel.Margin = new Padding(0);
+			requestTopPanel.Name = "requestTopPanel";
+			requestTopPanel.Padding = new Padding(0, 0, 0, 5);
+			requestTopPanel.Size = new Size(269, 69);
+			requestTopPanel.TabIndex = 2;
+			// 
+			// errorLabel
+			// 
+			errorLabel.AutoSize = true;
+			errorLabel.ContextMenuStrip = linkContextMenu;
+			requestTopPanel.SetFlowBreak(errorLabel, true);
+			errorLabel.ForeColor = Color.DarkRed;
+			errorLabel.Location = new Point(0, 0);
+			errorLabel.Margin = new Padding(0, 0, 5, 0);
+			errorLabel.Name = "errorLabel";
+			errorLabel.Size = new Size(0, 20);
+			errorLabel.TabIndex = 2;
+			errorLabel.MouseDown += errorLabel_MouseDown;
+			errorLabel.MouseEnter += errorLabel_MouseEnter;
+			errorLabel.MouseLeave += errorLabel_MouseLeave;
+			// 
+			// linkContextMenu
+			// 
+			linkContextMenu.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
+			linkContextMenu.Items.AddRange(new ToolStripItem[] { linkOpenMenuItem, folderOpenMenuItem, linkContextMenuLine1, linkCopyMenuItem });
+			linkContextMenu.Name = "gridContextMenu";
+			linkContextMenu.Size = new Size(148, 76);
+			linkContextMenu.Opening += linkContextMenu_Opening;
+			linkContextMenu.ItemClicked += linkContextMenu_ItemClicked;
+			// 
+			// linkOpenMenuItem
+			// 
+			linkOpenMenuItem.Name = "linkOpenMenuItem";
+			linkOpenMenuItem.Size = new Size(147, 22);
+			linkOpenMenuItem.Text = "&Open link";
+			// 
+			// folderOpenMenuItem
+			// 
+			folderOpenMenuItem.Name = "folderOpenMenuItem";
+			folderOpenMenuItem.Size = new Size(147, 22);
+			folderOpenMenuItem.Text = "Open &folder";
+			// 
+			// linkContextMenuLine1
+			// 
+			linkContextMenuLine1.Name = "linkContextMenuLine1";
+			linkContextMenuLine1.Size = new Size(144, 6);
+			// 
+			// linkCopyMenuItem
+			// 
+			linkCopyMenuItem.Name = "linkCopyMenuItem";
+			linkCopyMenuItem.Size = new Size(147, 22);
+			linkCopyMenuItem.Text = "&Copy";
+			// 
+			// originLabel
+			// 
+			originLabel.AutoSize = true;
+			originLabel.ContextMenuStrip = labelContextMenu;
+			requestTopPanel.SetFlowBreak(originLabel, true);
+			originLabel.Location = new Point(0, 20);
+			originLabel.Margin = new Padding(0);
+			originLabel.Name = "originLabel";
+			originLabel.Size = new Size(64, 20);
+			originLabel.TabIndex = 0;
+			originLabel.Text = "Origin: ?";
+			originLabel.TextAlign = ContentAlignment.MiddleLeft;
+			originLabel.MouseDown += originLabel_MouseDown;
+			// 
+			// methodLabel
+			// 
+			methodLabel.AutoSize = true;
+			methodLabel.ContextMenuStrip = labelContextMenu;
+			methodLabel.Location = new Point(0, 44);
+			methodLabel.Margin = new Padding(0, 2, 0, 0);
+			methodLabel.Name = "methodLabel";
+			methodLabel.Size = new Size(16, 20);
+			methodLabel.TabIndex = 3;
+			methodLabel.Text = "?";
+			methodLabel.TextAlign = ContentAlignment.MiddleLeft;
+			methodLabel.MouseDown += methodLabel_MouseDown;
+			// 
+			// requestLabel
+			// 
+			requestLabel.AutoSize = true;
+			requestLabel.ContextMenuStrip = linkContextMenu;
+			requestLabel.Cursor = Cursors.Hand;
+			requestLabel.Location = new Point(16, 44);
+			requestLabel.Margin = new Padding(0, 2, 0, 0);
+			requestLabel.Name = "requestLabel";
+			requestLabel.Padding = new Padding(2, 0, 2, 0);
+			requestLabel.Size = new Size(19, 20);
+			requestLabel.TabIndex = 1;
+			requestLabel.Text = "/";
+			requestLabel.TextAlign = ContentAlignment.MiddleLeft;
+			requestLabel.MouseDown += requestLabel_MouseDown;
+			requestLabel.MouseEnter += requestLabel_MouseEnter;
+			requestLabel.MouseLeave += requestLabel_Mouseleave;
+			// 
+			// httpLabel
+			// 
+			httpLabel.AutoSize = true;
+			httpLabel.ContextMenuStrip = labelContextMenu;
+			requestTopPanel.SetFlowBreak(httpLabel, true);
+			httpLabel.Location = new Point(35, 44);
+			httpLabel.Margin = new Padding(0, 2, 0, 0);
+			httpLabel.Name = "httpLabel";
+			httpLabel.Size = new Size(16, 20);
+			httpLabel.TabIndex = 4;
+			httpLabel.Text = "?";
+			httpLabel.TextAlign = ContentAlignment.MiddleLeft;
+			httpLabel.MouseDown += httpLabel_MouseDown;
+			// 
+			// requestBottomPanel
+			// 
+			requestBottomPanel.Dock = DockStyle.Bottom;
+			requestBottomPanel.Location = new Point(0, 233);
+			requestBottomPanel.Margin = new Padding(0);
+			requestBottomPanel.Name = "requestBottomPanel";
+			requestBottomPanel.Size = new Size(269, 4);
+			requestBottomPanel.TabIndex = 9;
+			// 
+			// jsonEditor
+			// 
+			jsonEditor.AcceptsReturn = true;
+			jsonEditor.AcceptsTab = true;
+			jsonEditor.AccessibleRole = AccessibleRole.Document;
+			jsonEditor.AllowDrop = true;
+			jsonEditor.Dock = DockStyle.Fill;
+			jsonEditor.HideSelection = false;
+			jsonEditor.Location = new Point(8, 39);
+			jsonEditor.Margin = new Padding(0);
+			jsonEditor.Multiline = true;
+			jsonEditor.Name = "jsonEditor";
+			jsonEditor.ScrollBars = ScrollBars.Both;
+			jsonEditor.Size = new Size(987, 525);
+			jsonEditor.TabIndex = 10;
+			jsonEditor.WordWrap = false;
+			jsonEditor.Click += jsonEditor_Click;
+			jsonEditor.VisibleChanged += jsonEditor_VisibleChanged;
+			// 
+			// resourceTypeLabel
+			// 
+			resourceTypeLabel.AutoSize = true;
+			resourceTypeLabel.ContextMenuStrip = labelContextMenu;
+			resourceTypeLabel.Location = new Point(225, 4);
+			resourceTypeLabel.Margin = new Padding(0);
+			resourceTypeLabel.Name = "resourceTypeLabel";
+			resourceTypeLabel.Padding = new Padding(0, 2, 0, 2);
+			resourceTypeLabel.Size = new Size(88, 24);
+			resourceTypeLabel.TabIndex = 4;
+			resourceTypeLabel.Text = "Not started ";
+			resourceTypeLabel.TextAlign = ContentAlignment.MiddleCenter;
+			resourceTypeLabel.MouseDown += resourceTypeLabel_MouseDown;
+			// 
+			// notifyIcon
+			// 
+			notifyIcon.ContextMenuStrip = iconMenu;
+			notifyIcon.Icon = (Icon)resources.GetObject("notifyIcon.Icon");
+			notifyIcon.Text = "...";
+			notifyIcon.Visible = true;
+			notifyIcon.MouseDown += notifyIcon_MouseDown;
+			notifyIcon.MouseUp += notifyIcon_MouseUp;
+			// 
+			// iconMenu
+			// 
+			iconMenu.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
+			iconMenu.ImageScalingSize = new Size(1, 1);
+			iconMenu.Items.AddRange(new ToolStripItem[] { aboutMenuItem, toolStripSeparator0, startJSONConfigMenuItem, showQuickStartMenuItem, toolStripSeparator1, showMainWindowMenuItem, showStartParametersMenuItem, toolStripSeparator2, stopServerMenuItem, closeProgramMenuItem });
+			iconMenu.Name = "iconMenu";
+			iconMenu.RenderMode = ToolStripRenderMode.Professional;
+			iconMenu.ShowImageMargin = false;
+			iconMenu.Size = new Size(206, 204);
+			iconMenu.Opening += iconMenu_Opening;
+			iconMenu.ItemClicked += iconMenu_ItemClicked;
+			// 
+			// aboutMenuItem
+			// 
+			aboutMenuItem.Margin = new Padding(0, 2, 0, 2);
+			aboutMenuItem.Name = "aboutMenuItem";
+			aboutMenuItem.Padding = new Padding(0, 2, 0, 0);
+			aboutMenuItem.Size = new Size(205, 22);
+			aboutMenuItem.Text = "About the program";
+			// 
+			// toolStripSeparator0
+			// 
+			toolStripSeparator0.Name = "toolStripSeparator0";
+			toolStripSeparator0.Size = new Size(202, 6);
+			// 
+			// startJSONConfigMenuItem
+			// 
+			startJSONConfigMenuItem.Margin = new Padding(0, 2, 0, 2);
+			startJSONConfigMenuItem.Name = "startJSONConfigMenuItem";
+			startJSONConfigMenuItem.Padding = new Padding(0, 2, 0, 0);
+			startJSONConfigMenuItem.Size = new Size(205, 22);
+			startJSONConfigMenuItem.Text = "Start current configuration";
+			// 
+			// showQuickStartMenuItem
+			// 
+			showQuickStartMenuItem.Margin = new Padding(0, 2, 0, 2);
+			showQuickStartMenuItem.Name = "showQuickStartMenuItem";
+			showQuickStartMenuItem.Padding = new Padding(0, 2, 0, 0);
+			showQuickStartMenuItem.Size = new Size(205, 22);
+			showQuickStartMenuItem.Text = "Show quick start form";
+			// 
+			// toolStripSeparator1
+			// 
+			toolStripSeparator1.Name = "toolStripSeparator1";
+			toolStripSeparator1.Size = new Size(202, 6);
+			// 
+			// showMainWindowMenuItem
+			// 
+			showMainWindowMenuItem.Margin = new Padding(0, 2, 0, 2);
+			showMainWindowMenuItem.Name = "showMainWindowMenuItem";
+			showMainWindowMenuItem.Padding = new Padding(0, 2, 0, 0);
+			showMainWindowMenuItem.Size = new Size(205, 22);
+			showMainWindowMenuItem.Text = "Show";
+			// 
+			// showStartParametersMenuItem
+			// 
+			showStartParametersMenuItem.Margin = new Padding(0, 2, 0, 2);
+			showStartParametersMenuItem.Name = "showStartParametersMenuItem";
+			showStartParametersMenuItem.Padding = new Padding(0, 2, 0, 0);
+			showStartParametersMenuItem.Size = new Size(205, 22);
+			showStartParametersMenuItem.Text = "Show starting parameters";
+			// 
+			// toolStripSeparator2
+			// 
+			toolStripSeparator2.Name = "toolStripSeparator2";
+			toolStripSeparator2.Size = new Size(202, 6);
+			// 
+			// stopServerMenuItem
+			// 
+			stopServerMenuItem.Margin = new Padding(0, 2, 0, 2);
+			stopServerMenuItem.Name = "stopServerMenuItem";
+			stopServerMenuItem.Padding = new Padding(0, 2, 0, 0);
+			stopServerMenuItem.Size = new Size(205, 22);
+			stopServerMenuItem.Text = "Stop http server";
+			// 
+			// closeProgramMenuItem
+			// 
+			closeProgramMenuItem.Margin = new Padding(0, 2, 0, 2);
+			closeProgramMenuItem.Name = "closeProgramMenuItem";
+			closeProgramMenuItem.Padding = new Padding(0, 2, 0, 0);
+			closeProgramMenuItem.Size = new Size(205, 22);
+			closeProgramMenuItem.Text = "Close program and server";
+			// 
+			// menuButton
+			// 
+			menuButton.BackgroundImage = Properties.Resources.settings;
+			menuButton.BackgroundImageLayout = ImageLayout.Stretch;
+			menuButton.FlatAppearance.BorderSize = 0;
+			menuButton.FlatStyle = FlatStyle.Flat;
+			menuButton.Location = new Point(248, 4);
+			menuButton.Margin = new Padding(3, 4, 3, 4);
+			menuButton.Name = "menuButton";
+			menuButton.Size = new Size(26, 27);
+			menuButton.TabIndex = 5;
+			menuButton.TabStop = false;
+			menuButton.TextImageRelation = TextImageRelation.ImageAboveText;
+			menuButton.UseVisualStyleBackColor = false;
+			menuButton.MouseDown += stopButton_MouseDown;
+			// 
+			// statusPanel
+			// 
+			statusPanel.AutoSize = true;
+			statusPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			statusPanel.Controls.Add(searchButton);
+			statusPanel.Controls.Add(searchLabel);
+			statusPanel.Controls.Add(searchBox);
+			statusPanel.Controls.Add(searchSplitter);
+			statusPanel.Controls.Add(uriLabel);
+			statusPanel.Controls.Add(resourceTypeLabel);
+			statusPanel.Controls.Add(resourceLabel);
+			statusPanel.Location = new Point(0, 0);
+			statusPanel.Margin = new Padding(0);
+			statusPanel.Name = "statusPanel";
+			statusPanel.Padding = new Padding(0, 4, 0, 0);
+			statusPanel.Size = new Size(313, 31);
+			statusPanel.TabIndex = 6;
+			// 
+			// searchButton
+			// 
+			searchButton.BackgroundImage = Properties.Resources.searchIcon;
+			searchButton.BackgroundImageLayout = ImageLayout.Zoom;
+			searchButton.FlatAppearance.BorderSize = 0;
+			searchButton.FlatStyle = FlatStyle.Flat;
+			searchButton.Location = new Point(0, 4);
+			searchButton.Margin = new Padding(0);
+			searchButton.Name = "searchButton";
+			searchButton.RightToLeft = RightToLeft.Yes;
+			searchButton.Size = new Size(25, 27);
+			searchButton.TabIndex = 10;
+			searchButton.TabStop = false;
+			searchButton.TextImageRelation = TextImageRelation.ImageAboveText;
+			searchButton.UseVisualStyleBackColor = false;
+			searchButton.Visible = false;
+			searchButton.Click += searchButton_Click;
+			// 
+			// searchLabel
+			// 
+			searchLabel.AutoSize = true;
+			searchLabel.ContextMenuStrip = labelContextMenu;
+			searchLabel.Location = new Point(25, 4);
+			searchLabel.Margin = new Padding(0);
+			searchLabel.Name = "searchLabel";
+			searchLabel.Padding = new Padding(0, 2, 0, 2);
+			searchLabel.Size = new Size(56, 24);
+			searchLabel.TabIndex = 8;
+			searchLabel.Text = "Search:";
+			searchLabel.TextAlign = ContentAlignment.MiddleCenter;
+			searchLabel.Visible = false;
+			// 
+			// searchBox
+			// 
+			searchBox.Location = new Point(81, 4);
+			searchBox.Margin = new Padding(0);
+			searchBox.MaximumSize = new Size(330, 0);
+			searchBox.MinimumSize = new Size(50, 0);
+			searchBox.Name = "searchBox";
+			searchBox.Size = new Size(140, 27);
+			searchBox.TabIndex = 0;
+			searchBox.Visible = false;
+			searchBox.TextChanged += searchBox_TextChanged;
+			searchBox.KeyDown += searchBox_KeyDown;
+			searchBox.Resize += searchBox_Resize;
+			// 
+			// searchSplitter
+			// 
+			searchSplitter.Location = new Point(221, 4);
+			searchSplitter.Margin = new Padding(0);
+			searchSplitter.MinExtra = 0;
+			searchSplitter.MinSize = 0;
+			searchSplitter.Name = "searchSplitter";
+			searchSplitter.Size = new Size(4, 27);
+			searchSplitter.TabIndex = 9;
+			searchSplitter.TabStop = false;
+			searchSplitter.Visible = false;
+			searchSplitter.SplitterMoving += searchSplitter_SplitterMoving;
+			searchSplitter.SplitterMoved += searchSplitter_SplitterMoved;
+			searchSplitter.MouseDown += searchSplitter_MouseDown;
+			searchSplitter.MouseEnter += splitter_MouseEnter;
+			searchSplitter.MouseLeave += splitter_MouseLeave;
+			searchSplitter.MouseUp += searchSplitter_MouseUp;
+			// 
+			// uriLabel
+			// 
+			uriLabel.AutoSize = true;
+			uriLabel.ContextMenuStrip = linkContextMenu;
+			uriLabel.Cursor = Cursors.Hand;
+			uriLabel.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold | FontStyle.Underline, GraphicsUnit.Point);
+			uriLabel.Location = new Point(225, 4);
+			uriLabel.Margin = new Padding(0);
+			uriLabel.Name = "uriLabel";
+			uriLabel.Padding = new Padding(0, 2, 0, 2);
+			uriLabel.Size = new Size(0, 19);
+			uriLabel.TabIndex = 5;
+			uriLabel.TextAlign = ContentAlignment.MiddleLeft;
+			uriLabel.TextChanged += uriLabel_TextChanged;
+			uriLabel.MouseDown += uriLabel_MouseDown;
+			uriLabel.MouseEnter += uriLabel_MouseEnter;
+			uriLabel.MouseLeave += uriLabel_MouseLeave;
+			// 
+			// resourceLabel
+			// 
+			resourceLabel.AutoSize = true;
+			resourceLabel.ContextMenuStrip = linkContextMenu;
+			resourceLabel.Cursor = Cursors.Hand;
+			resourceLabel.Location = new Point(313, 4);
+			resourceLabel.Margin = new Padding(0);
+			resourceLabel.Name = "resourceLabel";
+			resourceLabel.Padding = new Padding(0, 2, 0, 2);
+			resourceLabel.Size = new Size(0, 24);
+			resourceLabel.TabIndex = 6;
+			resourceLabel.TextAlign = ContentAlignment.MiddleLeft;
+			resourceLabel.MouseDown += resourceLabel_MouseDown;
+			resourceLabel.MouseEnter += resourceLabel_MouseEnter;
+			resourceLabel.MouseLeave += resourceLabel_MouseLeave;
 			// 
 			// testLabel
 			// 
-			this.testLabel.AutoSize = true;
-			this.testLabel.Location = new System.Drawing.Point(-399, -267);
-			this.testLabel.Margin = new System.Windows.Forms.Padding(0);
-			this.testLabel.Name = "testLabel";
-			this.testLabel.Padding = new System.Windows.Forms.Padding(3);
-			this.testLabel.Size = new System.Drawing.Size(90, 26);
-			this.testLabel.TabIndex = 7;
-			this.testLabel.Text = "Not started";
+			testLabel.AutoSize = true;
+			testLabel.Location = new Point(-399, -271);
+			testLabel.Margin = new Padding(0);
+			testLabel.Name = "testLabel";
+			testLabel.Padding = new Padding(3);
+			testLabel.Size = new Size(90, 26);
+			testLabel.TabIndex = 7;
+			testLabel.Text = "Not started";
 			// 
 			// topPanel
 			// 
-			this.topPanel.AutoSize = true;
-			this.topPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.topPanel.Controls.Add(this.statusPanel);
-			this.topPanel.Controls.Add(this.menuButton);
-			this.topPanel.Dock = System.Windows.Forms.DockStyle.Top;
-			this.topPanel.Location = new System.Drawing.Point(8, 8);
-			this.topPanel.Margin = new System.Windows.Forms.Padding(0);
-			this.topPanel.Name = "topPanel";
-			this.topPanel.Size = new System.Drawing.Size(958, 31);
-			this.topPanel.TabIndex = 8;
-			this.topPanel.Resize += new System.EventHandler(this.topPanel_Resize);
+			topPanel.AutoSize = true;
+			topPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			topPanel.Controls.Add(buttonPanel);
+			topPanel.Controls.Add(statusPanel);
+			topPanel.Dock = DockStyle.Top;
+			topPanel.Location = new Point(8, 4);
+			topPanel.Margin = new Padding(0);
+			topPanel.Name = "topPanel";
+			topPanel.Padding = new Padding(0, 0, 0, 4);
+			topPanel.Size = new Size(987, 35);
+			topPanel.TabIndex = 8;
+			topPanel.Resize += topPanel_Resize;
+			// 
+			// buttonPanel
+			// 
+			buttonPanel.AutoSize = true;
+			buttonPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			buttonPanel.Controls.Add(menuButton);
+			buttonPanel.Controls.Add(viewSwitch);
+			buttonPanel.Controls.Add(monitorSwitch);
+			buttonPanel.Controls.Add(startStopSwitch);
+			buttonPanel.Controls.Add(configFileNameLabel);
+			buttonPanel.Controls.Add(configLabel);
+			buttonPanel.Dock = DockStyle.Right;
+			buttonPanel.FlowDirection = FlowDirection.RightToLeft;
+			buttonPanel.Location = new Point(710, 0);
+			buttonPanel.Margin = new Padding(0);
+			buttonPanel.Name = "buttonPanel";
+			buttonPanel.Size = new Size(277, 31);
+			buttonPanel.TabIndex = 10;
+			buttonPanel.WrapContents = false;
+			// 
+			// viewSwitch
+			// 
+			viewSwitch.BackgroundImage = Properties.Resources.monitor;
+			viewSwitch.BackgroundImageLayout = ImageLayout.Stretch;
+			viewSwitch.FlatAppearance.BorderSize = 0;
+			viewSwitch.FlatStyle = FlatStyle.Flat;
+			viewSwitch.Location = new Point(216, 4);
+			viewSwitch.Margin = new Padding(3, 4, 3, 4);
+			viewSwitch.Name = "viewSwitch";
+			viewSwitch.Size = new Size(26, 27);
+			viewSwitch.TabIndex = 7;
+			viewSwitch.TabStop = false;
+			viewSwitch.TextImageRelation = TextImageRelation.ImageAboveText;
+			viewSwitch.UseVisualStyleBackColor = false;
+			viewSwitch.Click += viewSwitch_Click;
+			viewSwitch.MouseEnter += viewSwitch_MouseEnter;
+			viewSwitch.MouseLeave += viewSwitch_MouseLeave;
+			// 
+			// monitorSwitch
+			// 
+			monitorSwitch.BackgroundImage = Properties.Resources.monWhite;
+			monitorSwitch.BackgroundImageLayout = ImageLayout.Stretch;
+			monitorSwitch.FlatAppearance.BorderSize = 0;
+			monitorSwitch.FlatStyle = FlatStyle.Flat;
+			monitorSwitch.Location = new Point(184, 4);
+			monitorSwitch.Margin = new Padding(3, 4, 3, 4);
+			monitorSwitch.Name = "monitorSwitch";
+			monitorSwitch.Size = new Size(26, 27);
+			monitorSwitch.TabIndex = 8;
+			monitorSwitch.TabStop = false;
+			monitorSwitch.TextImageRelation = TextImageRelation.ImageAboveText;
+			monitorSwitch.UseVisualStyleBackColor = false;
+			monitorSwitch.Click += monitorSwitch_Click;
+			// 
+			// startStopSwitch
+			// 
+			startStopSwitch.BackgroundImage = Properties.Resources.play;
+			startStopSwitch.BackgroundImageLayout = ImageLayout.Stretch;
+			startStopSwitch.FlatAppearance.BorderSize = 0;
+			startStopSwitch.FlatStyle = FlatStyle.Flat;
+			startStopSwitch.Location = new Point(152, 4);
+			startStopSwitch.Margin = new Padding(3, 4, 3, 4);
+			startStopSwitch.Name = "startStopSwitch";
+			startStopSwitch.Size = new Size(26, 27);
+			startStopSwitch.TabIndex = 9;
+			startStopSwitch.TabStop = false;
+			startStopSwitch.TextImageRelation = TextImageRelation.ImageAboveText;
+			startStopSwitch.UseVisualStyleBackColor = false;
+			startStopSwitch.Click += startStopSwitch_Click;
+			// 
+			// configFileNameLabel
+			// 
+			configFileNameLabel.AutoSize = true;
+			configFileNameLabel.ContextMenuStrip = configContextMenu;
+			configFileNameLabel.Cursor = Cursors.Hand;
+			configFileNameLabel.Location = new Point(56, 6);
+			configFileNameLabel.Margin = new Padding(0, 6, 0, 0);
+			configFileNameLabel.Name = "configFileNameLabel";
+			configFileNameLabel.Padding = new Padding(0, 2, 0, 2);
+			configFileNameLabel.Size = new Size(93, 24);
+			configFileNameLabel.TabIndex = 10;
+			configFileNameLabel.Text = "<not saved>";
+			configFileNameLabel.TextAlign = ContentAlignment.MiddleCenter;
+			configFileNameLabel.MouseDown += configFileNameLabel_MouseDown;
+			configFileNameLabel.MouseEnter += configFileNameLabel_MouseEnter;
+			configFileNameLabel.MouseLeave += configFileNameLabel_MouseLeave;
+			// 
+			// configContextMenu
+			// 
+			configContextMenu.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
+			configContextMenu.Items.AddRange(new ToolStripItem[] { browseConfigFileMenuItem, toolStripSeparator4, saveConfigFileMenuItem, toolStripSeparator5, copyConfigNameMenuItem });
+			configContextMenu.Name = "gridContextMenu";
+			configContextMenu.Size = new Size(185, 82);
+			configContextMenu.Opening += configContextMenu_Opening;
+			configContextMenu.ItemClicked += configContextMenu_ItemClicked;
+			// 
+			// browseConfigFileMenuItem
+			// 
+			browseConfigFileMenuItem.Name = "browseConfigFileMenuItem";
+			browseConfigFileMenuItem.Size = new Size(184, 22);
+			browseConfigFileMenuItem.Text = "&Browse";
+			// 
+			// toolStripSeparator4
+			// 
+			toolStripSeparator4.Name = "toolStripSeparator4";
+			toolStripSeparator4.Size = new Size(181, 6);
+			// 
+			// saveConfigFileMenuItem
+			// 
+			saveConfigFileMenuItem.Name = "saveConfigFileMenuItem";
+			saveConfigFileMenuItem.Size = new Size(184, 22);
+			saveConfigFileMenuItem.Text = "Save configuration";
+			// 
+			// toolStripSeparator5
+			// 
+			toolStripSeparator5.Name = "toolStripSeparator5";
+			toolStripSeparator5.Size = new Size(181, 6);
+			// 
+			// copyConfigNameMenuItem
+			// 
+			copyConfigNameMenuItem.Name = "copyConfigNameMenuItem";
+			copyConfigNameMenuItem.Size = new Size(184, 22);
+			copyConfigNameMenuItem.Text = "&Copy with full path";
+			// 
+			// configLabel
+			// 
+			configLabel.AutoSize = true;
+			configLabel.ContextMenuStrip = linkContextMenu;
+			configLabel.Location = new Point(0, 6);
+			configLabel.Margin = new Padding(0, 6, 0, 0);
+			configLabel.Name = "configLabel";
+			configLabel.Padding = new Padding(0, 2, 0, 2);
+			configLabel.Size = new Size(56, 24);
+			configLabel.TabIndex = 11;
+			configLabel.Text = "Config:";
+			configLabel.TextAlign = ContentAlignment.MiddleRight;
+			// 
+			// saveFileDialog
+			// 
+			saveFileDialog.DefaultExt = "json";
+			saveFileDialog.Filter = "JSON|*.json|Any file|*.*";
+			saveFileDialog.SupportMultiDottedExtensions = true;
+			saveFileDialog.Title = "Save configuration";
+			// 
+			// images24
+			// 
+			images24.ColorDepth = ColorDepth.Depth32Bit;
+			images24.ImageStream = (ImageListStreamer)resources.GetObject("images24.ImageStream");
+			images24.TransparentColor = Color.Transparent;
+			images24.Images.SetKeyName(0, "json");
+			images24.Images.SetKeyName(1, "log");
+			images24.Images.SetKeyName(2, "logRed");
+			images24.Images.SetKeyName(3, "monitor");
+			images24.Images.SetKeyName(4, "stop");
+			images24.Images.SetKeyName(5, "play");
+			images24.Images.SetKeyName(6, "monGreen");
+			images24.Images.SetKeyName(7, "monRed");
+			images24.Images.SetKeyName(8, "monWhite");
+			images24.Images.SetKeyName(9, "monYellow");
+			images24.Images.SetKeyName(10, "monWhiteCheck");
+			images24.Images.SetKeyName(11, "monitorHover");
+			// 
+			// openFileDialog
+			// 
+			openFileDialog.Filter = "JSON files(*.json)|*.json|text files(*.txt)|*.txt|any(*.*)|*.*";
 			// 
 			// MonitorForm
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(974, 572);
-			this.Controls.Add(this.testLabel);
-			this.Controls.Add(this.midPanel);
-			this.Controls.Add(this.topPanel);
-			this.DoubleBuffered = true;
-			this.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-			this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.MinimumSize = new System.Drawing.Size(600, 360);
-			this.Name = "MonitorForm";
-			this.Opacity = 0D;
-			this.Padding = new System.Windows.Forms.Padding(8);
-			this.ShowInTaskbar = false;
-			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
-			this.Text = "Simple Http Server Connection Monitor";
-			this.logPanel.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.requestGrid)).EndInit();
-			this.gridContextMenu.ResumeLayout(false);
-			this.midPanel.ResumeLayout(false);
-			this.propertiesPanel.ResumeLayout(false);
-			this.responsePanel.ResumeLayout(false);
-			this.responsePanel.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.responseGrid)).EndInit();
-			this.responseTopPanel.ResumeLayout(false);
-			this.responseTopPanel.PerformLayout();
-			this.labelContextMenu.ResumeLayout(false);
-			this.requestPanel.ResumeLayout(false);
-			this.requestPanel.PerformLayout();
-			this.requestTopPanel.ResumeLayout(false);
-			this.requestTopPanel.PerformLayout();
-			this.linkContextMenu.ResumeLayout(false);
-			this.iconMenu.ResumeLayout(false);
-			this.statusPanel.ResumeLayout(false);
-			this.statusPanel.PerformLayout();
-			this.logListMenu.ResumeLayout(false);
-			this.topPanel.ResumeLayout(false);
-			this.topPanel.PerformLayout();
-			this.ResumeLayout(false);
-			this.PerformLayout();
-
+			AutoScaleDimensions = new SizeF(8F, 20F);
+			AutoScaleMode = AutoScaleMode.Font;
+			ClientSize = new Size(1003, 572);
+			Controls.Add(midPanel);
+			Controls.Add(testLabel);
+			Controls.Add(jsonEditor);
+			Controls.Add(topPanel);
+			DoubleBuffered = true;
+			Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+			Icon = (Icon)resources.GetObject("$this.Icon");
+			Margin = new Padding(3, 4, 3, 4);
+			MinimumSize = new Size(600, 360);
+			Name = "MonitorForm";
+			Opacity = 0D;
+			Padding = new Padding(8, 4, 8, 8);
+			ShowInTaskbar = false;
+			SizeGripStyle = SizeGripStyle.Show;
+			Text = "Simple Http Server Connection Monitor";
+			logListMenu.ResumeLayout(false);
+			logPanel.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)requestGrid).EndInit();
+			gridContextMenu.ResumeLayout(false);
+			labelContextMenu.ResumeLayout(false);
+			midPanel.ResumeLayout(false);
+			propertiesPanel.ResumeLayout(false);
+			responsePanel.ResumeLayout(false);
+			responsePanel.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)responseGrid).EndInit();
+			responseTopPanel.ResumeLayout(false);
+			responseTopPanel.PerformLayout();
+			requestPanel.ResumeLayout(false);
+			requestPanel.PerformLayout();
+			requestTopPanel.ResumeLayout(false);
+			requestTopPanel.PerformLayout();
+			linkContextMenu.ResumeLayout(false);
+			iconMenu.ResumeLayout(false);
+			statusPanel.ResumeLayout(false);
+			statusPanel.PerformLayout();
+			topPanel.ResumeLayout(false);
+			topPanel.PerformLayout();
+			buttonPanel.ResumeLayout(false);
+			buttonPanel.PerformLayout();
+			configContextMenu.ResumeLayout(false);
+			ResumeLayout(false);
+			PerformLayout();
 		}
+
 
 		#endregion
 
@@ -964,17 +1153,17 @@
         private FlowLayoutPanel requestTopPanel;
 		private Label originLabel;
         private Label requestLabel;
-        private Label statusLabel;
-        private NotifyIcon notifyIcon;
+        private Label resourceTypeLabel;
+		private NotifyIcon notifyIcon;
         private Button menuButton;
 		private ContextMenuStrip iconMenu;
-        private ToolStripMenuItem showMonitorMenuItem;
+        private ToolStripMenuItem showMainWindowMenuItem;
         private ToolStripSeparator toolStripSeparator0;
         private ToolStripMenuItem stopServerMenuItem;
-        private ToolStripSeparator toolStripSeparator3;
-        private ToolStripMenuItem closeProgramMenuItem;
+        private ToolStripSeparator toolStripSeparator2;
+		private ToolStripMenuItem closeProgramMenuItem;
 		private Panel propertiesPanel ;
-        private ToolStripMenuItem showStartDialogMenuItem;
+        private ToolStripMenuItem showQuickStartMenuItem;
         private Label errorLabel;
         private FlowLayoutPanel statusPanel;
 		private Label uriLabel;
@@ -988,18 +1177,15 @@
         private Label resourceLabel;
         private ContextMenuStrip linkContextMenu;
         private ToolStripMenuItem linkOpenMenuItem;
-        private ToolStripSeparator line4;
-        private ToolStripMenuItem linkCopyMenuItem;
+        private ToolStripSeparator linkContextMenuLine1;
+		private ToolStripMenuItem linkCopyMenuItem;
         private ContextMenuStrip labelContextMenu;
         private ToolStripMenuItem labelCopyMenuItem;
         private Label httpLabel;
         private ToolStripMenuItem openLogMenuItem;
-        private ToolStripMenuItem monitorEventsMenuItem;
-        private ToolStripSeparator toolStripSeparator2;
-        private Label testLabel;
+		private Label testLabel;
         private ToolStripMenuItem showStartParametersMenuItem;
-        private ToolStripSeparator toolStripSeparator1;
-		private ToolStripMenuItem createCommandParametersMenuItem;
+        private ToolStripSeparator toolStripSeparator3;
         private ToolStripMenuItem aboutMenuItem;
         private ToolStripMenuItem gridSearchMenuItem;
         private ToolStripSeparator gridLine1;
@@ -1020,8 +1206,25 @@
 		private Splitter propertiesSplitter;
 		private Panel requestPanel;
 		private Button closePropertiesButton;
-		private Panel panel1;
-		private Panel panel2;
 		private Panel requestBottomPanel;
+        private CodeTextBox jsonEditor;
+		private ToolStripMenuItem folderOpenMenuItem;
+		private SaveFileDialog saveFileDialog;
+		private ToolStripMenuItem startJSONConfigMenuItem;
+		private ToolStripSeparator toolStripSeparator1;
+		private Button viewSwitch;
+		private Button monitorSwitch;
+		private ImageList images24;
+		private Button startStopSwitch;
+		private FlowLayoutPanel buttonPanel;
+		private Label configFileNameLabel;
+		private Label configLabel;
+		private ContextMenuStrip configContextMenu;
+		private ToolStripMenuItem browseConfigFileMenuItem;
+		private ToolStripSeparator toolStripSeparator4;
+		private ToolStripMenuItem saveConfigFileMenuItem;
+		private ToolStripSeparator toolStripSeparator5;
+		private ToolStripMenuItem copyConfigNameMenuItem;
+		private OpenFileDialog openFileDialog;
 	}
 }
