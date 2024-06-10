@@ -72,8 +72,30 @@ namespace SimpleHttp
 				}
 
 			ApplicationConfiguration.Initialize() ;
-			Application.SetCompatibleTextRenderingDefault ( false ) ;
+			Application.SetCompatibleTextRenderingDefault ( true ) ;
+			//Form form = new Form () ;
+			//CodeTextBox textBox = new CodeTextBox () ;
+			//textBox.Dock = DockStyle.Fill ;
+			//textBox.Multiline = true ;
+			//textBox.ScrollBars = ScrollBars.Vertical ;
+			//form.Controls.Add ( textBox ) ;
+			//TextBox textBox2 = new TextBox () ;
+			//textBox2.Dock = DockStyle.Top ;
+			//form.Controls.Add ( textBox2 ) ;
+			//textBox.KeyDown += ( object? sender , KeyEventArgs e ) =>
+			//	{ 
+			//		textBox2.Text = textBox.leftToRightSelection ? "->" : "<-" ;
+			//	} ;
+			//textBox.KeyUp += ( object? sender , KeyEventArgs e ) =>
+			//	{ 
+			//		textBox2.Text = textBox.leftToRightSelection ? "->" : "<-" ;
+			//	} ;
+
+			//Application.Run ( form ) ;
 			Application.Run ( new MonitorForm ( new HttpStartParameters ( args ) ) ) ;
+			//Application.Run ( new Form1 ( )  ) ;
 		}
+
+
 	}
 }

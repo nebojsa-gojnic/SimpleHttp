@@ -11,30 +11,62 @@ namespace SimpleHttp
 	{
 		public MessageForm()
 		{
-			InitializeComponent();
+			InitializeComponent() ;
+			titlePanel.BackColor = MonitorForm.titleBackColor ;
+			titlePanel.ForeColor = MonitorForm.titleForeColor ;
+			MonitorForm.AssingFlatButtonAppearance ( closeButton ) ;
+			//closeButton.BackColor = MonitorForm.errorEditBackColor ;
+		}
+		/// <summary>
+		/// Button kind: ok(first),no(second),cancel(third)
+		/// </summary>
+		public enum ButtonKind
+		{
+			/// <summary>
+			/// X button at the top right corner
+			/// </summary>
+			close= 0 , 
+			/// <summary>
+			/// First button, generaly confirmation(ok,yes,apply,)
+			/// </summary>
+			ok = 1 , 
+			/// <summary>
+			/// Second button, generaly opositie or destructive action
+			/// </summary>
+			no = 2 ,
+			/// <summary>
+			/// Last button, close or continue, genaraly "do nothing" button.
+			/// </summary>
+			cancel = 3 
 		}
 		// nullable/non-nullable, omg what did thay do with C#
-		public event EventHandler<EventArgs>? cmdOkClicked ;
-		public event EventHandler<EventArgs>? cmdNoClicked ;
-		public event EventHandler<EventArgs>? cmdCancelClicked ;
+		public event EventHandler<ButtonKind>? buttonClicked ;
 
 		private void cmdOk_Click ( object sender , EventArgs e )
 		{
-			cmdOkClicked?.Invoke ( this , e ) ;
+			buttonClicked?.Invoke ( this , ButtonKind.ok ) ;
 		}
 		private void cmdNo_Click ( object sender , EventArgs e )
 		{
-			cmdNoClicked?.Invoke ( this , e ) ;
+			buttonClicked?.Invoke ( this , ButtonKind.no ) ;
 		}
-
 		private void cmdCancel_Click ( object sender , EventArgs e )
 		{
-			cmdCancelClicked?.Invoke ( this , e ) ;
+			buttonClicked?.Invoke ( this , ButtonKind.cancel ) ;
+		}
+		private void closeButton_Click ( object sender , EventArgs e )
+		{
+			buttonClicked?.Invoke ( this , ButtonKind.close ) ;
 		}
 		public string messageText
 		{
 			get => textLabel.Text ;
 			set => textLabel.Text = value ;
+		}
+		public string title
+		{
+			get => titleLabel.Text ;
+			set => titleLabel.Text = value ;
 		}
 		public void setOkButtonText ( string value )
 		{
@@ -72,75 +104,63 @@ namespace SimpleHttp
 		protected override void OnShown ( EventArgs e )
 		{
 			if ( this.Owner != null )
-				Location = new Point ( Owner.Left + ( ( Owner.Width - Width ) >> 1 ) , Owner.Top + ( ( Owner.Height - Height ) >> 1 ) ) ;
+				if (  this.Owner.WindowState == FormWindowState.Minimized )
+				{
+					API.WindowPlacement wp = new API.WindowPlacement () ;
+					API.GetWindowPlacement ( Owner.Handle , ref wp ) ;
+					Location = new Point ( wp.NormalPosition.Left + ( ( wp.NormalPosition.Right - wp.NormalPosition.Left - Width ) >> 1 ) , wp.NormalPosition.Top + ( ( wp.NormalPosition.Bottom - wp.NormalPosition.Top - Height ) >> 1 ) ) ;
+				}
+				else Location = new Point ( Owner.Left + ( ( Owner.Width - Width ) >> 1 ) , Owner.Top + ( ( Owner.Height - Height ) >> 1 ) ) ;
 			Opacity = 1.0 ;
 			base.OnShown ( e ) ;
 		}
 		public static MessageForm ShowYesNo ( Form owner , string title , string caption , 
-									EventHandler<EventArgs> cmdOkClickedHandler , EventHandler<EventArgs> cmdCancelClicked ,
-									FormClosedEventHandler fromClosedHalder )
+									EventHandler<ButtonKind> clickHandler , FormClosedEventHandler fromClosedHalder )
 		{
 			return Show ( owner , title , caption , 
-									"  Yes  " , "" ,  "    No    " ,
-									cmdOkClickedHandler , null , cmdCancelClicked , fromClosedHalder ) ;
+									"  Yes  " , "" ,  "    No    " , clickHandler , fromClosedHalder ) ;
 		}
 		public static MessageForm ShowYesNo ( Form owner , string title , string caption , 
-									EventHandler<EventArgs> cmdOkClickedHandler , EventHandler<EventArgs> cmdCancelClicked ,
-									EventHandler disposedHandler )
+									EventHandler<ButtonKind> clickHandler , EventHandler disposedHandler )
 		{
 			return Show ( owner , title , caption , 
-									"  Yes  " , "" , "    No    " ,
-									cmdOkClickedHandler , null , cmdCancelClicked , null , disposedHandler ) ;
+									"  Yes  " , "" , "    No    " , clickHandler , null , disposedHandler ) ;
 		}
 		public static MessageForm ShowOKCancel ( Form owner , string title , string caption , 
-									EventHandler<EventArgs> cmdOkClickedHandler , EventHandler<EventArgs> cmdCancelClicked ,
-									FormClosedEventHandler fromClosedHalder )
+									EventHandler<ButtonKind> clickHandler , FormClosedEventHandler fromClosedHalder )
 		{
-			return Show ( owner , title , caption , 
-									"    OK    " , "" , "Cancel" ,
-									cmdOkClickedHandler , null , cmdCancelClicked , fromClosedHalder ) ;
+			return Show ( owner , title , caption , "    OK    " , "" , "Cancel" , clickHandler , fromClosedHalder ) ;
 		}
 		public static MessageForm ShowOKCancel ( Form owner , string title , string caption , 
-									EventHandler<EventArgs> cmdOkClickedHandler , EventHandler<EventArgs> cmdCancelClicked ,
-									EventHandler disposedHandler )
+									EventHandler<ButtonKind> clickHandler , EventHandler disposedHandler )
 		{
-			return Show ( owner , title , caption , 
-									"    OK    " , "" , "Cancel" ,
-									cmdOkClickedHandler , null , cmdCancelClicked , null , disposedHandler ) ;
+			return Show ( owner , title , caption , "    OK    " , "" , "Cancel" , clickHandler , null , disposedHandler ) ;
 		}
 		public static MessageForm Show ( Form owner , string title , string caption , 
 									string okButtonText , string noButtonText , string cancelButtonText , 
-									EventHandler<EventArgs> cmdOkClickedHandler , EventHandler<EventArgs> cmdNoClicked , EventHandler<EventArgs> cmdCancelClicked ,
-									FormClosedEventHandler fromClosedHalder )
+									EventHandler<ButtonKind> clickHandler , FormClosedEventHandler fromClosedHalder )
 		{
 			return Show ( owner , title , caption , okButtonText , noButtonText , cancelButtonText , 
-									cmdOkClickedHandler , cmdNoClicked , cmdCancelClicked ,
-									fromClosedHalder , null ) ;
+									clickHandler , fromClosedHalder , null ) ;
 		
 		}
 		public static MessageForm Show ( Form owner , string title , string caption , 
 									string okButtonText , string noButtonText , string cancelButtonText , 
-									EventHandler<EventArgs> cmdOkClickedHandler , EventHandler<EventArgs> cmdNoClicked ,  EventHandler<EventArgs> cmdCancelClicked ,
-									EventHandler disposedHandler )
+									EventHandler<ButtonKind> clickHandler , EventHandler disposedHandler )
 		{
-			return Show ( owner , title , caption , okButtonText , noButtonText , cancelButtonText , 
-									cmdOkClickedHandler , cmdNoClicked , cmdCancelClicked ,
-									null , disposedHandler ) ;
+			return Show ( owner , title , caption , okButtonText , noButtonText , cancelButtonText , clickHandler , null , disposedHandler ) ;
 		
 		}
 		public static MessageForm Show ( Form owner , string title , string caption , 
 									string okButtonText , string noButtonText , string cancelButtonText , 
-									EventHandler<EventArgs> cmdOkClickedHandler , EventHandler<EventArgs> cmdNoClicked , EventHandler<EventArgs> cmdCancelClicked ,
-									FormClosedEventHandler? fromClosedHalder , EventHandler? disposedHandler )
+									EventHandler<ButtonKind> clickHandler ,FormClosedEventHandler? fromClosedHalder , EventHandler? disposedHandler )
 		{
-			return Show ( owner , SimpleHttp.Properties.Resources.textIcon , title , caption , 
-								okButtonText , noButtonText , cancelButtonText , 
-							cmdOkClickedHandler , cmdNoClicked , cmdCancelClicked , fromClosedHalder , disposedHandler ) ;
+			return Show ( owner , SimpleHttp.Properties.Resources.textIcon , title , caption , okButtonText , noButtonText , cancelButtonText , 
+							clickHandler , fromClosedHalder , disposedHandler ) ;
 		}
 		public static MessageForm Show ( Form owner , Image image , string title , string caption , 
 									string okButtonText , string noButtonText , string cancelButtonText , 
-									EventHandler<EventArgs> cmdOkClickedHandler , EventHandler<EventArgs> cmdNoClicked , EventHandler<EventArgs> cmdCancelClicked ,
-									FormClosedEventHandler? fromClosedHalder , EventHandler? disposedHandler )
+									EventHandler<ButtonKind> clickHandler , FormClosedEventHandler? fromClosedHalder , EventHandler? disposedHandler )
 		{
 			MessageForm messageForm = new MessageForm () ;
 			if ( owner == null )
@@ -151,13 +171,11 @@ namespace SimpleHttp
 				messageForm.Show ( owner ) ;
 			}
 			messageForm.messageImage = image ;
-			messageForm.cmdOkClicked += cmdOkClickedHandler ;
-			messageForm.cmdNoClicked += cmdNoClicked ;
-			messageForm.cmdCancelClicked += cmdCancelClicked  ;
+			messageForm.buttonClicked += clickHandler ;
 			messageForm.okButtonText = okButtonText ;
 			messageForm.cancelButtonText = cancelButtonText ;
 			messageForm.noButtonText = noButtonText ;
-			messageForm.Text = title ;
+			messageForm.title = title ;
 			messageForm.messageText = caption ;
 			messageForm.FormClosed += fromClosedHalder ;
 			messageForm.Disposed += disposedHandler ;
@@ -168,12 +186,12 @@ namespace SimpleHttp
 		}
 		public Image messageImage 
 		{
-			get => messagePicture.Image ;
+			get => messagePicture.BackgroundImage ;
 			set => setMessageImage ( value ) ;
 		}
 		protected void setMessageImage ( Image value )
 		{
-			messagePicture.Image = value ;
+			messagePicture.BackgroundImage = value ;
 			messagePicturePanel.Visible = value != null ;
 		}
 
@@ -215,5 +233,29 @@ namespace SimpleHttp
 			}
 			catch { }
         }
-    }
+		protected override void OnFontChanged ( EventArgs e )
+		{
+			Font titleFont ;
+			MonitorForm.CreateTitleFont ( Font , out titleFont ) ;
+			titleLabel.Font = titleFont ;
+			int h = titleFont.Height ;
+			closeButton.Size = new Size ( h , h ) ;
+			titlePanel.Height = ( 3 * h ) >> 1 ;
+			base.OnFontChanged ( e ) ;
+		}
+		private void titlePanel_Resize ( object sender , EventArgs e )
+		{
+			int d = ( titlePanel.Height - closeButton.Height ) >> 1 ;
+			closeButton.Location = new Point ( titlePanel.Width - closeButton.Width - d , d ) ;
+		}
+		protected override void OnResize ( EventArgs e )
+		{
+			MonitorForm.SetBoxRegion ( this ) ;
+			base.OnResize ( e ) ;
+		}
+		protected override void OnPaint ( PaintEventArgs e )
+		{
+			MonitorForm.drawBoxBorder ( e.Graphics , Size ) ;
+		}
+	}
 }

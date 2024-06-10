@@ -29,184 +29,240 @@
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MessageForm));
-			this.mainLayout = new System.Windows.Forms.FlowLayoutPanel();
-			this.messagePanel = new System.Windows.Forms.FlowLayoutPanel();
-			this.messagePicturePanel = new System.Windows.Forms.Panel();
-			this.messagePicture = new System.Windows.Forms.PictureBox();
-			this.textLabel = new System.Windows.Forms.Label();
-			this.buttonPanel = new System.Windows.Forms.FlowLayoutPanel();
-			this.cmdCancel = new System.Windows.Forms.Button();
-			this.cmdNo = new System.Windows.Forms.Button();
-			this.cmdOk = new System.Windows.Forms.Button();
-			this.mainLayout.SuspendLayout();
-			this.messagePanel.SuspendLayout();
-			this.messagePicturePanel.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.messagePicture)).BeginInit();
-			this.buttonPanel.SuspendLayout();
-			this.SuspendLayout();
+			titlePanel = new CommonPanel();
+			closeButton = new Button();
+			titleLabel = new CommonLabel();
+			mainLayout = new CommonFlowLayoutPanel();
+			messagePanel = new CommonFlowLayoutPanel();
+			messagePicturePanel = new CommonPanel();
+			messagePicture = new CommonPanel();
+			textLabel = new CommonLabel();
+			buttonPanel = new CommonFlowLayoutPanel();
+			cmdOk = new Button();
+			cmdNo = new Button();
+			cmdCancel = new Button();
+			titlePanel.SuspendLayout();
+			mainLayout.SuspendLayout();
+			messagePanel.SuspendLayout();
+			messagePicturePanel.SuspendLayout();
+			buttonPanel.SuspendLayout();
+			SuspendLayout();
+			// 
+			// titlePanel
+			// 
+			titlePanel.Controls.Add(closeButton);
+			titlePanel.Controls.Add(titleLabel);
+			titlePanel.Dock = DockStyle.Top;
+			titlePanel.Location = new Point(0, 0);
+			titlePanel.Margin = new Padding(0);
+			titlePanel.Name = "titlePanel";
+			titlePanel.Size = new Size(400, 33);
+			titlePanel.TabIndex = 0;
+			titlePanel.Resize += titlePanel_Resize;
+			// 
+			// closeButton
+			// 
+			closeButton.Anchor = AnchorStyles.Right;
+			closeButton.BackColor = SystemColors.ButtonFace;
+			closeButton.BackgroundImage = Properties.Resources.closeX;
+			closeButton.BackgroundImageLayout = ImageLayout.Stretch;
+			closeButton.FlatAppearance.BorderSize = 0;
+			closeButton.FlatAppearance.MouseDownBackColor = SystemColors.ControlDark;
+			closeButton.FlatAppearance.MouseOverBackColor = SystemColors.ControlLightLight;
+			closeButton.FlatStyle = FlatStyle.Flat;
+			closeButton.Location = new Point(370, 4);
+			closeButton.Margin = new Padding(3, 0, 0, 0);
+			closeButton.Name = "closeButton";
+			closeButton.Size = new Size(26, 27);
+			closeButton.TabIndex = 15;
+			closeButton.TabStop = false;
+			closeButton.TextImageRelation = TextImageRelation.ImageAboveText;
+			closeButton.UseVisualStyleBackColor = false;
+			closeButton.Click += closeButton_Click;
+			// 
+			// titleLabel
+			// 
+			titleLabel.Dock = DockStyle.Fill;
+			titleLabel.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+			titleLabel.Location = new Point(0, 0);
+			titleLabel.Margin = new Padding(0);
+			titleLabel.Name = "titleLabel";
+			titleLabel.Padding = new Padding(4);
+			titleLabel.Size = new Size(400, 33);
+			titleLabel.TabIndex = 2;
+			titleLabel.Text = "Title";
+			titleLabel.TextAlign = ContentAlignment.MiddleLeft;
 			// 
 			// mainLayout
 			// 
-			this.mainLayout.AutoSize = true;
-			this.mainLayout.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.mainLayout.Controls.Add(this.messagePanel);
-			this.mainLayout.Controls.Add(this.buttonPanel);
-			this.mainLayout.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-			this.mainLayout.Location = new System.Drawing.Point(0, 0);
-			this.mainLayout.Margin = new System.Windows.Forms.Padding(0);
-			this.mainLayout.Name = "mainLayout";
-			this.mainLayout.Padding = new System.Windows.Forms.Padding(12, 12, 8, 12);
-			this.mainLayout.Size = new System.Drawing.Size(235, 163);
-			this.mainLayout.TabIndex = 0;
+			mainLayout.AutoSize = true;
+			mainLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			mainLayout.BackColor = Color.WhiteSmoke;
+			mainLayout.Controls.Add(titlePanel);
+			mainLayout.Controls.Add(messagePanel);
+			mainLayout.Controls.Add(buttonPanel);
+			mainLayout.FlowDirection = FlowDirection.TopDown;
+			mainLayout.Location = new Point(1, 1);
+			mainLayout.Margin = new Padding(0);
+			mainLayout.Name = "mainLayout";
+			mainLayout.Size = new Size(400, 184);
+			mainLayout.TabIndex = 0;
 			// 
 			// messagePanel
 			// 
-			this.messagePanel.AutoSize = true;
-			this.messagePanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.messagePanel.Controls.Add(this.messagePicturePanel);
-			this.messagePanel.Controls.Add(this.textLabel);
-			this.messagePanel.Location = new System.Drawing.Point(15, 15);
-			this.messagePanel.Name = "messagePanel";
-			this.messagePanel.Size = new System.Drawing.Size(181, 96);
-			this.messagePanel.TabIndex = 3;
+			messagePanel.Anchor = AnchorStyles.Top;
+			messagePanel.AutoSize = true;
+			messagePanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			messagePanel.Controls.Add(messagePicturePanel);
+			messagePanel.Controls.Add(textLabel);
+			messagePanel.Location = new Point(0, 33);
+			messagePanel.Margin = new Padding(0);
+			messagePanel.MinimumSize = new Size(400, 0);
+			messagePanel.Name = "messagePanel";
+			messagePanel.Padding = new Padding(12, 6, 12, 0);
+			messagePanel.Size = new Size(400, 102);
+			messagePanel.TabIndex = 3;
 			// 
 			// messagePicturePanel
 			// 
-			this.messagePicturePanel.AutoSize = true;
-			this.messagePicturePanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.messagePicturePanel.Controls.Add(this.messagePicture);
-			this.messagePicturePanel.Location = new System.Drawing.Point(0, 0);
-			this.messagePicturePanel.Margin = new System.Windows.Forms.Padding(0);
-			this.messagePicturePanel.MinimumSize = new System.Drawing.Size(88, 88);
-			this.messagePicturePanel.Name = "messagePicturePanel";
-			this.messagePicturePanel.Padding = new System.Windows.Forms.Padding(8);
-			this.messagePicturePanel.Size = new System.Drawing.Size(96, 96);
-			this.messagePicturePanel.TabIndex = 2;
+			messagePicturePanel.AutoSize = true;
+			messagePicturePanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			messagePicturePanel.Controls.Add(messagePicture);
+			messagePicturePanel.Location = new Point(12, 6);
+			messagePicturePanel.Margin = new Padding(0);
+			messagePicturePanel.MinimumSize = new Size(88, 88);
+			messagePicturePanel.Name = "messagePicturePanel";
+			messagePicturePanel.Padding = new Padding(8);
+			messagePicturePanel.Size = new Size(96, 96);
+			messagePicturePanel.TabIndex = 2;
 			// 
 			// messagePicture
 			// 
-			this.messagePicture.Image = global::SimpleHttp.Properties.Resources.textIcon;
-			this.messagePicture.Location = new System.Drawing.Point(8, 8);
-			this.messagePicture.Margin = new System.Windows.Forms.Padding(0);
-			this.messagePicture.MinimumSize = new System.Drawing.Size(80, 80);
-			this.messagePicture.Name = "messagePicture";
-			this.messagePicture.Size = new System.Drawing.Size(80, 80);
-			this.messagePicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-			this.messagePicture.TabIndex = 0;
-			this.messagePicture.TabStop = false;
+			messagePicture.BackgroundImage = Properties.Resources.textIcon;
+			messagePicture.BackgroundImageLayout = ImageLayout.Zoom;
+			messagePicture.Location = new Point(8, 8);
+			messagePicture.Margin = new Padding(0);
+			messagePicture.MinimumSize = new Size(80, 80);
+			messagePicture.Name = "messagePicture";
+			messagePicture.Size = new Size(80, 80);
+			messagePicture.TabIndex = 0;
 			// 
 			// textLabel
 			// 
-			this.textLabel.AutoSize = true;
-			this.textLabel.Dock = System.Windows.Forms.DockStyle.Left;
-			this.textLabel.Location = new System.Drawing.Point(99, 0);
-			this.textLabel.Name = "textLabel";
-			this.textLabel.Padding = new System.Windows.Forms.Padding(4);
-			this.textLabel.Size = new System.Drawing.Size(79, 96);
-			this.textLabel.TabIndex = 1;
-			this.textLabel.Text = "Hello world!";
-			this.textLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.textLabel.DoubleClick += new System.EventHandler(this.textLabel_DoubleClick);
+			textLabel.AutoSize = true;
+			textLabel.Dock = DockStyle.Left;
+			textLabel.Location = new Point(111, 6);
+			textLabel.Name = "textLabel";
+			textLabel.Padding = new Padding(4);
+			textLabel.Size = new Size(79, 96);
+			textLabel.TabIndex = 1;
+			textLabel.Text = "Hello world!";
+			textLabel.TextAlign = ContentAlignment.MiddleLeft;
+			textLabel.DoubleClick += textLabel_DoubleClick;
 			// 
 			// buttonPanel
 			// 
-			this.buttonPanel.AutoSize = true;
-			this.buttonPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.buttonPanel.Controls.Add(this.cmdCancel);
-			this.buttonPanel.Controls.Add(this.cmdNo);
-			this.buttonPanel.Controls.Add(this.cmdOk);
-			this.buttonPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.buttonPanel.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-			this.buttonPanel.Location = new System.Drawing.Point(12, 114);
-			this.buttonPanel.Margin = new System.Windows.Forms.Padding(0);
-			this.buttonPanel.Name = "buttonPanel";
-			this.buttonPanel.Padding = new System.Windows.Forms.Padding(0, 8, 0, 0);
-			this.buttonPanel.Size = new System.Drawing.Size(215, 37);
-			this.buttonPanel.TabIndex = 1;
-			// 
-			// cmdCancel
-			// 
-			this.cmdCancel.AutoSize = true;
-			this.cmdCancel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.cmdCancel.Location = new System.Drawing.Point(150, 8);
-			this.cmdCancel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-			this.cmdCancel.Name = "cmdCancel";
-			this.cmdCancel.Padding = new System.Windows.Forms.Padding(4, 2, 4, 2);
-			this.cmdCancel.Size = new System.Drawing.Size(61, 29);
-			this.cmdCancel.TabIndex = 1;
-			this.cmdCancel.Text = "Cancel";
-			this.cmdCancel.UseVisualStyleBackColor = true;
-			this.cmdCancel.Click += new System.EventHandler(this.cmdCancel_Click);
-			// 
-			// cmdNo
-			// 
-			this.cmdNo.AutoSize = true;
-			this.cmdNo.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.cmdNo.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.cmdNo.Location = new System.Drawing.Point(77, 8);
-			this.cmdNo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-			this.cmdNo.Name = "cmdNo";
-			this.cmdNo.Padding = new System.Windows.Forms.Padding(4, 2, 4, 2);
-			this.cmdNo.Size = new System.Drawing.Size(65, 29);
-			this.cmdNo.TabIndex = 2;
-			this.cmdNo.Text = "    No    ";
-			this.cmdNo.UseVisualStyleBackColor = true;
-			this.cmdNo.Click += new System.EventHandler(this.cmdNo_Click);
+			buttonPanel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+			buttonPanel.AutoSize = true;
+			buttonPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			buttonPanel.Controls.Add(cmdOk);
+			buttonPanel.Controls.Add(cmdNo);
+			buttonPanel.Controls.Add(cmdCancel);
+			buttonPanel.Location = new Point(161, 135);
+			buttonPanel.Margin = new Padding(0);
+			buttonPanel.Name = "buttonPanel";
+			buttonPanel.Padding = new Padding(12, 8, 12, 12);
+			buttonPanel.Size = new Size(239, 49);
+			buttonPanel.TabIndex = 1;
 			// 
 			// cmdOk
 			// 
-			this.cmdOk.AutoSize = true;
-			this.cmdOk.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.cmdOk.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.cmdOk.Location = new System.Drawing.Point(4, 8);
-			this.cmdOk.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-			this.cmdOk.Name = "cmdOk";
-			this.cmdOk.Padding = new System.Windows.Forms.Padding(4, 2, 4, 2);
-			this.cmdOk.Size = new System.Drawing.Size(65, 29);
-			this.cmdOk.TabIndex = 0;
-			this.cmdOk.Text = "    OK    ";
-			this.cmdOk.UseVisualStyleBackColor = true;
-			this.cmdOk.Click += new System.EventHandler(this.cmdOk_Click);
+			cmdOk.AutoSize = true;
+			cmdOk.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			cmdOk.Dock = DockStyle.Bottom;
+			cmdOk.Location = new Point(16, 8);
+			cmdOk.Margin = new Padding(4, 0, 4, 0);
+			cmdOk.Name = "cmdOk";
+			cmdOk.Padding = new Padding(4, 2, 4, 2);
+			cmdOk.Size = new Size(65, 29);
+			cmdOk.TabIndex = 0;
+			cmdOk.Text = "    OK    ";
+			cmdOk.UseVisualStyleBackColor = true;
+			cmdOk.Click += cmdOk_Click;
+			// 
+			// cmdNo
+			// 
+			cmdNo.AutoSize = true;
+			cmdNo.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			cmdNo.Dock = DockStyle.Bottom;
+			cmdNo.Location = new Point(89, 8);
+			cmdNo.Margin = new Padding(4, 0, 4, 0);
+			cmdNo.Name = "cmdNo";
+			cmdNo.Padding = new Padding(4, 2, 4, 2);
+			cmdNo.Size = new Size(65, 29);
+			cmdNo.TabIndex = 2;
+			cmdNo.Text = "    No    ";
+			cmdNo.UseVisualStyleBackColor = true;
+			cmdNo.Click += cmdNo_Click;
+			// 
+			// cmdCancel
+			// 
+			cmdCancel.AutoSize = true;
+			cmdCancel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			cmdCancel.Location = new Point(162, 8);
+			cmdCancel.Margin = new Padding(4, 0, 4, 0);
+			cmdCancel.Name = "cmdCancel";
+			cmdCancel.Padding = new Padding(4, 2, 4, 2);
+			cmdCancel.Size = new Size(61, 29);
+			cmdCancel.TabIndex = 1;
+			cmdCancel.Text = "Cancel";
+			cmdCancel.UseVisualStyleBackColor = true;
+			cmdCancel.Click += cmdCancel_Click;
 			// 
 			// MessageForm
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.AutoSize = true;
-			this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.ClientSize = new System.Drawing.Size(248, 165);
-			this.Controls.Add(this.mainLayout);
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-			this.MaximizeBox = false;
-			this.MinimizeBox = false;
-			this.Name = "MessageForm";
-			this.Opacity = 0D;
-			this.ShowInTaskbar = false;
-			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "MessageForm";
-			this.mainLayout.ResumeLayout(false);
-			this.mainLayout.PerformLayout();
-			this.messagePanel.ResumeLayout(false);
-			this.messagePanel.PerformLayout();
-			this.messagePicturePanel.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.messagePicture)).EndInit();
-			this.buttonPanel.ResumeLayout(false);
-			this.buttonPanel.PerformLayout();
-			this.ResumeLayout(false);
-			this.PerformLayout();
-
+			AutoScaleMode = AutoScaleMode.None;
+			AutoSize = true;
+			AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			BackColor = SystemColors.ActiveBorder;
+			ClientSize = new Size(450, 165);
+			ControlBox = false;
+			Controls.Add(mainLayout);
+			FormBorderStyle = FormBorderStyle.None;
+			Icon = (Icon)resources.GetObject("$this.Icon");
+			MaximizeBox = false;
+			MinimizeBox = false;
+			Name = "MessageForm";
+			Opacity = 0D;
+			Padding = new Padding(1);
+			ShowInTaskbar = false;
+			StartPosition = FormStartPosition.CenterParent;
+			Text = "MessageForm";
+			titlePanel.ResumeLayout(false);
+			mainLayout.ResumeLayout(false);
+			mainLayout.PerformLayout();
+			messagePanel.ResumeLayout(false);
+			messagePanel.PerformLayout();
+			messagePicturePanel.ResumeLayout(false);
+			buttonPanel.ResumeLayout(false);
+			buttonPanel.PerformLayout();
+			ResumeLayout(false);
+			PerformLayout();
 		}
 
-        #endregion
+		#endregion
 
-        private FlowLayoutPanel mainLayout;
-        private Label textLabel;
-        private PictureBox messagePicture;
-		private Panel messagePicturePanel ;
-        private FlowLayoutPanel buttonPanel;
+		private CommonFlowLayoutPanel mainLayout;
+        private CommonLabel textLabel;
+        private CommonPanel messagePicture;
+		private CommonPanel messagePicturePanel ;
+        private CommonFlowLayoutPanel buttonPanel;
         private Button cmdCancel;
         private Button cmdOk;
         private Button cmdNo;
-		private FlowLayoutPanel messagePanel;
+		private CommonFlowLayoutPanel messagePanel;
+		private CommonPanel titlePanel;
+		private CommonLabel titleLabel;
+		private Button closeButton;
 	}
 }

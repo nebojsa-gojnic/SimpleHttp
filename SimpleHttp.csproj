@@ -14,8 +14,26 @@
 
   <ItemGroup>
     <Compile Remove="old\**" />
+    <Compile Remove="packages\HttpMultipartParser.8.0.0\**" />
+    <Compile Remove="packages\Microsoft.IO.RecyclableMemoryStream.2.2.1\**" />
+    <Compile Remove="packages\System.Buffers.4.5.1\**" />
+    <Compile Remove="packages\System.Memory.4.5.5\**" />
+    <Compile Remove="packages\System.Numerics.Vectors.4.5.0\**" />
+    <Compile Remove="packages\System.Runtime.CompilerServices.Unsafe.4.5.3\**" />
     <EmbeddedResource Remove="old\**" />
+    <EmbeddedResource Remove="packages\HttpMultipartParser.8.0.0\**" />
+    <EmbeddedResource Remove="packages\Microsoft.IO.RecyclableMemoryStream.2.2.1\**" />
+    <EmbeddedResource Remove="packages\System.Buffers.4.5.1\**" />
+    <EmbeddedResource Remove="packages\System.Memory.4.5.5\**" />
+    <EmbeddedResource Remove="packages\System.Numerics.Vectors.4.5.0\**" />
+    <EmbeddedResource Remove="packages\System.Runtime.CompilerServices.Unsafe.4.5.3\**" />
     <None Remove="old\**" />
+    <None Remove="packages\HttpMultipartParser.8.0.0\**" />
+    <None Remove="packages\Microsoft.IO.RecyclableMemoryStream.2.2.1\**" />
+    <None Remove="packages\System.Buffers.4.5.1\**" />
+    <None Remove="packages\System.Memory.4.5.5\**" />
+    <None Remove="packages\System.Numerics.Vectors.4.5.0\**" />
+    <None Remove="packages\System.Runtime.CompilerServices.Unsafe.4.5.3\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +41,7 @@
     <Compile Remove="MultipartFormDataParser.cs" />
     <Compile Remove="MultipartParseException.cs" />
     <Compile Remove="SimpleHttpServiceFactory - Copy.cs" />
+    <Compile Remove="TextBox.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,7 +56,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>

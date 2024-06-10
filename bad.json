@@ -1,0 +1,33 @@
+{
+	"port": 50080,
+	"sitename": "localhost",
+	"sslCertificate": "I:\\Code\\localhost2.pfx",
+	"sslCertificatePassword": "password",
+	"sslProtocol": "Tls12",
+	"activators": [
+		{
+			"activator": "resourceHttpService",
+			"source": "WebSockets.ResourcesHttpService, WebSockets, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null",
+			"configData": {
+				"assemblyPath": "i:\\code\\simplehttp\\bin\\debug\\net6.0-windows\\pipemaniaservice.dll",
+				"resourceAssemblySource": "PipeManiaService.dll"
+			}
+		}
+	],
+		{
+			"activator": "resourceHttpService",
+			"path": "/*"
+		}
+	]
+}
+		},
+		{
+			"activator": "resourceHttpService",
+			"path": "/*"
+		},
+		{
+			"activator": "resourceHttpService",
+			"path": "/*/*"
+		}
+	]
+}

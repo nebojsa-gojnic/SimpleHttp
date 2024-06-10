@@ -1,42 +1,19 @@
-﻿{
-	"sitename" : "localhost" ,
-	"port": 50080 ,
-	"services": 
-	[
+{
+	"port": 50081 , 
+	"sitename": "localhost",
+	"services": [
 		{
-			"service" : "FileService" ,
-			"source" : "WebSockets.FileHttpService" ,
-			"configData" : 
-			{
-				"webroot" : "I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources"
-			} 
-		} ,
-		{
-			"service" : "CodeService" ,
-			"source" : "PipeMania.PipeManiaHttpService,PipeManiaService.dll" ,
-			"configData" : 
-			{
-				"saveFolder" : "I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources"
-			} 
+			"service": "fileHttpService",
+			"source": "WebSockets.FileHttpService, WebSockets, Version=4.0.0.0, Culture=neutral, PublicKeyToken=null",
+			"configData": {
+				"webroot": "I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources"
+			}
 		}
-	] ,
-	"paths" : 
-	[
-		{ 
-			"service":"fileService" , 
-			"path":"/*" 
-		} ,
-		{ 
-			"service":"codeService" , 
-			"path":"code/*" 
-		} ,
-		{ 
-			"service":"fileService" , 
-			"path":"/*/*" 
-		} ,
-		{ 
-			"service":"fileService" , 
-			"path":"/*/*/*" 
+	],
+	"paths": [
+		{
+			"service": "fileHttpService",
+			"path": "/*"
 		}
 	]
 }

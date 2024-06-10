@@ -12,6 +12,10 @@ namespace SimpleHttp
 	public class HttpStartParameters
 	{
 		/// <summary>
+		/// if empty string was passed to the constructor
+		/// </summary>
+		public bool isEmpty { get ; protected set ; }
+		/// <summary>
 		/// TCP port (0-65535)
 		/// </summary>
 		public int port { get ; protected set ; }
@@ -87,6 +91,18 @@ namespace SimpleHttp
 			jsonConfigFile = null ;
 			sslProtocol = SslProtocols.Tls12 ;
 			configData = new WebServerConfigData () ;
+			mode = StartServerMode.empty ;
+			if ( args == null )
+			{
+				isEmpty = true ;
+				return ;
+			}
+			else if ( args.Length == 0 )
+			{
+				isEmpty = true ;
+				return ;
+			}
+			isEmpty = false ;
 			commandEnum command = commandEnum.none ;
 			string fileSource ;
 			string assemblyName ;
@@ -95,19 +111,21 @@ namespace SimpleHttp
 			{
 				if ( char.IsLetter ( args [ 0 ] [ 0 ] ) )
 				{
-					jsonConfigFile = args [ 0 ] ;
 					mode = StartServerMode.jsonConfig ;
+					jsonConfigFile = args [ 0 ] ;
+					
 					if ( File.Exists ( jsonConfigFile ) )
 						try
 						{ 
 							configData = new WebServerConfigData () ;
+							jsonConfigFile = new FileInfo ( jsonConfigFile ).Name ;							
 							configData.loadFromJSONFile ( jsonConfigFile ) ;
 						}
 						catch ( Exception x )
 						{
 							errorMessage = "Cannot parse json file \"" + jsonConfigFile + "\".\r\n" + x.Message ;
 						}
-
+					else errorMessage = "File not found \"" + jsonConfigFile + "\"." ;
 					return ;
 				}
 			}
@@ -320,15 +338,17 @@ namespace SimpleHttp
 		}
 		public override string ToString()
 		{
-			return mode == StartServerMode.jsonConfig ? jsonConfigFile :
-				( ( mode == StartServerMode.resourceServer ? "/r" : "/f" ) + " \"" + source + "\" /p " + port.ToString() + " " +
-							( string.IsNullOrEmpty ( sslCertificateSource ) ? "" :
-							( "/c \"" + sslCertificateSource + "\" " + 
-							( string.IsNullOrWhiteSpace ( sslCertificatePassword ) ? "" : ( "/pw \"" + sslCertificatePassword + "\" " ) ) + 
-							"/" + TlsShort ( sslProtocol ) + " " ) 
-							) + 
-							( string.IsNullOrWhiteSpace ( sitename ) ? "" : ( "/s \"" + sitename + "\"" ) )
-							).Trim() ;
+			return isEmpty ? "" : mode == StartServerMode.jsonConfig ? jsonConfigFile :
+				( ( mode == StartServerMode.resourceServer ? 
+					
+					"/r" : "/f" ) + " \"" + source + "\" /p " + port.ToString() + " " + ( string.IsNullOrEmpty ( sslCertificateSource ) ? "" :
+
+					( "/c \"" + sslCertificateSource + "\" " + 
+							( string.IsNullOrWhiteSpace ( sslCertificatePassword ) ? 
+							"" : 
+							( "/pw \"" + sslCertificatePassword + "\" " ) ) + "/" + TlsShort ( sslProtocol ) + " " )  ) + 
+						( string.IsNullOrWhiteSpace ( sitename ) ? "" : ( "/s \"" + sitename + "\"" ) )
+					).Trim() ;
 		}
 	}
 

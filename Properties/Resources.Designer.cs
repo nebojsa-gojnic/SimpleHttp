@@ -93,6 +93,26 @@ namespace SimpleHttp.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap closeX {
+            get {
+                object obj = ResourceManager.GetObject("closeX", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap dropDownArrow {
+            get {
+                object obj = ResourceManager.GetObject("dropDownArrow", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap greenCheck {
             get {
                 object obj = ResourceManager.GetObject("greenCheck", resourceCulture);
@@ -113,9 +133,9 @@ namespace SimpleHttp.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap json24 {
+        internal static System.Drawing.Bitmap jsonIcon {
             get {
-                object obj = ResourceManager.GetObject("json24", resourceCulture);
+                object obj = ResourceManager.GetObject("jsonIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -143,9 +163,9 @@ namespace SimpleHttp.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap monitor {
+        internal static System.Drawing.Bitmap maximizeIcon {
             get {
-                object obj = ResourceManager.GetObject("monitor", resourceCulture);
+                object obj = ResourceManager.GetObject("maximizeIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -153,9 +173,79 @@ namespace SimpleHttp.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap monWhite {
+        internal static System.Drawing.Bitmap minimizeIcon {
             get {
-                object obj = ResourceManager.GetObject("monWhite", resourceCulture);
+                object obj = ResourceManager.GetObject("minimizeIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap monGreenIcon {
+            get {
+                object obj = ResourceManager.GetObject("monGreenIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap monitorHoverIcon {
+            get {
+                object obj = ResourceManager.GetObject("monitorHoverIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap monitorIcon {
+            get {
+                object obj = ResourceManager.GetObject("monitorIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap monRedIcon {
+            get {
+                object obj = ResourceManager.GetObject("monRedIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap monWhiteCheckIcon {
+            get {
+                object obj = ResourceManager.GetObject("monWhiteCheckIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap monWhiteIcon {
+            get {
+                object obj = ResourceManager.GetObject("monWhiteIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap monYellowIcon {
+            get {
+                object obj = ResourceManager.GetObject("monYellowIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -166,6 +256,16 @@ namespace SimpleHttp.Properties {
         internal static System.Drawing.Bitmap play {
             get {
                 object obj = ResourceManager.GetObject("play", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap restoreIcon {
+            get {
+                object obj = ResourceManager.GetObject("restoreIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -196,6 +296,16 @@ namespace SimpleHttp.Properties {
         internal static System.Drawing.Bitmap settings {
             get {
                 object obj = ResourceManager.GetObject("settings", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap smallLeftArrow {
+            get {
+                object obj = ResourceManager.GetObject("smallLeftArrow", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

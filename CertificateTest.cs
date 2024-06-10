@@ -11,7 +11,7 @@ using System.Security.Cryptography ;
 using System.Security.Cryptography.X509Certificates ;
 using WebSockets ;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq ;
 
 namespace SimpleHttp
 {
@@ -246,15 +246,15 @@ namespace SimpleHttp
 				if ( webServer == null )
 				{
 					webServer = new WebServer () ;
-					webServer.addPath ( "*", 0 , "Tester" , typeof ( TestHttpService ) , ( JObject ) JsonConvert.DeserializeObject ( "{ 'message':'evo ga ovde' }" ) ) ;
+					webServer.addPath ( "*" , 0 , "Tester" , typeof ( TestHttpService ) , new TestHttpService.TestHttpServiceData ( "test message" ) ) ;
 					webServer.connectionErrorRaised += webServer_connectionErrorRaised ;
-					webServer.criticalErrorRaised += webServer_criticalErrorRaised;
+					webServer.serviceErrorRaised += webServer_serviceErrorRaised;
 					webServer.disposed += webServer_disposed ;
 				}
 				else webServer.Stop () ;
 				webServer.addPath ( "/*" , 0 , new HttpServiceActivator ( typeof ( TestHttpService ) , new TestHttpService.TestHttpServiceData ( "Certificate Test Message" ) ) ) ;
 
-				webServer.Listen ( new TestWebConfigData ( "Connectin OK" , siteName , _port , "" , "" , sslProtocol ) ) ;
+				webServer.Listen ( new TestWebConfigData ( "Connectin OK" , siteName , _port , "" , "" , sslProtocol , certificate ) ) ;
 				httpClient = new HttpClient () ;
 				httpClient.GetStringAsync ( "https://" + siteName + ":" + webServer.port.ToString () + "/" ).ContinueWith ( onHttpClient ) ;
 			}
@@ -286,7 +286,7 @@ namespace SimpleHttp
 		/// </summary>
 		/// <param name="sender">WebServer instance</param>
 		/// <param name="e">ErrorEventArgs instance, call GetException() method to get exception</param>
-		private void webServer_criticalErrorRaised ( object sender , HttpConnectionDetails e )
+		private void webServer_serviceErrorRaised ( object sender , HttpConnectionDetails e )
 		{
 			if ( webServer == sender as WebServer ) onOpenTcpTestFailed ( new ErrorEventArgs ( e.error ) ) ;
 		}

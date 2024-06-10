@@ -221,6 +221,28 @@ namespace SimpleHttp
 	 		Private Declare Function PlaySound Lib "winmm.dll" Alias "PlaySoundA" _
 (ByVal lpszName As String, ByVal hModule As Long, ByVal dwFlags As Long) As Long
 */
+		public struct PaintStruct 
+		{
+			public IntPtr hdc ;
+			public bool fErase ;
+			public APIRect rcPaint ;
+			public bool fRestore ;
+			public bool fIncUpdate ;
+			public uint rgbReserved0 ;
+			public uint rgbReserved1 ;
+			public uint rgbReserved2 ;
+			public uint rgbReserved3 ;
+			public uint rgbReserved4 ;
+			public uint rgbReserved5 ;
+			public uint rgbReserved6 ;
+			public uint rgbReserved7 ;
+		}
+		
+		[DllImport("User32.dll")]
+		public static extern IntPtr BeginPaint ( IntPtr hWnd , ref PaintStruct lpPaint ) ;
+		[DllImport("User32.dll")]
+		public static extern IntPtr EndPaint ( IntPtr hWnd , ref PaintStruct lpPaint ) ;
+
 		[DllImport("winmm.dll")]
 		public static extern IntPtr PlaySoundA ( 
 									string lpFileName ,
@@ -472,6 +494,9 @@ namespace SimpleHttp
 		}
 		[DllImport("user32.dll")]
 		public static extern IntPtr WindowFromPoint ( APIPoint Point ) ;
+		[DllImport("user32.dll")]
+		public static extern IntPtr WindowFromDC ( IntPtr hdc ) ;
+		
 		[DllImport("user32")]
 		public static extern IntPtr GetWindowDC ( IntPtr hWnd ) ;
 		public static int GetWindowDC ( int hWnd ) 
@@ -878,24 +903,16 @@ namespace SimpleHttp
 		[DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
 		public static extern int GetScrollPos ( int hWnd , int nBar ) ;
 		[DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
-		public static extern IntPtr GetScrollPos ( IntPtr hWnd , IntPtr nBar ) ;
-		public static IntPtr GetScrollPos ( IntPtr hWnd , ScrollBarDirection sb ) 
-		{
-			return GetScrollPos ( hWnd , new IntPtr ( ( int ) sb ) ) ;
-		}
-		public static int GetScrollPos ( int hWnd , ScrollBarDirection sb ) 
-		{
-			return GetScrollPos ( hWnd , ( int ) sb ) ;
-		}
+		public static extern int GetScrollPos ( IntPtr hWnd , IntPtr nBar ) ;
+		[DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+		public static extern int GetScrollPos ( IntPtr hWnd , ScrollBarDirection sb ) ;
 
 		[DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
 		public static extern int SetScrollPos ( int hWnd , int nBar , int Pos , bool redraw ) ;
 		[DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
-		public static extern IntPtr SetScrollPos ( IntPtr hWnd , IntPtr nBar , IntPtr Pos , bool redraw ) ;
-		public static IntPtr SetScrollPos ( IntPtr hWnd , ScrollBarDirection sb , int Pos , bool redraw ) 
-		{
-			return SetScrollPos ( hWnd , new IntPtr ( ( int ) sb ) , new IntPtr ( Pos ) , redraw ) ;
-		}
+		public static extern int SetScrollPos ( IntPtr hWnd , IntPtr nBar , IntPtr Pos , bool redraw ) ;
+		[DllImport("user32.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
+		public static extern int SetScrollPos ( IntPtr hWnd , ScrollBarDirection sb , int Pos , bool redraw ) ; 
 
 
 		[DllImport("user32")]
@@ -1495,10 +1512,12 @@ namespace SimpleHttp
 		public static extern int GetWindowRect ( int hWnd , ref APIRect Rect ) ;
 
 		[DllImport("user32", SetLastError=true)]
-		public static extern int GetWindowRect ( IntPtr hWnd , ref APIRect Rect ) ;
+		public static extern bool GetWindowRect ( IntPtr hWnd , ref APIRect Rect ) ;
 
+		[DllImport("user32", SetLastError=true)]
+		public static extern bool GetClientRect ( IntPtr hWnd , ref APIRect Rect ) ;
 
-
+		 
 
 
 
@@ -1979,10 +1998,21 @@ namespace SimpleHttp
 			return  Buffer.ToString ( 0 , Size ) ;
 		}
 		
-
+		
+        [DllImport("user32.dll", SetLastError=true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool ShowCaret ( IntPtr hWnd ) ;
         [DllImport("user32.dll", SetLastError=true)]
 		[return: MarshalAs(UnmanagedType.Bool)]
 		public static extern bool ClientToScreen ( IntPtr hWnd , ref APIPoint point ) ;
+
+        [DllImport("user32.dll", EntryPoint="ClientToScreen",SetLastError=true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool ClientToScreenPoint ( IntPtr hWnd , ref Point point ) ;
+        
+		[DllImport("user32.dll", EntryPoint="PointToScreen",SetLastError=true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		public static extern bool PointToScreenPoint ( IntPtr hWnd , ref Point point ) ;
         
         [DllImport("user32.dll", SetLastError=true)]
 		[return: MarshalAs(UnmanagedType.Bool)]

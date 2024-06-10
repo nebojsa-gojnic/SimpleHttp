@@ -28,7 +28,6 @@ namespace SimpleHttp
 		protected Bitmap mainLayoutBitmap ;
 		protected Brush mainLayoutGrayBrush ;
 		protected Brush mainLayoutWindowBrush ;
-		protected Color inactiveEditBack ;
 		protected Dictionary <string,Dictionary<SslProtocols,CertificateTest>> certificateTests ;
 		protected CertificateTest runningTest ;
 		/// <summary>
@@ -81,7 +80,7 @@ namespace SimpleHttp
 		/// </summary>
 		protected WebServerConfigData _configData ;
 		/// <summary>
-		/// Auxiliary variable for the configData property
+		/// Set method for the configData property
 		/// </summary>
 		protected void setConfigData ( WebServerConfigData value )
 		{
@@ -92,35 +91,21 @@ namespace SimpleHttp
 				tbPassword.Text = value.sslCertificatePassword ;
 				tbCertificate.Text = value.sslCertificateSource ;
 				sslProtocol = value.sslProtocol ;
-				JObject httpServiceConfigData = null ;
-				try
+				string path ;
+				mode = getMode ( value , out path ) ;
+				switch ( _mode )
 				{
-					httpServiceConfigData = value.services [ "resourceHttpService" ].configData ;
+					case StartServerMode.resourceServer :
+						insertLoadedAssembly ( AssemblyItem.loadAssemblyItem ( path ) ) ;
+					break ;
+					case StartServerMode.fileServer :
+						tbWebroot.Text = path == null ? "" : tbWebroot.Text = path ;
+					break ;
+					default :
+						tbWebroot.Text = "" ;
+					break ;
 				}
-				catch { }
-				object obj ;
-				if ( httpServiceConfigData == null )
-				{
-					try
-					{
-						httpServiceConfigData = value.services [ "fileHttpService" ].configData ;
-					}
-					catch { }
-					if ( httpServiceConfigData == null )
-					{ }
-					else
-					{
-						mode = StartServerMode.fileServer ;
-						obj = httpServiceConfigData [ "webroot" ] ;
-						tbWebroot.Text = obj == null ? "" : obj.ToString () ;
-					}
-				}
-				else
-				{
-					mode = StartServerMode.resourceServer ;
-					obj = httpServiceConfigData [ "assemblyPath" ] ;
-					if ( obj != null ) insertLoadedAssembly ( AssemblyItem.loadAssemblyItem ( obj.ToString () ) ) ;
-				}
+
 				_certificateLoadError = null ;
 				_certificateClientError = null ;
 				_certificateServerError = null ;
@@ -141,13 +126,57 @@ namespace SimpleHttp
 			}
 		}
 		/// <summary>
+		/// Set method for the configData property
+		/// </summary>
+		public static StartServerMode getMode ( WebServerConfigData value , out string path )
+		{
+			StartServerMode mode = StartServerMode.jsonConfig ;
+			path = null ;
+			if ( value != null )
+			{
+				JObject httpServiceConfigData = null ;
+				int c = value.services.Count ;
+				object obj ;
+				foreach ( HttpServiceActivator activator in value.services.Values )
+					try
+					{
+						if ( ( activator.serviceType == typeof ( ResourcesHttpService ) ) || 
+							( activator.serviceType.IsSubclassOf ( typeof ( ResourcesHttpService ) ) ) )
+						{
+							httpServiceConfigData = activator.configData ;
+							mode = StartServerMode.resourceServer ;
+							obj = httpServiceConfigData [ "resourceAssemblySource" ] ;
+							if ( obj != null ) 
+							{
+								path = obj.ToString () ;
+								break ;
+							}
+						}
+						else if ( ( activator.serviceType == typeof ( FileHttpService ) ) || 
+							( activator.serviceType.IsSubclassOf ( typeof ( FileHttpService ) ) ) )
+						{
+							httpServiceConfigData = activator.configData ;
+							mode = StartServerMode.fileServer ;
+							obj = httpServiceConfigData [ "webroot" ] ;
+							if ( obj != null ) 
+							{
+								path = obj.ToString () ;
+								break ;
+							}
+						}
+					}
+					catch { }
+			}
+			return mode ;				
+		}
+		/// <summary>
 		/// Creates new value for configData property based on current form values
 		/// </summary>
 		protected void createConfigData ()
 		{
-			_configData = mode == StartServerMode.fileServer ?
-				new FileWebConfigData ( tbWebroot.Text.Trim () , tbSiteName.Text.Trim () , port , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) :
-				new ResourceWebConfigData ( resourceAssemblySource , tbSiteName.Text.Trim () , port , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) ;
+			_configData = mode == StartServerMode.resourceServer ?
+				new ResourceWebConfigData ( resourceAssemblySource , tbSiteName.Text.Trim () , port , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) :
+				new FileWebConfigData ( tbWebroot.Text.Trim () , tbSiteName.Text.Trim () , port , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) ;
 		}
 		/// <summary>
 		/// Auxiliary variable for the configData property
@@ -173,7 +202,7 @@ namespace SimpleHttp
 		protected Uri getSiteUri ()
 		{
 			Uri uri ;
-			Uri.TryCreate ( lbSiteUri.Text , new UriCreationOptions () , out uri ) ;
+			Uri.TryCreate ( uriLabel.Text , new UriCreationOptions () , out uri ) ;
 			return uri ;
 		}
 		/// <summary>
@@ -334,25 +363,24 @@ namespace SimpleHttp
 		public QuickStartForm()
 		{
 			InitializeComponent() ;
+			cmdStartOptions.Parent = cmdStart ;
 			certificateTests = new Dictionary<string, Dictionary<SslProtocols, CertificateTest>> () ;
 
-			boldUnderlineFont = lbSiteUri.Font ;
-			boldFont = new Font ( boldUnderlineFont , FontStyle.Regular ) ;
+			MonitorForm.AssingFlatButtonAppearance ( closeButton ) ;
+
+			titlePanel.BackColor = MonitorForm.titleBackColor ;
+			titlePanel.ForeColor = MonitorForm.titleForeColor ;
 			runningTest = null ;
 			_assemblyPath = "" ;
 			certificatePassword = "" ;
-			Color col1 = SystemColors.Window ;
-			Color col2 = SystemColors.ButtonFace ;
+			//closeButton.BackColor = MonitorForm.errorEditBackColor ;
+
 			tbPort.BackColor =
 			tbSiteName.BackColor =
 			tbCertificate.BackColor =
 			cbAssemblies.BackColor =
 			tbWebroot.BackColor =
-			cbProtocol.BackColor = 
-			inactiveEditBack = Color.FromArgb (  255 ,
-												( ( int ) col1.R + ( int ) col2.R ) >> 1 ,
-												( ( int ) col1.G + ( int ) col2.G ) >> 1 ,
-												( ( int ) col1.B + ( int ) col2.B ) >> 1 ) ;
+			cbProtocol.BackColor = MonitorForm.inactiveEditBackColor ;
 			
 			loadAssemblies () ;
 			mainLayoutBitmap = null ;
@@ -400,12 +428,47 @@ namespace SimpleHttp
 			AutoSize = false ;
 			Size = sz ;
 			base.OnShown ( e ) ;
+			cmdStart_Resize ( cmdStart , e ) ;
 			Opacity = 1.0 ;
 		}
 		protected override void OnActivated ( EventArgs e )
 		{
 			base.OnActivated ( e ) ;
 			BeginInvoke ( button_MouseUp  , new object [ 2 ] ) ;
+		}
+		protected override void OnFontChanged ( EventArgs e )
+		{
+			Font titleFont ;
+			MonitorForm.CreateTitleFont ( Font , out titleFont ) ;
+			MonitorForm.CreateSemiboldFonts ( Font , out boldFont , out boldUnderlineFont ) ;
+			uriLabel.Font = boldFont ;
+			titleLabel.Font = titleFont ;
+			int h = titleFont.Height ;
+			closeButton.Size = new Size ( h , h ) ;
+			titlePanel.Height = ( 3 * h ) >> 1 ;
+			base.OnFontChanged ( e ) ;
+		}
+		protected override void OnPaintBackground ( PaintEventArgs e )
+		{
+			base.OnPaintBackground ( e ) ;
+			MonitorForm.drawBoxBorder ( e.Graphics , Size ) ;
+		}
+		protected override void OnResize ( EventArgs e )
+		{
+			MonitorForm.SetBoxRegion ( this ) ;
+			base.OnResize ( e ) ;
+		}
+		private void mainLayout_Resize ( object sender , EventArgs e )
+		{
+			mainLayout.Location = new Point ( Padding.Left , titlePanel.Bottom ) ;
+			Size = new Size ( Padding.Horizontal + mainLayout.Width , Padding.Vertical + mainLayout.Bottom ) ;
+			
+			//Height = Padding.Vertical + mainLayout.Bottom  ;
+		}
+		private void titlePanel_Resize ( object sender , EventArgs e )
+		{
+			int d = ( titlePanel.Height - closeButton.Height ) >> 1 ;
+			closeButton.Location = new Point ( titlePanel.Width - closeButton.Width - d , d ) ;
 		}
 		protected override void OnKeyDown ( KeyEventArgs e )
 		{
@@ -491,6 +554,7 @@ namespace SimpleHttp
 		{
 			if ( _mode == value ) return ;
 			_mode = value ;
+			mainLayout.SuspendLayout () ; //for the first time this actually does something
 			if ( _mode == StartServerMode.fileServer )
 			{
 				cmdFileMode.BackColor = SystemColors.Window ;
@@ -511,6 +575,7 @@ namespace SimpleHttp
 				gbWebroot.Visible = false ;
 				cbAssemblies_SelectedIndexChanged ( cbAssemblies , new EventArgs () ) ;
 			}
+			mainLayout.ResumeLayout () ;
 		}
 		/// <summary>
 		/// Server start mode(file system or resource assemly)
@@ -566,6 +631,10 @@ namespace SimpleHttp
 			}
 			catch { }
 		}
+		private void closeButton_Click ( object sender , EventArgs e )
+		{
+			Close () ;
+		}
 		/// <summary>
 		/// When user click "Filebased server" button
 		/// </summary>
@@ -602,7 +671,7 @@ namespace SimpleHttp
 			if ( int.TryParse ( tbPort.Text.Trim() , out i ) )
 				if ( ( i < 0 ) || ( i > 65535 ) )
 				{
-					tbPort.BackColor = Color.MistyRose ;
+					tbPort.BackColor = MonitorForm.errorEditBackColor ;
 					if ( raiseEvents ) _invalidPortNumber?.Invoke ( this , new ErrorEventArgs ( new ApplicationException ( "Invalid port number value(" + i.ToString() + "), allowed range is 1-65535" ) ) ) ;
 				}
 				else 
@@ -612,7 +681,7 @@ namespace SimpleHttp
 				}
 			else 
 			{
-				tbPort.BackColor = Color.MistyRose ;
+				tbPort.BackColor = MonitorForm.errorEditBackColor ;
 				if ( raiseEvents )  _invalidPortNumber?.Invoke ( this , new ErrorEventArgs ( new ApplicationException ( "Invalid text for port number, \"" + tbPort.Text.Trim() + "\" cannot be converted to number" ) ) ) ;
 			}
 			return false ;
@@ -637,6 +706,12 @@ namespace SimpleHttp
 		private void cmdSelectCertificate_Click ( object sender , EventArgs e )
 		{
 			openCertificateDialog.FileName = tbCertificate.Text ;
+			try
+			{
+				openCertificateDialog.InitialDirectory = Path.GetDirectoryName ( tbCertificate.Text  ) ;
+				openCertificateDialog.FileName = Path.GetFileName ( tbCertificate.Text ) ;
+			}
+			catch { }
 			if ( openCertificateDialog.ShowDialog () == DialogResult.OK )
 			{
 				tbCertificate.Text = openCertificateDialog.FileName ;
@@ -780,7 +855,7 @@ namespace SimpleHttp
 							else _certificateLoadFailure?.Invoke ( this , new ErrorEventArgs ( _certificateLoadError = new IOException ( "File not found:\r\n" + tbCertificate.Text  ) ) ) ;
 						return false ;
 					case CerrtificateState.error :
-						tbCertificate.BackColor = Color.MistyRose ;
+						tbCertificate.BackColor = MonitorForm.errorEditBackColor ;
 						if ( focusErrorControl ) tbCertificate.Focus () ;
 						if ( raiseEvents )
 						{
@@ -797,7 +872,7 @@ namespace SimpleHttp
 						}
 					return false ;
 				}
-			tbCertificate.BackColor = tbCertificate.Focused ? SystemColors.Window : inactiveEditBack ;		
+			tbCertificate.BackColor = tbCertificate.Focused ? SystemColors.Window : MonitorForm.inactiveEditBackColor ;		
 			return true ;
 		}
 		protected bool validateValues ( bool raiseEvents , bool focusErrorControl )
@@ -823,6 +898,10 @@ namespace SimpleHttp
 			if ( validateValues ( true , true ) )
 				_paremetersChoosen?.Invoke ( this , getStartParameters() ) ;
 			else certificateBy = passwordPanel.Visible ? certificateRequestedBy.startButtonClick : certificateRequestedBy.none ; 
+		}
+		private void cmdStartOptions_Click ( object sender , EventArgs e )
+		{
+			startContextMenu.Show ( cmdStartOptions , Point.Empty ) ;
 		}
 		private void showStartParametersClick ( )
 		{
@@ -1183,6 +1262,7 @@ namespace SimpleHttp
 		{
 			_certificate = null ;
 			_certificateServerError = e.GetException() ;
+			certificateWaitLabel.Visible = false ;
 			if ( _certificateServerError.InnerException != null ) _certificateServerError = _certificateServerError.InnerException ;
 			tbCertificate.BackColor = Color.MistyRose ;
 			_certificateFailedOnServer?.Invoke ( this , e ) ;
@@ -1195,6 +1275,7 @@ namespace SimpleHttp
 		{
 			UseWaitCursor = false ;
 			passwordPanel.Enabled = true ;
+			certificateWaitLabel.Visible = false ;
 			_certificate = null ;
 			_certificateClientError = e.GetException() ;
 			tbCertificate.BackColor = Color.MistyRose ;
@@ -1206,6 +1287,7 @@ namespace SimpleHttp
 		{
 			passwordPanel.Enabled = true ;
 			UseWaitCursor = false ;
+			certificateWaitLabel.Visible = false ;
 			tbCertificate.BackColor = Color.LightSalmon ;
 			addCertificateTest ( certificateTest ) ;
 			_openTcpTestFailed?.Invoke ( this , e ) ;
@@ -1220,6 +1302,7 @@ namespace SimpleHttp
 		{
 			addCertificateTest ( certificateTest ) ;
 			UseWaitCursor = false ;
+			certificateWaitLabel.Visible = false ;
 			mainLayout.Enabled = true ; //!!!
 			passwordPanel.Enabled = true ;				
 			passwordPanel.Visible = false ;				
@@ -1277,6 +1360,7 @@ namespace SimpleHttp
 		{
 			_loadedCertificate = null ;
 			gbPassword.Visible = true ;
+			certificateWaitLabel.Visible = false ;
 			setCertificatePasswordBackground () ;
 			BeginInvoke ( () =>
 			{
@@ -1334,6 +1418,10 @@ namespace SimpleHttp
 		private void passwordPanel_Resize ( object sender , EventArgs e )
 		{
 			gbPassword.Location = new Point ( ( passwordPanel.Width - gbPassword.Width ) >> 1 , gbCertificate.Bottom ) ;
+			int h1 = ClientSize.Height - gbPassword.Bottom ;
+			certificateWaitLabel.Location = new Point ( ( ClientSize.Width - certificateWaitLabel.Width ) >> 1 , 
+						h1 < gbPassword.Top ? ( gbPassword.Top - certificateWaitLabel.Height ) >> 1 : 
+											  ( gbPassword.Bottom - ( ( h1 - certificateWaitLabel.Height ) >> 1 ) ) ) ;
 			if ( passwordPanel.Visible ) setCertificatePasswordBackground () ;
 		}
 		private void cmdAcceptPassword_Click ( object sender, EventArgs e )
@@ -1394,6 +1482,7 @@ namespace SimpleHttp
 			BeginInvoke( (Delegate)(() =>
 			{
 				passwordPanel.Enabled = true ;
+				certificateWaitLabel.Visible = false ;
 				UseWaitCursor = false ;
 				tbSiteName.Text = runningTest.siteName ; //??
 				cmdStartCertificateTest_Click ( this , new EventArgs () ) ;
@@ -1406,6 +1495,7 @@ namespace SimpleHttp
 			{
 				runningTest.siteName = tbSiteName.Text.Trim () ;
 				runningTest.testCertifiate () ;
+				certificateWaitLabel.Visible = true ;
 				UseWaitCursor = true ;
 				passwordPanel.Enabled = false ;
 			}
@@ -1498,6 +1588,12 @@ namespace SimpleHttp
 		private void cmdLoadAssembly_Click ( object sender , EventArgs e )
 		{
 			if ( _assemblyPath != "" ) openAssemblyDialog.FileName = _assemblyPath ;
+			try
+			{
+				openAssemblyDialog.InitialDirectory = Path.GetDirectoryName ( tbCertificate.Text  ) ;
+				openAssemblyDialog.FileName = Path.GetFileName ( tbCertificate.Text ) ;
+			}
+			catch { }
 			if ( openAssemblyDialog.ShowDialog () == DialogResult.OK )
 				try
 				{
@@ -1515,6 +1611,7 @@ namespace SimpleHttp
 		/// <param name="newItem">AssemblyItem instance with Assembly</param>
 		protected void insertLoadedAssembly ( AssemblyItem newItem )
 		{
+			if ( newItem == null ) return ;
 			ComboBox.ObjectCollection items = cbAssemblies.Items ;
 			string assemblyName = newItem.ToString () ;
 			int c = items.Count ;
@@ -1607,7 +1704,7 @@ namespace SimpleHttp
 		{
 			cbAssemblies.BackColor = 
 				( cbAssemblies.SelectedIndex == -1 ? false : cbAssemblies.Text == cbAssemblies.SelectedItem.ToString () ) 
-				? cbAssemblies.Focused ? SystemColors.Window : inactiveEditBack : Color.MistyRose ;
+				? cbAssemblies.Focused ? SystemColors.Window : MonitorForm.inactiveEditBackColor : MonitorForm.errorEditBackColor ;
 		}
 		/// <summary>
 		/// Set proper certificate text box background color
@@ -1968,19 +2065,19 @@ namespace SimpleHttp
 		}
 		private void cbProtocol_Leave ( object sender, EventArgs e )
 		{
-			cbProtocol.BackColor = inactiveEditBack ;
+			cbProtocol.BackColor = MonitorForm.inactiveEditBackColor ;
 		}
 		private void tbSiteName_Leave ( object sender , EventArgs e )
 		{
-			tbSiteName.BackColor = inactiveEditBack ;
+			tbSiteName.BackColor = MonitorForm.inactiveEditBackColor ;
 		}
 		private void tbWebroot_Leave ( object sender, EventArgs e )
 		{
-			tbWebroot.BackColor = inactiveEditBack ;
+			tbWebroot.BackColor = MonitorForm.inactiveEditBackColor ;
 		}
 		private void tbPort_Leave ( object sender, EventArgs e )
 		{
-			tbPort.BackColor = inactiveEditBack ;
+			tbPort.BackColor = MonitorForm.inactiveEditBackColor ;
 		}
 
 		private void tbSiteName_TextChanged ( object sender , EventArgs e )
@@ -1990,7 +2087,7 @@ namespace SimpleHttp
 		protected void setSiteUriText ()
 		{
 			string s = tbSiteName.Text.Trim() ;
-			lbSiteUri.Text = s == "" ? "" : ( "http" + ( cbProtocol.SelectedIndex > 0 ? "s" : "" ) + "://" + s + ":" + ( port == 0 ? "(?)" : port.ToString () ) ) ;
+			uriLabel.Text = s == "" ? "" : ( "http" + ( cbProtocol.SelectedIndex > 0 ? "s" : "" ) + "://" + s + ":" + ( port == 0 ? "(?)" : port.ToString () ) ) ;
 		}
 		private void tbSiteName_KeyDown ( object sender , KeyEventArgs e )
 		{
@@ -2130,17 +2227,17 @@ namespace SimpleHttp
 			catch { }
 		}
 
-		private void lbSiteUri_MouseEnter ( object sender , EventArgs e )
+		private void uriLabel_MouseEnter ( object sender , EventArgs e )
 		{
-			lbSiteUri.Font = boldUnderlineFont ;
+			uriLabel.Font = boldUnderlineFont ;
 		}
 
-		private void lbSiteUri_MouseLeave ( object sender , EventArgs e )
+		private void uriLabel_MouseLeave ( object sender , EventArgs e )
 		{
-			lbSiteUri.Font = boldFont ;
+			uriLabel.Font = boldFont ;
 		}
 
-		private void lbSiteUri_MouseDown ( object sender , MouseEventArgs e )
+		private void uriLabel_MouseDown ( object sender , MouseEventArgs e )
 		{
 			switch ( e.Button )
 			{
@@ -2155,7 +2252,7 @@ namespace SimpleHttp
 		{
 			try
 			{
-				Uri uri = new Uri ( lbSiteUri.Text ) ;
+				Uri uri = new Uri ( uriLabel.Text ) ;
 				ProcessStartInfo startInfo = new ProcessStartInfo ( uri.ToString () ) ;
 				startInfo.UseShellExecute = true ;
 				Process.Start ( startInfo ) ;
@@ -2170,9 +2267,21 @@ namespace SimpleHttp
 			if ( e.ClickedItem == siteUriOpenItem )
 				openSiteUri () ;
 			else if ( e.ClickedItem == siteUriCopyItem )
-				Clipboard.SetText ( lbSiteUri.Text ) ;
+				Clipboard.SetText ( uriLabel.Text ) ;
 		}
-
+		private void cmdStart_Resize ( object sender , EventArgs e )
+		{
+			int w = cmdStart.Height >> 1 ;
+			int h = w * 10 / 11 ;
+			cmdStartOptions.Bounds = new Rectangle ( cmdStart.Width - w - 6 , 1 + ( ( cmdStart.Height - h ) >> 1 ) , w , h) ;
+		}
+		private void cmdStartOptions_Resize ( object sender , EventArgs e )
+		{
+			Region oldRegion = cmdStartOptions.Region ;
+			cmdStartOptions.Region = new Region ( new Rectangle ( 2 , 2 , cmdStartOptions.Width - 4 , cmdStartOptions.Height - 4 ) ) ;
+			oldRegion?.Dispose () ;
+		}
+		
 		private void tbSiteName_Resize ( object sender , EventArgs e )
 		{
 			cmdLoadAssembly.MinimumSize = 
@@ -2199,6 +2308,44 @@ namespace SimpleHttp
 			else if ( e.ClickedItem == parametersMenuItem )
 				showStartParametersClick () ;
 		}
+		private void startMenuItem_Click ( object sender , EventArgs e )
+		{
+			cmdStart_Click ( cmdStart , e ) ;
+		}
+		/// <summary>
+		/// Auxiliary variable for then JSONScriptMade event
+		/// </summary>
+		protected EventHandler<string> _JSONScriptMade  ;
+		/// <summary>
+		/// When user choose to export JSON text
+		/// </summary>
+		public event EventHandler<string> JSONScriptMade  
+		{
+			add => _JSONScriptMade += value ;
+			remove => _JSONScriptMade -= value ;
+		}
+		/// <summary>
+		/// Auxiliary variable for then JSONScriptMade event
+		/// </summary>
+		protected EventHandler<WebServerConfigData> _ExportConfig ;
+		/// <summary>
+		/// When user choose to export JSON text
+		/// </summary>
+		public event EventHandler<WebServerConfigData> ExportConfig
+		{
+			add => _ExportConfig += value ;
+			remove => _ExportConfig -= value ;
+		}
+		private void makeJSONMenuItem_Click ( object sender , EventArgs e )
+		{
+			createConfigData () ;
+			_JSONScriptMade?.Invoke ( this , _configData.GetJSONString ( ) ) ;
+			_ExportConfig?.Invoke ( this , _configData ) ;
+		}
+		private void parametersMenuItem_Click ( object sender , EventArgs e )
+		{
+			showStartParametersClick () ;
+		}
 
 		private void button_MouseUp ( object sender , MouseEventArgs e )
 		{
@@ -2208,7 +2355,13 @@ namespace SimpleHttp
 			}
 			catch { }
 		}
-
+		private void cmdStartOptions_MouseUp ( object sender , MouseEventArgs e )
+		{
+			if ( startContextMenu.Visible ) return ;
+			if ( e.Button == MouseButtons.Right ) return ;
+			button_MouseUp ( cmdStart , e ) ;
+		}
+		
 		private void edit_MouseUp ( object sender , MouseEventArgs e )
 		{
 			try

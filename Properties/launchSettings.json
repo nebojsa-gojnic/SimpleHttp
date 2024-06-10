@@ -12,7 +12,7 @@
     },
     "Resource 50080": {
       "commandName": "Project",
-      "commandLineArgs": "/r PipeManiaService.dll /p 50080 /c \"I:\\Code\\localhost2.pfx\" /pw \"password\" /tls12 /s localhost"
+      "commandLineArgs": "/r \"I:\\Code\\Nodes\\PipeMania\\PipeMania\\bin\\Release\\netstandard2.0\\PipeMania.dll\" /p 50080 /c \"I:\\Code\\localhost2.pfx\" /pw \"password\" /tls12 /s localhost"
     },
     "File wrong": {
       "commandName": "Project",
@@ -21,6 +21,13 @@
     "webconfig.json": {
       "commandName": "Project",
       "commandLineArgs": "webconfig.json"
+    },
+    "Empty": {
+      "commandName": "Project"
+    },
+    "Wrong pars": {
+      "commandName": "Project",
+      "commandLineArgs": "dsf"
     }
   }
 }

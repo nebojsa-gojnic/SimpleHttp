@@ -1,4 +1,5 @@
 ﻿using System ;
+using System.Diagnostics;
 using System.Windows.Forms ;
 
 
@@ -6,9 +7,60 @@ namespace SimpleHttp
 {
 	/// <summary>
 	/// TextBox with better ctrl+arrow keyboard control(it does better positioning)
+	/// and no flickering(fuck you Microsoft)
 	/// </summary>
 	public class CodeTextBox:TextBox
 	{
+		/// <summary>
+		/// We need this for maunal paint
+		/// </summary>
+		protected API.PaintStruct paintStruct ;
+		/// <summary>
+		/// We need this to find left top corner of the client area 
+		/// </summary>
+		protected API.APIPoint clientPoint ;
+		/// <summary>
+		/// We need this to find left top corner of the client area 
+		/// </summary>
+		protected API.APIRect windowRect  ;
+		/// <summary>
+		/// SelectionStart value preour to KeyDown event<br/?
+		/// We need this to maintain  text selection direction(leftToRightSelection property)
+		/// </summary>
+		protected int selectionStartPreKeyDown ; 
+		/// <summary>
+		/// Sum of SelectionStart and SelectionLength values preour to KeyDown event<br/?
+		/// We need this to maintain text selection direction(leftToRightSelection property)
+		/// </summary>
+		protected int selectionEndPreKeyDown ;
+		/// <summary>
+		/// Ah
+		/// </summary>
+		protected Bitmap paintBuffer ;
+		/// <summary>
+		/// Creates new instance od the CodeTextBox class
+		/// </summary>
+		public CodeTextBox ()
+		{
+			paintBuffer = null ;
+			clientPoint = new API.APIPoint () ;
+			clientPoint.x = 0 ;
+			clientPoint.y = 0 ;
+			windowRect = new API.APIRect () ;
+			//SetStyle ( ControlStyles.AllPaintingInWmPaint , true ) ;
+			//SetStyle ( ControlStyles.UserPaint , true ) ;
+			SetStyle ( ControlStyles.OptimizedDoubleBuffer , false) ;
+			paintStruct = new API.PaintStruct () ;
+			paintStruct.fErase = false ;
+			paintStruct.rcPaint = new API.APIRect () ;
+			paintStruct.rcPaint.Left = 0 ;
+			paintStruct.rcPaint.Top = 0 ;
+			//SetStyle ( ControlStyles.AllPaintingInWmPaint , true ) ;
+			//SetStyle ( ControlStyles.UserPaint , true ) ;
+			//SetStyle ( ControlStyles.Opaque , false ) ;
+			//SetStyle ( ControlStyles.SupportsTransparentBackColor , true ) ;
+		}
+
 		/// <summary>
 		/// Auxiliary variable for the mouseDownSelectionStart property
 		/// </summary>
@@ -27,7 +79,7 @@ namespace SimpleHttp
 		/// <summary>
 		/// Value of this property is true when actual selection end holds caret (selection start index is lower then selection end index)
 		/// </summary>
-		protected bool leftToRightSelection 
+		public bool leftToRightSelection 
 		{
 			get => _leftToRightSelection ;
 		}
@@ -107,48 +159,27 @@ namespace SimpleHttp
 					}
 				}
 			}
-			else 
+			else if ( e.Shift )
 			{
-				if ( _leftToRightSelection )
+				if ( ( SelectionLength == 0 ) || !_leftToRightSelection )
 				{
-					if ( e.Shift )
+					if ( SelectionStart == 0 )
+						_leftToRightSelection = true ;
+					else 
 					{
-						if ( SelectionLength > 0 )
-						{
-							SelectionLength-- ;
-							_leftToRightSelection = false ;
-						}
-						else if ( SelectionStart > 0 ) 
-						{
-							SelectionStart-- ;
-							SelectionLength = 1 ;
-							_leftToRightSelection = false ;
-						}
+						len = SelectionLength ;
+						SelectionStart-- ;
+						SelectionLength = len + 1 ;
+						_leftToRightSelection = false ;
 					}
-					else if ( SelectionLength == 0 )
-					{
-						if ( SelectionStart > 0 ) SelectionStart-- ;
-					}
-					else SelectionLength = 0 ;
 				}
-				else 
-				{
-					if ( e.Shift )
-					{
-						if ( SelectionStart > 0 )
-						{
-							len = SelectionLength ;
-							SelectionStart-- ;
-							SelectionLength = len + 1 ;
-						}
-					}
-					else if ( SelectionLength == 0 ) 
-					{
-						if ( SelectionStart > 0 ) SelectionStart-- ; 
-					}
-					else SelectionLength = 0 ;
-				}
+				else SelectionLength-- ;
 			}
+			else if ( SelectionLength == 0 ) 
+			{
+				if ( SelectionStart > 0 ) SelectionStart-- ; 
+			}
+			else SelectionLength = 0 ;
 		}
 		protected void handleRightArrow ( KeyEventArgs e )
 		{
@@ -200,41 +231,36 @@ namespace SimpleHttp
 					}
 				}
 			}
-			else
+			else if ( e.Shift )
 			{
-				if ( leftToRightSelection )
+				if ( SelectionLength == 0 ) 
 				{
-					if ( e.Shift )
-					{
-						if ( SelectionStart + SelectionLength < TextLength )
-							SelectionLength++ ;
-					}
-					else if ( SelectionLength == 0 )
-					{
-						if ( SelectionStart < TextLength ) SelectionStart++ ;
-					}
-					else SelectionLength = 0 ;
+					_leftToRightSelection = true ;
+					if ( SelectionStart < TextLength ) SelectionLength = 1 ;
 				}
-				else 
+				else if ( !leftToRightSelection )
 				{
-					if ( e.Shift )
-					{
-						if ( SelectionLength == 0 )
-						{
-							if ( SelectionStart > 0 )
-							{
-								len = SelectionLength ;
-								SelectionStart-- ;
-								SelectionLength = len + 1 ;
-							}
-						}
-					}
-					else if ( SelectionLength == 0 ) 
-					{
-						if ( SelectionStart > 0 ) SelectionStart-- ; 
-					}
-					else SelectionLength = 0 ;
+					len = SelectionLength ;
+					SelectionStart++ ;
+					SelectionLength = len -1 ;
 				}
+				else  if ( SelectionStart + SelectionLength < TextLength ) 
+					SelectionLength++ ;
+			}
+			else if ( SelectionLength == 0 )
+			{
+				if ( SelectionStart < TextLength ) SelectionStart++ ;
+			}
+			else if ( !leftToRightSelection )
+			{
+				SelectionLength = 0 ;
+			}
+			else 
+			{
+				_leftToRightSelection = true ;
+				len = SelectionLength + SelectionStart ;
+				SelectionLength = 0 ;
+				SelectionStart = len ;
 			}
 		}
 		public bool nextWordLeft ( string text , ref int selectionStart )
@@ -327,8 +353,93 @@ namespace SimpleHttp
 		/// <param name="e">(KeyEventArgs)</param>
 		protected override void OnKeyDown ( KeyEventArgs e )
 		{
+			if ( e.KeyCode == Keys.ShiftKey ) return ; //for debug
+			selectionStartPreKeyDown = SelectionStart ;
+			selectionEndPreKeyDown = SelectionStart + SelectionLength ;
 			base.OnKeyDown ( e ) ;
+			if ( e.Handled ) return ;
 			OnHorizontalArrows ( e ) ;
 		}
+		protected override void OnKeyUp ( KeyEventArgs e )
+		{
+			//if ( e.KeyCode == Keys.ShiftKey ) return ; //for debug
+			if ( !e.Control ) //We need this for up/down arrows
+			{
+				_leftToRightSelection = SelectionStart == selectionStartPreKeyDown || selectionEndPreKeyDown < SelectionStart + SelectionLength ;
+			}
+			base.OnKeyUp ( e ) ;
+		}
+		protected bool inPaint ;
+		//protected override void OnPaint ( PaintEventArgs e )
+		//{
+		//	if ( inPaint ) return ;
+		//	inPaint = true ;
+		//	Bitmap bitmap = new Bitmap ( Width , Height ) ;
+		//	DrawToBitmap ( bitmap , new Rectangle ( Point.Empty , Size ) ) ;
+		//	e.Graphics.DrawImageUnscaled ( bitmap , Point.Empty ) ;
+		//	bitmap.Dispose () ;
+		//	base.OnPaint ( e ) ;
+		//	inPaint = false ;
+		//}
+		protected bool sc ;
+		//[DebuggerStepThroughAttribute]
+		protected override void WndProc ( ref Message m )
+		{
+			switch ( m.Msg )
+			{
+				case WindowMessage.WM_EraseBackground :
+					m.Result = new IntPtr ( 1 ) ;
+					return ;
+				case WindowMessage.WM_Paint :
+					if ( inPaint )
+						break ;
+					else 
+					{
+						inPaint = true ;
+						
+						PaintCore () ;
+
+						inPaint = false ;
+						m.Result = IntPtr.Zero ;
+						
+						return ;
+					}
+			}
+			base.WndProc ( ref m )  ;
+		}
+		protected void PaintCore ()
+		{
+			if ( paintBuffer == null )
+				paintBuffer = new Bitmap ( Width , Height ) ;
+			else if ( ( paintBuffer.Width != Width ) || ( paintBuffer.Height != Height ) )
+			{
+				paintBuffer.Dispose () ;
+				paintBuffer = new Bitmap ( Width , Height ) ;
+			}
+			int scrTop = API.GetScrollPos ( Handle , API.ScrollBarDirection.SB_VERT ) ;
+			DrawToBitmap ( paintBuffer , new Rectangle ( Point.Empty , Size ) ) ; //sendig message from message and wainting on result, @#@!!!
+
+			IntPtr hdc = API.BeginPaint ( Handle , ref paintStruct ) ;
+			clientPoint.x = 0 ;
+			clientPoint.y = 0 ;
+			API.ClientToScreen ( Handle , ref clientPoint ) ;
+			API.GetWindowRect ( Handle , ref windowRect ) ;
+			Graphics graphics = Graphics.FromHdc ( hdc ) ;
+			graphics.DrawImageUnscaled ( paintBuffer , new Point ( windowRect.Left - clientPoint.x , windowRect.Top - clientPoint.y ) ) ;
+			
+			System.Diagnostics.Debug.WriteLine ( string.Concat ( "location: " , windowRect.Left , " ,    client: " , clientPoint.x , "    delta: " , windowRect.Left - clientPoint.x ) ) ;
+
+			API.ShowCaret ( Handle ) ;
+			API.EndPaint ( hdc , ref paintStruct ) ;
+			graphics.Dispose () ;
+		}
+		protected override void Dispose(bool disposing)
+		{
+			paintBuffer?.Dispose () ;
+			paintBuffer = null ;
+			base.Dispose ( disposing )  ;
+		}
 	}
+	
+		 
 }

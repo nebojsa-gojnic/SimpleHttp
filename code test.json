@@ -1,0 +1,22 @@
+{
+	"port": 50080,
+	"sitename": "localhost",
+	"sslCertificate": "I:\\Code\\localhost2.pfx",
+	"sslCertificatePassword": "password",
+	"sslProtocol": "Tls12",
+	"services": [
+		{
+			"service": "codeHttpService",
+			"source": "WebSockets.CodeHttpService, WebSockets",
+			"configData": {			}
+		}
+	] ,
+	"paths" :
+	[
+		{
+			"service": "codeHttpService",
+			"path": "/*"
+		}
+	]
+}
+

@@ -36,7 +36,6 @@ namespace SimpleHttp
 		private void link_MouseEnter ( object sender , EventArgs e )
 		{
 			( ( Label ) sender ).Font = boldUnderlineFont ;
-
 		}
 
 		private void link_MouseLeave ( object sender , EventArgs e )

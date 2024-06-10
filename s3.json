@@ -1,0 +1,19 @@
+{
+	"port": 50080,
+	"sitename": "",
+	"services": [
+		{
+			"service": "fileHttpService",
+			"source": "WebSockets.FileHttpService, WebSockets, Version=4.0.0.0, Culture=neutral, PublicKeyToken=null",
+			"configData": {
+				"webroot": "I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources"
+			}
+		}
+	],
+	"paths": [
+		{
+			"service": "fileHttpService",
+			"path": "/*"
+		}
+	]
+}

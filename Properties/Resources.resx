@@ -124,14 +124,14 @@
   <data name="activeIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\activeIcon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="json" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\json.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="rightDoubleArrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\rightDoubleArrow.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="greenCheck" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\greenCheck.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="monitor" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\monitor.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="closeIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\closeIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -139,26 +139,29 @@
   <data name="textIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\textIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="activeMonitorIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\activeMonitorIcon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="smallLeftArrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\smallLeftArrow.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="mainIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\mainIcon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="maximizeIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\maximizeIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="searchIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\searchIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="mainIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\mainIcon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="stopIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\stopIcon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="json24" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="jsonIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\json24.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="play" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\play.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="json" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\json.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="activeMonitorIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\activeMonitorIcon.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="stop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\stop.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -169,7 +172,37 @@
   <data name="warningIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\warningIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="monWhite" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\monWhite.ico;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="dropDownArrow" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\dropDownArrow.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="restoreIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\restoreIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="minimizeIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\minimizeIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="closeX" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\closeX.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="monitorHoverIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\monitorHoverIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="monitorIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\monitorIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="monRedIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\monRedIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="monWhiteCheckIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\monWhiteCheckIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="monWhiteIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\monWhiteIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="monYellowIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\monYellowIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="monGreenIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\monGreenIcon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>
