@@ -871,7 +871,6 @@
         private TextBox tbSiteName;
         private CommonGroupBox gbPort;
         private TextBox tbPort;
-        private CommonPanel sitePortGap;
 		private Button cmdStart;
 		private CommonGroupBox gbSiteUri;
 		private CommonFlowLayoutPanel clientTargetPanel;

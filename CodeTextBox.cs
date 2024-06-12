@@ -1,4 +1,5 @@
 ﻿using System ;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Forms ;
 
@@ -40,7 +41,7 @@ namespace SimpleHttp
 		/// <summary>
 		/// Creates new instance od the CodeTextBox class
 		/// </summary>
-		public CodeTextBox ()
+		public CodeTextBox ():base()
 		{
 			paintBuffer = null ;
 			clientPoint = new API.APIPoint () ;
@@ -370,19 +371,9 @@ namespace SimpleHttp
 			base.OnKeyUp ( e ) ;
 		}
 		protected bool inPaint ;
-		//protected override void OnPaint ( PaintEventArgs e )
-		//{
-		//	if ( inPaint ) return ;
-		//	inPaint = true ;
-		//	Bitmap bitmap = new Bitmap ( Width , Height ) ;
-		//	DrawToBitmap ( bitmap , new Rectangle ( Point.Empty , Size ) ) ;
-		//	e.Graphics.DrawImageUnscaled ( bitmap , Point.Empty ) ;
-		//	bitmap.Dispose () ;
-		//	base.OnPaint ( e ) ;
-		//	inPaint = false ;
-		//}
+
 		protected bool sc ;
-		//[DebuggerStepThroughAttribute]
+		[DebuggerStepThroughAttribute]
 		protected override void WndProc ( ref Message m )
 		{
 			switch ( m.Msg )
@@ -401,13 +392,12 @@ namespace SimpleHttp
 
 						inPaint = false ;
 						m.Result = IntPtr.Zero ;
-						
 						return ;
 					}
 			}
 			base.WndProc ( ref m )  ;
 		}
-		protected void PaintCore ()
+		protected virtual void PaintCore ()
 		{
 			if ( paintBuffer == null )
 				paintBuffer = new Bitmap ( Width , Height ) ;
@@ -420,20 +410,27 @@ namespace SimpleHttp
 			DrawToBitmap ( paintBuffer , new Rectangle ( Point.Empty , Size ) ) ; //sendig message from message and wainting on result, @#@!!!
 
 			IntPtr hdc = API.BeginPaint ( Handle , ref paintStruct ) ;
+			//	this how we get sceen coordinates,
+			//	why screen coordinates?
+			//	well, we just need coordinates is same co. system to find difference,
+			//	and thats how its down in Windows
 			clientPoint.x = 0 ;
 			clientPoint.y = 0 ;
 			API.ClientToScreen ( Handle , ref clientPoint ) ;
 			API.GetWindowRect ( Handle , ref windowRect ) ;
 			Graphics graphics = Graphics.FromHdc ( hdc ) ;
 			graphics.DrawImageUnscaled ( paintBuffer , new Point ( windowRect.Left - clientPoint.x , windowRect.Top - clientPoint.y ) ) ;
+
+			base.OnPaint ( new PaintEventArgs ( graphics , new Rectangle ( ( int ) graphics.ClipBounds.Left , ( int ) graphics.ClipBounds.Top , ( int ) graphics.ClipBounds.Width , ( int ) graphics.ClipBounds.Height ) ) ) ;
+			//_Paint?.Invoke ( this , new PaintEventArgs ( graphics , new Rectangle ( ( int ) graphics.ClipBounds.Left , ( int ) graphics.ClipBounds.Top , ( int ) graphics.ClipBounds.Width , ( int ) graphics.ClipBounds.Height ) ) ) ;
 			
-			System.Diagnostics.Debug.WriteLine ( string.Concat ( "location: " , windowRect.Left , " ,    client: " , clientPoint.x , "    delta: " , windowRect.Left - clientPoint.x ) ) ;
+			//System.Diagnostics.Debug.WriteLine ( string.Concat ( "location: " , windowRect.Left , " ,    client: " , clientPoint.x , "    delta: " , windowRect.Left - clientPoint.x ) ) ;
 
 			API.ShowCaret ( Handle ) ;
 			API.EndPaint ( hdc , ref paintStruct ) ;
 			graphics.Dispose () ;
 		}
-		protected override void Dispose(bool disposing)
+		protected override void Dispose ( bool disposing )
 		{
 			paintBuffer?.Dispose () ;
 			paintBuffer = null ;

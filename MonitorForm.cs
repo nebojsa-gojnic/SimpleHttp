@@ -36,18 +36,9 @@ namespace SimpleHttp
 		{
 			borderPen = SystemPens.ControlDark ;
 			backgroundBush = SystemBrushes.Control ;
-			Color col1 = SystemColors.Window ;
-			Color col2 = SystemColors.ButtonFace ;
-			inactiveEditBackColor = Color.FromArgb (  255 ,
-												( ( int ) col1.R + ( int ) col2.R ) >> 1 ,
-												( ( int ) col1.G + ( int ) col2.G ) >> 1 ,
-												( ( int ) col1.B + ( int ) col2.B ) >> 1 ) ;
+			inactiveEditBackColor = mixColors ( SystemColors.Window , SystemColors.ButtonFace ) ;
 			//col2 = SystemColors.ActiveCaption ;
 			titleBackColor = SystemColors.ControlDarkDark ;
-				//Color.FromArgb (  255 ,
-				//								( ( int ) col1.R + ( int ) col2.R ) >> 1 ,
-				//								( ( int ) col1.G + ( int ) col2.G ) >> 1 ,
-				//								( ( int ) col1.B + ( int ) col2.B ) >> 1 ) ;
 			titleForeColor = SystemColors.ControlLightLight ;
 			errorEditBackColor = Color.MistyRose ;
 			toolTipForeBrush = new SolidBrush ( SystemColors.InfoText ) ;
@@ -66,11 +57,7 @@ namespace SimpleHttp
 			//flatButtonAppearance.BorderColor = Color.Transparent ;
 			// fuck this retards, who created this ?
 			flatButtonAppearance.BorderSize = 0 ;
-			col1 = SystemColors.ControlDark ;
-			flatButtonAppearance.MouseDownBackColor  = Color.FromArgb (  150 ,
-												( ( int ) col1.R + ( int ) col2.R ) >> 1 ,
-												( ( int ) col1.G + ( int ) col2.G ) >> 1 ,
-												( ( int ) col1.B + ( int ) col2.B ) >> 1 ) ;
+			flatButtonAppearance.MouseDownBackColor = SystemColors.ControlLight ;
 			//col2 = SystemColors.ActiveCaption ;
 			flatButtonAppearance.MouseOverBackColor = SystemColors.ControlLightLight ;
 		}
@@ -456,13 +443,12 @@ namespace SimpleHttp
 		protected void readAndExecuteStartingParameters ()
 		{
 			string startingMessage = programStartParameters.errorMessage ;
-			setJsonEditorTabs () ;
 			try
 			{
 				if ( programStartParameters.configData.Properties().Count() != 0 ) jsonEditor.Text = json2string ( programStartParameters.configData ) ; //dont reflect yet, no no
 			}
 			catch { }
-			
+			jsonEditor.Text = programStartParameters.jsonText ;
 			try
 			{
 				_jsonConfigFileName = new FileInfo ( programStartParameters.jsonConfigFile ).FullName ;
@@ -472,19 +458,22 @@ namespace SimpleHttp
 				_jsonConfigFileName = programStartParameters.jsonConfigFile ;
 			}
 
+			try
+			{
+				configFileNameLabel.Text = Path.GetFileName ( jsonConfigFileName ) ;
+			}
+			catch { }
 
 			if ( string.IsNullOrWhiteSpace ( startingMessage ) )
 			{
-				if ( string.IsNullOrWhiteSpace ( programStartParameters.jsonConfigFile ) )
+				if ( programStartParameters.isEmpty )
+					restoreForm () ;
+				else if ( string.IsNullOrWhiteSpace ( programStartParameters.jsonConfigFile ) )
 				{
 
 					if ( programStartParameters.autoStart )
-					{
-						//jsonEditorVisible = false ;
 						if ( autoStarted = startWebServer ( programStartParameters.configData , out startingMessage ) ) 
-						{
-							Visible = false ;
-						}
+						{}
 						else
 						{
 							restoreForm ( () =>
@@ -494,37 +483,15 @@ namespace SimpleHttp
 									showWarning ( "Bad starting parameters" ,  startingMessage ) ;
 							} ) ;
 						}
-					}
 					else restoreForm ( new Action<WebServerConfigData,bool>(reflectServerStatus) , new object [ 2 ] { programStartParameters.configData , ( programStartParameters.mode == StartServerMode.fileServer ) || ( programStartParameters.mode == StartServerMode.resourceServer ) } ) ;
 				}
 				else 
 				{
 					jsonEditorVisible = true ;
-					if ( programStartParameters.isEmpty )
-					{ }
-					else if ( autoStarted = startWebServer ( programStartParameters.configData , out startingMessage ) )
-					{
-						Visible = false ;
-						_jsonConfigFileName = programStartParameters.jsonConfigFile ;
-						try
-						{
-							configFileNameLabel.Text = Path.GetFileName ( jsonConfigFileName ) ;
-						}
-						catch { }
-						//if ( programStartParameters.mode == StartServerMode.jsonConfig )
-						//{
-						//	int i = _jsonConfigFileName.LastIndexOf ( '\\' ) ;
-						//	configFileNameLabel.Text = ( i == -1 ) || ( i == _jsonConfigFileName.Length - 1 ) ? _jsonConfigFileName : _jsonConfigFileName.Substring ( i + 1 ) ;
-						//}
-						midPanel.Enabled = true ;
-					}
-					else
-					{
-						restoreForm ( () =>
-						{
-							showErrorMessage ( "Bad starting parameters" , startingMessage ) ;
-						} ) ;
-					}
+					reflectServerStatus ( programStartParameters.configData , false ) ;
+					if ( programStartParameters.autoStart )
+						autoStarted = startWebServer ( programStartParameters.configData , out startingMessage ) ;
+					else restoreForm ( ) ;
 				}
 			}
 			else 
@@ -542,12 +509,12 @@ namespace SimpleHttp
 			if ( !statusPanel.Visible ) reverTitlePanelControls () ; //possible situation if form lose focus during splitter dragging
 			base.OnDeactivate(e) ;
 		}
-		protected override void OnActivated ( EventArgs e )
-		{
-			if ( Opacity == 0f ) return ;
-			//API.SendMessage ( jsonEditor.Handle , WindowMessage.WM_SetRedraw , new IntPtr ( 1 ) , IntPtr.Zero ) ;
-			base.OnActivated ( e ) ;
-		}
+		//protected override void OnActivated ( EventArgs e )
+		//{
+		//	if ( Opacity == 0f ) return ;
+		//	//API.SendMessage ( jsonEditor.Handle , WindowMessage.WM_SetRedraw , new IntPtr ( 1 ) , IntPtr.Zero ) ;
+		//	base.OnActivated ( e ) ;
+		//}
 
 		protected void onPipeConnected ( object sender )
 		{
@@ -1197,7 +1164,6 @@ namespace SimpleHttp
 			}
 			notifyIcon.ShowBalloonTip ( 3000 , baloonTipTitle , baloonTipText , ToolTipIcon.Info ) ;
 			notifyIcon.Text = notifyIconText.Substring ( 0 , Math.Min ( 127 , notifyIconText.Length ) ) ;
-			setJsonEditorTabs () ;
 			setActiveStateIcon () ;
 		}
 		public static string fileNameOnly ( string path )
@@ -1305,16 +1271,16 @@ namespace SimpleHttp
 		}
 		public static void CreateSemiboldFonts ( string fontName , float fontSizeInPoints , out Font semiboldFont , out Font semiboldUnderlineFont ) 
 		{
-			CreateSemiboldFont ( fontName , fontSizeInPoints , out semiboldFont ) ;
+			semiboldFont = GetNewSemiboldFont ( fontName , fontSizeInPoints ) ;
 			semiboldUnderlineFont = new Font ( semiboldFont , FontStyle.Underline ) ;
 		}
-		public static void CreateTitleFont ( Font fontPrototype , out Font titleFont ) 
+		public static Font GetNewTitleFont ( Font fontPrototype ) 
 		{
-			CreateSemiboldFont ( fontPrototype.Name , 1.25f * fontPrototype.SizeInPoints , out titleFont ) ;
+			return GetNewSemiboldFont ( fontPrototype.Name , 1.15f * fontPrototype.SizeInPoints ) ;
 		}
-		public static void CreateSemiboldFont ( string fontName , float fontSizeInPoints , out Font semiboldFont ) 
+		public static Font GetNewSemiboldFont ( string fontName , float fontSizeInPoints ) 
 		{
-			semiboldFont = null ;
+			Font semiboldFont = null ;
 			string newFontName = string.Concat ( fontName , " Semibold" ) ;
 			try
 			{
@@ -1322,9 +1288,10 @@ namespace SimpleHttp
 			}
 			catch { }
 			if ( semiboldFont == null ) goto bad ;
-			if ( semiboldFont.FontFamily.Name == newFontName ) return ;
+			if ( semiboldFont.FontFamily.Name == newFontName ) return semiboldFont ;
+			semiboldFont.Dispose () ;
 bad:
-			semiboldFont = new Font ( fontName , fontSizeInPoints , FontStyle.Bold , GraphicsUnit.Point ) ;
+			return new Font ( fontName , fontSizeInPoints , FontStyle.Bold , GraphicsUnit.Point ) ;
 		}
 		protected override void OnFontChanged ( EventArgs e )
 		{
@@ -1334,9 +1301,7 @@ bad:
 			resourceLabel.Font = boldFont ;
 			requestLabel.Font = boldFont ;
 			uriLabel.Font = boldFont ;
-			Font titleFont ;
-			CreateTitleFont ( Font , out titleFont ) ;
-			titleLabel.Font = titleFont ;
+			titleLabel.Font = MonitorForm.GetNewTitleFont ( Font ) ;
 			//int h = Font.Height  ;
 			//closeButton.Size = new Size ( h , h ) ;
 			//titlePanel.Height = h << 1 ;
@@ -1361,9 +1326,9 @@ bad:
 			graphics.PixelOffsetMode = PixelOffsetMode.None ;
 			graphics.FillRectangle ( backgroundBush , new Rectangle ( Point.Empty , size ) ) ;
 			graphics.DrawLine ( borderPen , new Point ( 1 , 0 ) , new Point ( size.Width - 2 , 0 ) ) ;
-			graphics.DrawLine ( borderPen , new Point ( size.Width - 1 , 1 ) , new Point ( size.Width - 1 , size.Height - 1 ) ) ;
-			graphics.DrawLine ( borderPen , new Point ( 0 , 1 ) , new Point ( 0 , size.Height - 1 ) ) ;
-			graphics.DrawLine ( borderPen , new Point ( 1 , size.Height - 1  ) , new Point ( size.Width - 1 , size.Height - 1 ) ) ;
+			graphics.DrawLine ( borderPen , new Point ( size.Width - 1 , 1 ) , new Point ( size.Width - 1 , size.Height - 2 ) ) ;
+			graphics.DrawLine ( borderPen , new Point ( 0 , 1 ) , new Point ( 0 , size.Height - 2 ) ) ;
+			graphics.DrawLine ( borderPen , new Point ( 1 , size.Height - 1 ) , new Point ( size.Width - 2 , size.Height - 1 ) ) ;
 		}
 		/// <summary>
 		public static Region getNewBoxRegion ( Size size )
@@ -1550,7 +1515,7 @@ bad:
 				listItems.Clear () ;
 				listItems.AddRange ( items ) ;
 				if ( searchItemIndex < removeCount )
-					setSearchSelection ( -1 , -1 , 0 ) ;
+					selectLogItemAndMarkText ( -1 , -1 , 0 ) ;
 				else searchItemIndex -= removeCount ;
 			}
 			listItems.Add ( item ) ;
@@ -1651,7 +1616,7 @@ bad:
 			}
 			else 
 			{
-				setSearchSelection ( searchItemIndex , searchPosition , searchLength ) ;
+				selectLogItemAndMarkText ( searchItemIndex , searchPosition , searchLength ) ;
 				return true ;
 			}
 		}
@@ -1660,6 +1625,11 @@ bad:
 		//{
 		//	return searchForNextHeaderItem ( searchText , true ) ?  true : searchForNextHeaderItem ( searchText , false ) ;
 		//}
+		/// <summary>
+		/// This method tries to select next search text occurrence in the json editor.
+		/// </summary>
+		/// <param name="searchText">Text to find</param>
+		/// <returns>Returns true if successful in search</returns>
 		public bool searchNextJsonText ( string searchText )
 		{
 			if ( string.IsNullOrEmpty ( searchText ) ) return false ;
@@ -1683,6 +1653,12 @@ bad:
 			catch { }
 			return false ;
 		}
+		/// <summary>
+		/// Search for next appeareance of the given text in right properties panel(http headers).<br/>
+		/// It marks found text.
+		/// </summary>
+		/// <param name="searchText">Text to find</param>
+		/// <returns>Returns true if given text found</returns>
 		public bool searchForNextHeaderItem ( string searchText )
 		{
 			//if ( logList.SelectedIndex == -1  ) 
@@ -1705,7 +1681,7 @@ bad:
 					}
 					else
 					{
-						setSearchSelection ( searchItemIndex , currentCharIndex , currentLength ) ;
+						selectLogItemAndMarkText ( searchItemIndex , currentCharIndex , currentLength ) ;
 						return true ;
 					}
 			int i ;
@@ -1721,7 +1697,7 @@ bad:
 					}
 					else
 					{
-						setSearchSelection ( i , currentCharIndex , currentLength ) ;
+						selectLogItemAndMarkText ( i , currentCharIndex , currentLength ) ;
 						return true ;
 					}
 			currentCharIndex = -1 ;
@@ -1736,16 +1712,19 @@ bad:
 					}
 					else
 					{
-						setSearchSelection ( i , currentCharIndex , currentLength ) ;
+						selectLogItemAndMarkText ( i , currentCharIndex , currentLength ) ;
 						return true ;
 					}
 			if ( newSearch && ( searchItemIndex != -1 ) )
 			{
-				setSearchSelection ( searchItemIndex , searchPosition , searchLength ) ;
+				selectLogItemAndMarkText ( searchItemIndex , searchPosition , searchLength ) ;
 				return true ;
 			}
 			return false ;
 		}
+		/// <summary>
+		/// Makes selected item visible(scroll in focus)
+		/// </summary>
 		protected void fixScrollForLastItem ()
 		{
 			int lastVisibleIndex = logList.TopIndex + ( logList.ClientSize.Height / logList.ItemHeight ) ;
@@ -1756,7 +1735,13 @@ bad:
 			}
 			catch { }
 		}
-		protected void setSearchSelection ( int itemIndex , int charPosition , int length )
+		/// <summary>
+		/// This method selects log item and marks selected text on the right panel(headers) 
+		/// </summary>
+		/// <param name="itemIndex">Item index(in log list)</param>
+		/// <param name="charPosition">Char position in log item string</param>
+		/// <param name="length">Selection length</param>
+		protected void selectLogItemAndMarkText ( int itemIndex , int charPosition , int length )
 		{
 			searchItemIndex = itemIndex ;
 			searchPosition = charPosition ;
@@ -1809,9 +1794,6 @@ bad:
 								{
 									responseGrid.ClearSelection () ;
 									showProperties () ;
-									//logListSplitter.Visible = true ;
-									//propertiesPanel.Visible = true ;
-									//setClosePropertiesButtonBounds () ;
 								}
 						break ;
 					case HttpConnectionItem.FindResult.PositionFlags.responseFirstLine :
@@ -1841,6 +1823,7 @@ bad:
 		}
 		private bool markSearchInGrid ( int currentLength , DataGridView grid )
 		{
+			return markSearchInGrid ( searchBox.Text , searchPosition , searchLength , currentLength , grid ) ;
 
 			if ( searchPosition < 0 ) return false ;
 			if ( searchLength <= 0 ) return false ;
@@ -1875,7 +1858,47 @@ bad:
 			{
 				grid.ClearSelection () ;
 				cell.Selected = true ;
-				setGridRowInScroll ( cell ) ;
+				scrollToCell ( cell ) ;
+				return true ;
+			}
+		}
+		public static bool markSearchInGrid ( string searchText , int searchPosition , int searchLength  , int currentLength , DataGridView grid )
+		{
+
+			if ( searchPosition < 0 ) return false ;
+			if ( searchLength <= 0 ) return false ;
+			if ( searchLength > searchText.Length ) return false ; //!!!
+			
+			int rowCount = grid.RowCount ;
+			DataGridViewCell cell = null ;
+			int maxLength = 0 ;
+			string search = searchText.Substring ( 0 , searchLength ) ;
+			for ( int rowIndex = 0 ; rowIndex < rowCount ; rowIndex++ )
+			{
+				DataGridViewRow row = grid.Rows [ rowIndex ] ;
+				for ( int columnIndex = 0 ; columnIndex < 2 ; columnIndex++ )
+				{
+					string cellText = ( string ) row.Cells [ columnIndex ].Value ;
+					currentLength += cellText.Length ;
+					if ( ( currentLength >= searchPosition ) && ( cellText.Length > maxLength ) )
+					{
+						int currentCharIndex = -1 ;
+						if ( HttpConnectionItem.matchLongestLength ( search , cellText , ref currentCharIndex , ref maxLength , true ) )
+						{
+							cell = row.Cells [ columnIndex ] ;
+							break ;
+						}
+					}
+					currentLength ++ ;
+				}
+			}
+			if ( cell == null )
+				return false ;
+			else 
+			{
+				grid.ClearSelection () ;
+				cell.Selected = true ;
+				scrollToCell ( cell ) ;
 				return true ;
 			}
 		}
@@ -1895,7 +1918,11 @@ bad:
 			selectedLabel = foundLabel ;
 			return foundLabel == null ;
 		}
-		protected void setGridRowInScroll ( DataGridViewCell cell )
+		/// <summary>
+		/// Make the row with the given cell visible(by scrolling)
+		/// </summary>
+		/// <param name="cell">Cell to make visible</param>
+		public static void scrollToCell ( DataGridViewCell cell )
 		{
 			if ( cell == null ) return ;
 			DataGridView grid = cell.DataGridView ;
@@ -1915,9 +1942,7 @@ bad:
 					int r = firstDisplayedCell.RowIndex + i + 1 ;
 					grid.FirstDisplayedCell = grid.Rows [ Math.Min ( r , grid.Rows.Count - 1 ) ].Cells [ cell.ColumnIndex ] ;
 				}
-				else
-				{
-				}
+				else {}
 			}
 		}
 		/// <summary>
@@ -2029,7 +2054,10 @@ bad:
 								{
 									string errorMessage ;
 									if ( startWebServer ( quickStartForm.configData , out errorMessage ) )
+									{
+										jsonEditor.Text = json2string ( quickStartForm.configData ) ;
 										quickStartForm.Hide () ;
+									}
 								}
 						break ;
 						case MessageForm.ButtonKind.no :
@@ -2127,18 +2155,12 @@ bad:
 			int i = message.IndexOf ( ". Path " ) ;
 			if ( i != -1 )
 				message = message.Substring ( 0 , i ) + ".\r\nPath " + message.Substring ( i + 7 ) ;
-			if ( WindowState == FormWindowState.Minimized ) 
-				restoreForm ( showErrorMessage , new object [ 2 ] { title , message } ) ;
-			else showErrorMessage ( title , message ) ;
+			showErrorMessage ( title , message ) ;
 		}
 		public void showError ( string title , Exception exp )
 		{
-			ShowInTaskbar = true ;
-			Visible = true ;
 			string message = exp == null ? "Unknown error" : exp.InnerException == null ? exp.Message : exp.InnerException.Message ;
-			if ( WindowState == FormWindowState.Minimized ) 
-				restoreForm ( showErrorMessage , new object [ 2 ] { title , message } ) ;
-			else showErrorMessage ( title , message ) ;
+			showErrorMessage ( title , message ) ;
 		}
 		public void InvokeShowErrorMessage ( string title , Exception exp  )
 		{
@@ -2334,6 +2356,82 @@ bad:
 			closeProgramMenuItem.Text = isListening ? "Close http server and program" : "Close program" ;
 		}
 
+		private void iconMenu_ItemClicked ( object sender , ToolStripItemClickedEventArgs e )
+		{
+			return ;
+			if ( e.ClickedItem == aboutMenuItem )
+				restoreForm ( showAboutForm ) ;
+			else if ( e.ClickedItem == showStartParametersMenuItem )
+				restoreForm ( showStartParameters , new object [ 2 ] { "Starting parameters" , programStartParameters } ) ;
+			else if ( e.ClickedItem == showMainWindowMenuItem )
+				restoreForm () ;
+			else if ( e.ClickedItem == showQuickStartMenuItem )
+				restoreForm ( new ThreadStart ( showQuickStartForm ) ) ;
+			else if ( e.ClickedItem == startJSONConfigMenuItem )
+				restoreForm ( startJSONConfigMenuItemClick ) ;
+			else if ( e.ClickedItem == stopServerMenuItem )
+			{
+				if ( isListening )
+					restoreForm ( () =>
+					{
+						closeProgramConfirmed = false ;
+						showMessage ( SimpleHttp.Properties.Resources.warningIcon ,
+												"Stoping server" , "Do you want to stop http server?" ,
+												"Stop server" , "" , "Keep server working" ) ;
+
+					} ) ;
+				else Close () ;
+			}
+			else if ( e.ClickedItem == closeProgramMenuItem )
+			{
+				restoreForm ( () =>
+				{
+					closeProgramConfirmed = false ;
+					Close () ;
+				} ) ;
+			}
+		}
+		private void aboutMenuItem_Click ( object sender , EventArgs e )
+		{
+			restoreForm ( showAboutForm ) ;
+		}
+		private void showQuickStartMenuItem_Click ( object sender , EventArgs e )
+		{
+			restoreForm ( new ThreadStart ( showQuickStartForm ) ) ;
+		}
+		private void startJSONConfigMenuItem_Click ( object sender , EventArgs e )
+		{
+			restoreForm ( startJSONConfigMenuItemClick ) ;
+		}
+		private void showMainWindowMenuItem_Click ( object sender , EventArgs e )
+		{
+			restoreForm () ;
+		}
+		private void showStartParametersMenuItem_Click ( object sender , EventArgs e )
+		{
+			restoreForm ( showStartParameters , new object [ 2 ] { "Starting parameters" , programStartParameters } ) ;
+		}
+		private void stopServerMenuItem_Click ( object sender, EventArgs e )
+		{
+			if ( isListening )
+				restoreForm ( () =>
+				{
+					closeProgramConfirmed = false ;
+					showMessage ( SimpleHttp.Properties.Resources.warningIcon ,
+											"Stoping server" , "Do you want to stop http server?" ,
+											"Stop server" , "" , "Keep server working" ) ;
+
+				} ) ;
+			else Close () ;
+		}
+		private void closeProgramMenuItem_Click ( object sender , EventArgs e )
+		{
+			restoreForm ( () =>
+				{
+					closeProgramConfirmed = false ;
+					Close () ;
+				} ) ;
+		}
 		protected AboutForm aboutForm ;
 		private void showAboutForm ()
 		{
@@ -2383,40 +2481,7 @@ bad:
 			}
 			catch { }
 		}
-		private void iconMenu_ItemClicked ( object sender , ToolStripItemClickedEventArgs e )
-		{
-			if ( e.ClickedItem == aboutMenuItem )
-				restoreForm ( showAboutForm ) ;
-			else if ( e.ClickedItem == showStartParametersMenuItem )
-				restoreForm ( showStartParameters , new object [ 2 ] { "Starting parameters" , programStartParameters } ) ;
-			else if ( e.ClickedItem == showMainWindowMenuItem )
-				restoreForm () ;
-			else if ( e.ClickedItem == showQuickStartMenuItem )
-				restoreForm ( new ThreadStart ( showQuickStartForm ) ) ;
-			else if ( e.ClickedItem == startJSONConfigMenuItem )
-				restoreForm ( startJSONConfigMenuItemClick ) ;
-			else if ( e.ClickedItem == stopServerMenuItem )
-			{
-				if ( isListening )
-					restoreForm ( () =>
-					{
-						closeProgramConfirmed = false ;
-						showMessage ( SimpleHttp.Properties.Resources.warningIcon ,
-												"Stoping server" , "Do you want to stop http server?" ,
-												"Stop server" , "" , "Keep server working" ) ;
-
-					} ) ;
-				else Close () ;
-			}
-			else if ( e.ClickedItem == closeProgramMenuItem )
-			{
-				restoreForm ( () =>
-				{
-					closeProgramConfirmed = false ;
-					Close () ;
-				} ) ;
-			}
-		}
+		
 		/// <summary>
         /// Skida x,y-koordinate iz 32-bitnog int-a.
         /// </summary>
@@ -2570,18 +2635,27 @@ bad:
 		public void showMessage ( Image image , string title , string caption , 
 									string okButtonText , string noButtonText, string cancelButtonText )
 		{
-			if ( messageForm == null )
+			if ( WindowState == FormWindowState.Minimized ) 
+				restoreForm ( showMessage , new object [ 6 ] { image , title , caption , okButtonText , noButtonText , cancelButtonText } ) ;
+			else 
 			{
-				messageForm = MessageForm.Show ( this , image , title , caption , 
-									okButtonText , noButtonText , cancelButtonText ,
-									messageForm_buttonClick , messageForm_Closed , messageForm_Disposed ) ;
-				messageForm.Font = Font ;
-			}
-			else
-			{
-				messageForm.setAll ( image , title , caption , okButtonText , noButtonText , cancelButtonText ) ;
-				messageForm.Show () ;
-				messageForm.BringToFront () ;
+				//just incase
+				ShowInTaskbar = true ;
+				Visible = true ;
+
+				if ( messageForm == null )
+				{
+					messageForm = MessageForm.Show ( this , image , title , caption , 
+										okButtonText , noButtonText , cancelButtonText ,
+										messageForm_buttonClick , messageForm_Closed , messageForm_Disposed ) ;
+					messageForm.Font = Font ;
+				}
+				else
+				{
+					messageForm.setAll ( image , title , caption , okButtonText , noButtonText , cancelButtonText ) ;
+					messageForm.Show () ;
+					messageForm.BringToFront () ;
+				}
 			}
 			// API.PostMessageA ( jsonEditor.Handle , WindowMessage.WM_SetRedraw , IntPtr.Zero , IntPtr.Zero ) ;
 		}
@@ -3516,11 +3590,13 @@ endLab:
 		protected void loadSearchBoxVisibility ()
 		{
 			RegistryKey key = null ;
+			bool SearchBoxVisibleValue = false ;
+			// this will fail on the first start since registry is empty
 			try
 			{
 				key = Application.UserAppDataRegistry ;
 				//fuck (bool) 1 cannot do that!!
-				setSearchBoxVisible ( ( int ) key.GetValue ( "SearchBoxVisible" ) == 0 ? false : true , true ) ;
+				SearchBoxVisibleValue = ( ( int ) key.GetValue ( "SearchBoxVisible" ) == 0 ) ? false : true ;
 			}
 			catch { }
 			try
@@ -3532,6 +3608,7 @@ endLab:
 				}
 			}
 			catch { }
+			setSearchBoxVisible ( SearchBoxVisibleValue ) ;
 		}
 		protected void saveSearchBoxWidth ()
 		{
@@ -3620,7 +3697,7 @@ endLab:
 		{
 			if ( titlePanelBitmap == null ) return ;
 			newSearchBoxWidth = searchBox.Width + e.Location.X - searchBoxMouseDownX ;
-			if ( newSearchBoxWidth < searchBox.MinimumSize.Width ) //ovde
+			if ( newSearchBoxWidth < searchBox.MinimumSize.Width ) 
 			{
 				newSearchBoxWidth = searchBox.MinimumSize.Width ;
 				searchSplitter.Cursor = Cursors.PanWest ;
@@ -3736,10 +3813,17 @@ endLab:
 					propertiesPanel.Width = midPanel.ClientSize.Width - 200 ;
 			}
 		}
-
+		private void jsonEditor_Paint ( object sender , PaintEventArgs e )
+		{
+			if ( Opacity == 0f ) return ;
+			jsonEditor.Paint -= jsonEditor_Paint ;
+			setJsonEditorTabs () ; //fuck
+		}
+		private void jsonEditor_Enter ( object sender , EventArgs e )
+		{
+		}
 		private void jsonEditor_TextChanged ( object sender , EventArgs e )
 		{
-			setJsonEditorTabs () ; //fuck me
 			configFileNameLabel.Text = "<not saved>" ;
 		}
 
@@ -3815,12 +3899,6 @@ endLab:
 			if ( isListening )
 				showClosingQuestion () ;
 			else Close () ;
-		}
-		private void jsonEditor_VisibleChanged ( object sender , EventArgs e )
-		{
-			if ( jsonEditor.Visible ) setJsonEditorTabs () ;
-
-
 		}
 		private void viewSwitch_MouseEnter ( object sender , EventArgs e )
 		{

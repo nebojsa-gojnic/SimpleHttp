@@ -1,5 +1,6 @@
 {
-  "profiles": {
+  "profiles": 
+  {
     "File 50080 stop": {
       "commandName": "Project",
       "commandLineArgs": "/f \"I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources\" /p 50080 /d",
@@ -13,7 +14,8 @@
     "Resource 50080": {
       "commandName": "Project",
       "commandLineArgs": "/r \"I:\\Code\\Nodes\\PipeMania\\PipeMania\\bin\\Release\\netstandard2.0\\PipeMania.dll\" /p 50080 /c \"I:\\Code\\localhost2.pfx\" /pw \"password\" /tls12 /s localhost"
-    },
+    } 
+	,
     "File wrong": {
       "commandName": "Project",
       "commandLineArgs": "/f I:\\Code\\Nodes\\PipeMania\\PipeMania\\Resources1 /p 50080"
@@ -22,9 +24,29 @@
       "commandName": "Project",
       "commandLineArgs": "webconfig.json"
     },
-    "Empty": {
-      "commandName": "Project"
+    "webconfig.json /d": {
+      "commandName": "Project",
+      "commandLineArgs": "webconfig.json /d"
     },
+	"/d webconfig.json": 
+	{
+		"commandName": "Project",
+		"commandLineArgs": "/d webconfig.json"
+	},
+    "Empty": 
+	{
+      "commandName": "Project"
+    } ,
+    "Bad JSON": 
+	{
+      "commandName": "Project",
+      "commandLineArgs": "bad.json"
+    } ,
+    "Bad JSON stop": 
+	{
+      "commandName": "Project",
+      "commandLineArgs": "\"bad.json\" /d"
+    } ,
     "Wrong pars": {
       "commandName": "Project",
       "commandLineArgs": "dsf"

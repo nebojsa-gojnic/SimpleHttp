@@ -29,174 +29,195 @@
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ResourcesForm));
-			this.resourceList = new System.Windows.Forms.ListBox();
-			this.mainPanel = new System.Windows.Forms.Panel();
-			this.searchPanel = new System.Windows.Forms.Panel();
-			this.searchBox = new System.Windows.Forms.TextBox();
-			this.searchLabel = new System.Windows.Forms.Label();
-			this.namePanel = new System.Windows.Forms.FlowLayoutPanel();
-			this.assemblyNameLabel = new System.Windows.Forms.Label();
-			this.lbAssemblyName = new System.Windows.Forms.Label();
-			this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
-			this.sizeTestLabel = new System.Windows.Forms.Label();
-			this.mainPanel.SuspendLayout();
-			this.searchPanel.SuspendLayout();
-			this.namePanel.SuspendLayout();
-			this.SuspendLayout();
+			resourceList = new ListBox();
+			mainPanel = new CommonFlowLayoutPanel();
+			namePanel = new CommonFlowLayoutPanel();
+			assemblyNameLabel = new CommonLabel();
+			lbAssemblyName = new CommonLabel();
+			searchPanel = new CommonPanel();
+			searchBox = new CodeTextBox();
+			searchLabel = new Label();
+			saveFileDialog = new SaveFileDialog();
+			sizeTestLabel = new CommonLabel();
+			titleBar = new TitleBar();
+			mainPanel.SuspendLayout();
+			namePanel.SuspendLayout();
+			searchPanel.SuspendLayout();
+			SuspendLayout();
 			// 
 			// resourceList
 			// 
-			this.resourceList.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.resourceList.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
-			this.resourceList.FormattingEnabled = true;
-			this.resourceList.IntegralHeight = false;
-			this.resourceList.ItemHeight = 15;
-			this.resourceList.Location = new System.Drawing.Point(9, 55);
-			this.resourceList.Margin = new System.Windows.Forms.Padding(0, 0, 14, 5);
-			this.resourceList.Name = "resourceList";
-			this.resourceList.Size = new System.Drawing.Size(497, 449);
-			this.resourceList.TabIndex = 1;
-			this.resourceList.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.resourceList_DrawItem);
-			this.resourceList.SelectedIndexChanged += new System.EventHandler(this.resourceList_SelectedIndexChanged);
-			this.resourceList.DoubleClick += new System.EventHandler(this.resourceList_DoubleClick);
-			this.resourceList.MouseDown += new System.Windows.Forms.MouseEventHandler(this.resourceList_MouseDown);
-			this.resourceList.MouseUp += new System.Windows.Forms.MouseEventHandler(this.resourceList_MouseUp);
-			this.resourceList.Resize += new System.EventHandler(this.resourceList_Resize);
+			resourceList.DrawMode = DrawMode.OwnerDrawFixed;
+			resourceList.FormattingEnabled = true;
+			resourceList.ItemHeight = 15;
+			resourceList.Location = new Point(9, 83);
+			resourceList.Margin = new Padding(0);
+			resourceList.Name = "resourceList";
+			resourceList.Size = new Size(377, 409);
+			resourceList.TabIndex = 1;
+			resourceList.DrawItem += resourceList_DrawItem;
+			resourceList.SelectedIndexChanged += resourceList_SelectedIndexChanged;
+			resourceList.DoubleClick += resourceList_DoubleClick;
+			resourceList.MouseDown += resourceList_MouseDown;
+			resourceList.MouseUp += resourceList_MouseUp;
+			resourceList.Resize += resourceList_Resize;
 			// 
 			// mainPanel
 			// 
-			this.mainPanel.Controls.Add(this.resourceList);
-			this.mainPanel.Controls.Add(this.searchPanel);
-			this.mainPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.mainPanel.Location = new System.Drawing.Point(0, 33);
-			this.mainPanel.Margin = new System.Windows.Forms.Padding(0);
-			this.mainPanel.Name = "mainPanel";
-			this.mainPanel.Padding = new System.Windows.Forms.Padding(9, 11, 9, 11);
-			this.mainPanel.Size = new System.Drawing.Size(515, 515);
-			this.mainPanel.TabIndex = 1;
-			this.mainPanel.Resize += new System.EventHandler(this.mainPanel_Resize);
-			// 
-			// searchPanel
-			// 
-			this.searchPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.searchPanel.Controls.Add(this.searchBox);
-			this.searchPanel.Controls.Add(this.searchLabel);
-			this.searchPanel.Dock = System.Windows.Forms.DockStyle.Top;
-			this.searchPanel.Location = new System.Drawing.Point(9, 11);
-			this.searchPanel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.searchPanel.Name = "searchPanel";
-			this.searchPanel.Size = new System.Drawing.Size(497, 44);
-			this.searchPanel.TabIndex = 0;
-			// 
-			// searchBox
-			// 
-			this.searchBox.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.searchBox.Location = new System.Drawing.Point(56, 0);
-			this.searchBox.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.searchBox.Name = "searchBox";
-			this.searchBox.Size = new System.Drawing.Size(441, 27);
-			this.searchBox.TabIndex = 0;
-			this.searchBox.TextChanged += new System.EventHandler(this.searchBox_TextChanged);
-			this.searchBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.searchBox_KeyDown);
-			this.searchBox.MouseDown += new System.Windows.Forms.MouseEventHandler(this.searchBox_MouseDown);
-			this.searchBox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.searchBox_MouseUp);
-			this.searchBox.Resize += new System.EventHandler(this.searchBox_Resize);
-			// 
-			// searchLabel
-			// 
-			this.searchLabel.AutoSize = true;
-			this.searchLabel.Dock = System.Windows.Forms.DockStyle.Left;
-			this.searchLabel.Location = new System.Drawing.Point(0, 0);
-			this.searchLabel.Margin = new System.Windows.Forms.Padding(0);
-			this.searchLabel.Name = "searchLabel";
-			this.searchLabel.Padding = new System.Windows.Forms.Padding(0, 4, 0, 0);
-			this.searchLabel.Size = new System.Drawing.Size(56, 24);
-			this.searchLabel.TabIndex = 2;
-			this.searchLabel.Text = "Search:";
+			mainPanel.AutoSize = true;
+			mainPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			mainPanel.Controls.Add(namePanel);
+			mainPanel.Controls.Add(searchPanel);
+			mainPanel.Controls.Add(resourceList);
+			mainPanel.Dock = DockStyle.Top;
+			mainPanel.FlowDirection = FlowDirection.TopDown;
+			mainPanel.Location = new Point(1, 31);
+			mainPanel.Margin = new Padding(0);
+			mainPanel.Name = "mainPanel";
+			mainPanel.Padding = new Padding(9);
+			mainPanel.Size = new Size(396, 501);
+			mainPanel.TabIndex = 1;
+			mainPanel.WrapContents = false;
+			mainPanel.Resize += mainPanel_Resize;
 			// 
 			// namePanel
 			// 
-			this.namePanel.AutoSize = true;
-			this.namePanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.namePanel.Controls.Add(this.assemblyNameLabel);
-			this.namePanel.Controls.Add(this.lbAssemblyName);
-			this.namePanel.Dock = System.Windows.Forms.DockStyle.Top;
-			this.namePanel.Location = new System.Drawing.Point(0, 0);
-			this.namePanel.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.namePanel.Name = "namePanel";
-			this.namePanel.Padding = new System.Windows.Forms.Padding(9, 13, 9, 0);
-			this.namePanel.Size = new System.Drawing.Size(515, 33);
-			this.namePanel.TabIndex = 2;
+			namePanel.AutoSize = true;
+			namePanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			namePanel.Controls.Add(assemblyNameLabel);
+			namePanel.Controls.Add(lbAssemblyName);
+			namePanel.Dock = DockStyle.Top;
+			namePanel.Location = new Point(9, 9);
+			namePanel.Margin = new Padding(0);
+			namePanel.Name = "namePanel";
+			namePanel.Padding = new Padding(0, 6, 0, 6);
+			namePanel.Size = new Size(377, 32);
+			namePanel.TabIndex = 2;
 			// 
 			// assemblyNameLabel
 			// 
-			this.assemblyNameLabel.AutoSize = true;
-			this.assemblyNameLabel.Location = new System.Drawing.Point(9, 13);
-			this.assemblyNameLabel.Margin = new System.Windows.Forms.Padding(0);
-			this.assemblyNameLabel.Name = "assemblyNameLabel";
-			this.assemblyNameLabel.Size = new System.Drawing.Size(116, 20);
-			this.assemblyNameLabel.TabIndex = 1;
-			this.assemblyNameLabel.Text = "Assembly name:";
+			assemblyNameLabel.AutoSize = true;
+			assemblyNameLabel.Location = new Point(0, 6);
+			assemblyNameLabel.Margin = new Padding(0);
+			assemblyNameLabel.Name = "assemblyNameLabel";
+			assemblyNameLabel.Size = new Size(116, 20);
+			assemblyNameLabel.TabIndex = 1;
+			assemblyNameLabel.Text = "Assembly name:";
 			// 
 			// lbAssemblyName
 			// 
-			this.lbAssemblyName.AutoSize = true;
-			this.lbAssemblyName.Location = new System.Drawing.Point(125, 13);
-			this.lbAssemblyName.Margin = new System.Windows.Forms.Padding(0);
-			this.lbAssemblyName.Name = "lbAssemblyName";
-			this.lbAssemblyName.Size = new System.Drawing.Size(62, 20);
-			this.lbAssemblyName.TabIndex = 0;
-			this.lbAssemblyName.Text = "<none>";
+			lbAssemblyName.AutoSize = true;
+			lbAssemblyName.Location = new Point(116, 6);
+			lbAssemblyName.Margin = new Padding(0);
+			lbAssemblyName.Name = "lbAssemblyName";
+			lbAssemblyName.Size = new Size(62, 20);
+			lbAssemblyName.TabIndex = 0;
+			lbAssemblyName.Text = "<none>";
+			// 
+			// searchPanel
+			// 
+			searchPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			searchPanel.Controls.Add(searchBox);
+			searchPanel.Controls.Add(searchLabel);
+			searchPanel.Location = new Point(9, 47);
+			searchPanel.Margin = new Padding(0, 6, 0, 6);
+			searchPanel.Name = "searchPanel";
+			searchPanel.Size = new Size(377, 30);
+			searchPanel.TabIndex = 0;
+			// 
+			// searchBox
+			// 
+			searchBox.Dock = DockStyle.Fill;
+			searchBox.Location = new Point(56, 0);
+			searchBox.Margin = new Padding(3, 4, 3, 4);
+			searchBox.Name = "searchBox";
+			searchBox.Size = new Size(321, 27);
+			searchBox.TabIndex = 0;
+			searchBox.WordWrap = false;
+			searchBox.TextChanged += searchBox_TextChanged;
+			searchBox.KeyDown += searchBox_KeyDown;
+			searchBox.MouseDown += searchBox_MouseDown;
+			searchBox.MouseUp += searchBox_MouseUp;
+			searchBox.Resize += searchBox_Resize;
+			// 
+			// searchLabel
+			// 
+			searchLabel.AutoSize = true;
+			searchLabel.Dock = DockStyle.Left;
+			searchLabel.Location = new Point(0, 0);
+			searchLabel.Margin = new Padding(0);
+			searchLabel.Name = "searchLabel";
+			searchLabel.Padding = new Padding(0, 2, 0, 0);
+			searchLabel.Size = new Size(56, 22);
+			searchLabel.TabIndex = 2;
+			searchLabel.Text = "Search:";
 			// 
 			// sizeTestLabel
 			// 
-			this.sizeTestLabel.AutoSize = true;
-			this.sizeTestLabel.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-			this.sizeTestLabel.Location = new System.Drawing.Point(-174, -280);
-			this.sizeTestLabel.Margin = new System.Windows.Forms.Padding(0);
-			this.sizeTestLabel.Name = "sizeTestLabel";
-			this.sizeTestLabel.Size = new System.Drawing.Size(35, 20);
-			this.sizeTestLabel.TabIndex = 2;
-			this.sizeTestLabel.Text = "Test";
+			sizeTestLabel.AutoSize = true;
+			sizeTestLabel.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+			sizeTestLabel.Location = new Point(-173, -279);
+			sizeTestLabel.Margin = new Padding(0);
+			sizeTestLabel.Name = "sizeTestLabel";
+			sizeTestLabel.Size = new Size(35, 20);
+			sizeTestLabel.TabIndex = 2;
+			sizeTestLabel.Text = "Test";
+			// 
+			// titleBar
+			// 
+			titleBar.AutoSize = true;
+			titleBar.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			titleBar.CloseButtonImage = (Image)resources.GetObject("titleBar.CloseButtonImage");
+			titleBar.Dock = DockStyle.Top;
+			titleBar.Location = new Point(1, 1);
+			titleBar.MaximumSize = new Size(int.MaxValue, 30);
+			titleBar.MinimumSize = new Size(0, 30);
+			titleBar.Name = "titleBar";
+			titleBar.Size = new Size(396, 30);
+			titleBar.TabIndex = 2;
+			titleBar.Text = "titleBar1";
+			titleBar.CloseButtonClick += titleBar_CloseButtonClick;
 			// 
 			// ResourcesForm
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(515, 548);
-			this.Controls.Add(this.sizeTestLabel);
-			this.Controls.Add(this.mainPanel);
-			this.Controls.Add(this.namePanel);
-			this.Font = new System.Drawing.Font("Segoe UI", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-			this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-			this.MaximizeBox = false;
-			this.MinimizeBox = false;
-			this.Name = "ResourcesForm";
-			this.ShowInTaskbar = false;
-			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
-			this.Text = "Assembly Resources";
-			this.mainPanel.ResumeLayout(false);
-			this.searchPanel.ResumeLayout(false);
-			this.searchPanel.PerformLayout();
-			this.namePanel.ResumeLayout(false);
-			this.namePanel.PerformLayout();
-			this.ResumeLayout(false);
-			this.PerformLayout();
-
+			AutoScaleMode = AutoScaleMode.None;
+			ClientSize = new Size(398, 548);
+			Controls.Add(sizeTestLabel);
+			Controls.Add(mainPanel);
+			Controls.Add(titleBar);
+			Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+			FormBorderStyle = FormBorderStyle.None;
+			Icon = (Icon)resources.GetObject("$this.Icon");
+			Margin = new Padding(3, 4, 3, 4);
+			MaximizeBox = false;
+			MinimizeBox = false;
+			Name = "ResourcesForm";
+			Padding = new Padding(1);
+			ShowInTaskbar = false;
+			SizeGripStyle = SizeGripStyle.Show;
+			Text = "Assembly Resources";
+			mainPanel.ResumeLayout(false);
+			mainPanel.PerformLayout();
+			namePanel.ResumeLayout(false);
+			namePanel.PerformLayout();
+			searchPanel.ResumeLayout(false);
+			searchPanel.PerformLayout();
+			ResumeLayout(false);
+			PerformLayout();
 		}
 
-        #endregion
+		#endregion
 
-        private ListBox resourceList;
-        private Panel mainPanel;
-        private FlowLayoutPanel namePanel;
-        private Label lbAssemblyName;
-		private Label assemblyNameLabel;
+		private ListBox resourceList;
+        private CommonFlowLayoutPanel mainPanel;
+        private CommonFlowLayoutPanel namePanel;
+        private CommonLabel lbAssemblyName;
         private SaveFileDialog saveFileDialog;
-        private Label sizeTestLabel;
-        private TextBox searchBox;
-		private Panel searchPanel;
+        private CommonLabel sizeTestLabel;
+        private CodeTextBox searchBox;
+		private CommonPanel searchPanel;
 		private Label searchLabel;
+		private TitleBar titleBar;
+		private CommonLabel assemblyNameLabel;
 	}
 }

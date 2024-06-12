@@ -9,9 +9,15 @@ namespace SimpleHttp
 {
 	public partial class MessageForm : Form
 	{
+		// nullable/non-nullable, omg what did thay do with C#
+		public event EventHandler<ButtonKind>? buttonClicked ;
+		protected bool keyDownHandledByUser ;
+		protected char pressedChar ;
 		public MessageForm()
 		{
 			InitializeComponent() ;
+			pressedChar = char.MinValue ;
+			keyDownHandledByUser = false ;
 			titlePanel.BackColor = MonitorForm.titleBackColor ;
 			titlePanel.ForeColor = MonitorForm.titleForeColor ;
 			MonitorForm.AssingFlatButtonAppearance ( closeButton ) ;
@@ -39,8 +45,7 @@ namespace SimpleHttp
 			/// </summary>
 			cancel = 3 
 		}
-		// nullable/non-nullable, omg what did thay do with C#
-		public event EventHandler<ButtonKind>? buttonClicked ;
+
 
 		private void cmdOk_Click ( object sender , EventArgs e )
 		{
@@ -200,6 +205,11 @@ namespace SimpleHttp
 			Text = title ;
 			messageText = caption ;
 		}
+		protected override void OnTextChanged(EventArgs e)
+		{
+			titleLabel.Text = Text ;
+			base.OnTextChanged(e) ;
+		}
 		public void setButtonText ( string okButtonText , string noButtonText , string cancelButtonText )
 		{ 
 			this.okButtonText = okButtonText ;
@@ -235,10 +245,8 @@ namespace SimpleHttp
         }
 		protected override void OnFontChanged ( EventArgs e )
 		{
-			Font titleFont ;
-			MonitorForm.CreateTitleFont ( Font , out titleFont ) ;
-			titleLabel.Font = titleFont ;
-			int h = titleFont.Height ;
+			titleLabel.Font = MonitorForm.GetNewTitleFont ( Font ) ;
+			int h = titleLabel.Font.Height ;
 			closeButton.Size = new Size ( h , h ) ;
 			titlePanel.Height = ( 3 * h ) >> 1 ;
 			base.OnFontChanged ( e ) ;
@@ -252,6 +260,54 @@ namespace SimpleHttp
 		{
 			MonitorForm.SetBoxRegion ( this ) ;
 			base.OnResize ( e ) ;
+		}
+		protected override void OnKeyDown ( KeyEventArgs e )
+		{
+			keyDownHandledByUser = e.Handled ;
+			pressedChar = char.MinValue ;
+			base.OnKeyDown ( e ) ;
+			keyDownHandledByUser = e.Handled ;
+		}
+		protected override void OnKeyPress ( KeyPressEventArgs e )
+		{
+			pressedChar = e.Handled ? char.MinValue : e.KeyChar ;
+			base.OnKeyPress ( e ) ;
+		}
+		protected override void OnKeyUp ( KeyEventArgs e )
+		{
+			base.OnKeyDown ( e ) ;
+			if ( keyDownHandledByUser || e.Handled ) return ;
+			switch ( e.KeyCode )
+			{
+				case Keys.Escape :
+					closeButton_Click ( closeButton , e ) ;
+				break ;
+				case Keys.Enter :
+					if ( cmdOk.Visible ) 
+					{
+						e.Handled = true ;
+						cmdOk_Click ( cmdOk  , e ) ;
+					}
+					else if ( cmdNo.Visible )
+					{
+						e.Handled = true ;
+						cmdNo_Click ( cmdNo , e ) ;
+					}
+					else if ( cmdCancel.Visible )
+					{
+						e.Handled = true ;
+						cmdCancel_Click ( cmdNo , e ) ;
+					}
+					else closeButton_Click ( closeButton , e ) ;
+				break ;
+				default :
+				break ;
+			}
+		}
+		protected bool handleHotKey ( char key )
+		{
+			if ( key == char.MinValue ) return false ;
+			return false ;
 		}
 		protected override void OnPaint ( PaintEventArgs e )
 		{

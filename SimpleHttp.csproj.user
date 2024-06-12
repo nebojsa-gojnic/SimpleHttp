@@ -4,7 +4,7 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>Wrong pars</ActiveDebugProfile>
+    <ActiveDebugProfile>Bad JSON stop</ActiveDebugProfile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="AboutForm.cs">
@@ -39,6 +39,9 @@
     </Compile>
     <Compile Update="QuickStartForm.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="TitleBar.cs">
+      <SubType>UserControl</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>

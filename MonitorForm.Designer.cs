@@ -694,8 +694,8 @@
 			jsonEditor.Size = new Size(987, 502);
 			jsonEditor.TabIndex = 10;
 			jsonEditor.WordWrap = false;
+			jsonEditor.Paint += jsonEditor_Paint;
 			jsonEditor.TextChanged += jsonEditor_TextChanged;
-			jsonEditor.VisibleChanged += jsonEditor_VisibleChanged;
 			// 
 			// resourceTypeLabel
 			// 
@@ -740,6 +740,7 @@
 			aboutMenuItem.Padding = new Padding(0, 2, 0, 0);
 			aboutMenuItem.Size = new Size(252, 24);
 			aboutMenuItem.Text = "About the program";
+			aboutMenuItem.Click += aboutMenuItem_Click;
 			// 
 			// toolStripSeparator0
 			// 
@@ -753,6 +754,7 @@
 			startJSONConfigMenuItem.Padding = new Padding(0, 2, 0, 0);
 			startJSONConfigMenuItem.Size = new Size(252, 24);
 			startJSONConfigMenuItem.Text = "Start current configuration";
+			startJSONConfigMenuItem.Click += startJSONConfigMenuItem_Click;
 			// 
 			// showQuickStartMenuItem
 			// 
@@ -761,6 +763,7 @@
 			showQuickStartMenuItem.Padding = new Padding(0, 2, 0, 0);
 			showQuickStartMenuItem.Size = new Size(252, 24);
 			showQuickStartMenuItem.Text = "Show quick start form";
+			showQuickStartMenuItem.Click += showQuickStartMenuItem_Click;
 			// 
 			// toolStripSeparator1
 			// 
@@ -774,6 +777,7 @@
 			showMainWindowMenuItem.Padding = new Padding(0, 2, 0, 0);
 			showMainWindowMenuItem.Size = new Size(252, 24);
 			showMainWindowMenuItem.Text = "Show";
+			showMainWindowMenuItem.Click += showMainWindowMenuItem_Click;
 			// 
 			// showStartParametersMenuItem
 			// 
@@ -782,6 +786,7 @@
 			showStartParametersMenuItem.Padding = new Padding(0, 2, 0, 0);
 			showStartParametersMenuItem.Size = new Size(252, 24);
 			showStartParametersMenuItem.Text = "Show starting parameters";
+			showStartParametersMenuItem.Click += showStartParametersMenuItem_Click;
 			// 
 			// toolStripSeparator2
 			// 
@@ -795,6 +800,7 @@
 			stopServerMenuItem.Padding = new Padding(0, 2, 0, 0);
 			stopServerMenuItem.Size = new Size(252, 24);
 			stopServerMenuItem.Text = "Stop http server";
+			stopServerMenuItem.Click += stopServerMenuItem_Click;
 			// 
 			// closeProgramMenuItem
 			// 
@@ -803,6 +809,7 @@
 			closeProgramMenuItem.Padding = new Padding(0, 2, 0, 0);
 			closeProgramMenuItem.Size = new Size(252, 24);
 			closeProgramMenuItem.Text = "Close program and server";
+			closeProgramMenuItem.Click += closeProgramMenuItem_Click;
 			// 
 			// startMenu
 			// 
@@ -897,7 +904,6 @@
 			// 
 			// searchPanel
 			// 
-			searchPanel.AutoDragForm = false;
 			searchPanel.AutoSize = true;
 			searchPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 			searchPanel.Controls.Add(searchSplitter);
@@ -911,6 +917,7 @@
 			searchPanel.Padding = new Padding(0, 3, 0, 0);
 			searchPanel.Size = new Size(612, 30);
 			searchPanel.TabIndex = 12;
+			searchPanel.DoubleClick += title_DoubleClick;
 			searchPanel.Resize += searchPanel_Resize;
 			// 
 			// searchSplitter

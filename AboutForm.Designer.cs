@@ -8,17 +8,15 @@ namespace SimpleHttp
 {
 	public partial class AboutForm
 	{
-		private FlowLayoutPanel mainPanel;
-        private FlowLayoutPanel dialogPanel;
-        private FlowLayoutPanel bottomPanel;
+        private CommonFlowLayoutPanel dialogPanel;
+        private CommonFlowLayoutPanel bottomPanel;
 		private Button closeButton;
 
 		private void InitializeComponent()
 		{
 			components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AboutForm));
-			mainPanel = new FlowLayoutPanel();
-			dialogPanel = new FlowLayoutPanel();
+			dialogPanel = new CommonFlowLayoutPanel();
 			topLabel = new Label();
 			labelMenu = new ContextMenuStrip(components);
 			copyLabelMenuItem = new ToolStripMenuItem();
@@ -35,29 +33,14 @@ namespace SimpleHttp
 			webSocketLabel = new Label();
 			bottomLabel = new Label();
 			ninjaLabel = new Label();
-			bottomPanel = new FlowLayoutPanel();
+			bottomPanel = new CommonFlowLayoutPanel();
 			closeButton = new Button();
-			mainPanel.SuspendLayout();
+			titleBar = new TitleBar();
 			dialogPanel.SuspendLayout();
 			labelMenu.SuspendLayout();
 			linkMenu.SuspendLayout();
 			bottomPanel.SuspendLayout();
 			SuspendLayout();
-			// 
-			// mainPanel
-			// 
-			mainPanel.AutoSize = true;
-			mainPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-			mainPanel.Controls.Add(dialogPanel);
-			mainPanel.Controls.Add(bottomPanel);
-			mainPanel.FlowDirection = FlowDirection.TopDown;
-			mainPanel.Location = new Point(0, 0);
-			mainPanel.Margin = new Padding(0);
-			mainPanel.Name = "mainPanel";
-			mainPanel.Size = new Size(375, 276);
-			mainPanel.TabIndex = 0;
-			mainPanel.WrapContents = false;
-			mainPanel.MouseDown += noLabel_MouseDown;
 			// 
 			// dialogPanel
 			// 
@@ -69,15 +52,16 @@ namespace SimpleHttp
 			dialogPanel.Controls.Add(webSocketLabel);
 			dialogPanel.Controls.Add(bottomLabel);
 			dialogPanel.Controls.Add(ninjaLabel);
-			dialogPanel.Dock = DockStyle.Fill;
+			dialogPanel.Controls.Add(bottomPanel);
 			dialogPanel.FlowDirection = FlowDirection.TopDown;
-			dialogPanel.Location = new Point(0, 0);
+			dialogPanel.Location = new Point(1, 31);
 			dialogPanel.Margin = new Padding(0);
 			dialogPanel.Name = "dialogPanel";
 			dialogPanel.Padding = new Padding(12);
-			dialogPanel.Size = new Size(375, 228);
+			dialogPanel.Size = new Size(375, 276);
 			dialogPanel.TabIndex = 1;
 			dialogPanel.MouseDown += noLabel_MouseDown;
+			dialogPanel.Resize += dialogPanel_Resize;
 			// 
 			// topLabel
 			// 
@@ -93,27 +77,28 @@ namespace SimpleHttp
 			// 
 			// labelMenu
 			// 
+			labelMenu.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
 			labelMenu.Items.AddRange(new ToolStripItem[] { copyLabelMenuItem, labelMenuSeparator, copyAllLabelMenuItem });
 			labelMenu.Name = "labelMenu";
-			labelMenu.Size = new Size(118, 54);
+			labelMenu.Size = new Size(133, 58);
 			labelMenu.Closed += labelMenu_Closed;
 			// 
 			// copyLabelMenuItem
 			// 
 			copyLabelMenuItem.Name = "copyLabelMenuItem";
-			copyLabelMenuItem.Size = new Size(117, 22);
+			copyLabelMenuItem.Size = new Size(132, 24);
 			copyLabelMenuItem.Text = "Copy";
 			copyLabelMenuItem.Click += copyLabelMenuItem_Click;
 			// 
 			// labelMenuSeparator
 			// 
 			labelMenuSeparator.Name = "labelMenuSeparator";
-			labelMenuSeparator.Size = new Size(114, 6);
+			labelMenuSeparator.Size = new Size(129, 6);
 			// 
 			// copyAllLabelMenuItem
 			// 
 			copyAllLabelMenuItem.Name = "copyAllLabelMenuItem";
-			copyAllLabelMenuItem.Size = new Size(117, 22);
+			copyAllLabelMenuItem.Size = new Size(132, 24);
 			copyAllLabelMenuItem.Text = "Copy all";
 			copyAllLabelMenuItem.Click += copyAllLabelMenuItem_Click;
 			// 
@@ -135,39 +120,40 @@ namespace SimpleHttp
 			// 
 			// linkMenu
 			// 
+			linkMenu.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
 			linkMenu.Items.AddRange(new ToolStripItem[] { openLinkMenuItem, copyLinkMenuSeparator0, copyLinkMenuItem, copyLinkMenuSeparator1, copyAllLinkMenuItem });
 			linkMenu.Name = "labelMenu";
-			linkMenu.Size = new Size(118, 82);
+			linkMenu.Size = new Size(181, 110);
 			linkMenu.Closed += linkMenu_Closed;
 			// 
 			// openLinkMenuItem
 			// 
 			openLinkMenuItem.Name = "openLinkMenuItem";
-			openLinkMenuItem.Size = new Size(117, 22);
+			openLinkMenuItem.Size = new Size(180, 24);
 			openLinkMenuItem.Text = "Open";
 			openLinkMenuItem.Click += openLinkMenuItem_Click;
 			// 
 			// copyLinkMenuSeparator0
 			// 
 			copyLinkMenuSeparator0.Name = "copyLinkMenuSeparator0";
-			copyLinkMenuSeparator0.Size = new Size(114, 6);
+			copyLinkMenuSeparator0.Size = new Size(177, 6);
 			// 
 			// copyLinkMenuItem
 			// 
 			copyLinkMenuItem.Name = "copyLinkMenuItem";
-			copyLinkMenuItem.Size = new Size(117, 22);
+			copyLinkMenuItem.Size = new Size(180, 24);
 			copyLinkMenuItem.Text = "Copy";
 			copyLinkMenuItem.Click += copyLinkMenuItem_Click;
 			// 
 			// copyLinkMenuSeparator1
 			// 
 			copyLinkMenuSeparator1.Name = "copyLinkMenuSeparator1";
-			copyLinkMenuSeparator1.Size = new Size(114, 6);
+			copyLinkMenuSeparator1.Size = new Size(177, 6);
 			// 
 			// copyAllLinkMenuItem
 			// 
 			copyAllLinkMenuItem.Name = "copyAllLinkMenuItem";
-			copyAllLinkMenuItem.Size = new Size(117, 22);
+			copyAllLinkMenuItem.Size = new Size(180, 24);
 			copyAllLinkMenuItem.Text = "Copy all";
 			copyAllLinkMenuItem.Click += copyAllLinkMenuItem_Click;
 			// 
@@ -230,14 +216,15 @@ namespace SimpleHttp
 			// 
 			// bottomPanel
 			// 
+			bottomPanel.Anchor = AnchorStyles.Top | AnchorStyles.Right;
 			bottomPanel.AutoSize = true;
+			bottomPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 			bottomPanel.Controls.Add(closeButton);
-			bottomPanel.Dock = DockStyle.Bottom;
 			bottomPanel.FlowDirection = FlowDirection.RightToLeft;
-			bottomPanel.Location = new Point(0, 228);
-			bottomPanel.Margin = new Padding(0, 0, 12, 12);
+			bottomPanel.Location = new Point(292, 228);
+			bottomPanel.Margin = new Padding(0, 12, 0, 0);
 			bottomPanel.Name = "bottomPanel";
-			bottomPanel.Size = new Size(363, 36);
+			bottomPanel.Size = new Size(71, 36);
 			bottomPanel.TabIndex = 0;
 			bottomPanel.MouseDown += noLabel_MouseDown;
 			// 
@@ -245,7 +232,7 @@ namespace SimpleHttp
 			// 
 			closeButton.AutoSize = true;
 			closeButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-			closeButton.Location = new Point(292, 0);
+			closeButton.Location = new Point(0, 0);
 			closeButton.Margin = new Padding(0);
 			closeButton.Name = "closeButton";
 			closeButton.Padding = new Padding(8, 3, 8, 3);
@@ -256,24 +243,43 @@ namespace SimpleHttp
 			closeButton.Click += closeButton_Click;
 			closeButton.MouseDown += noLabel_MouseDown;
 			// 
+			// titleBar
+			// 
+			titleBar.AutoSize = true;
+			titleBar.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			titleBar.CloseButtonImage = (Image)resources.GetObject("titleBar.CloseButtonImage");
+			titleBar.Dock = DockStyle.Top;
+			titleBar.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+			titleBar.Location = new Point(1, 1);
+			titleBar.Margin = new Padding(0);
+			titleBar.MaximumSize = new Size(int.MaxValue, 30);
+			titleBar.MinimumSize = new Size(0, 30);
+			titleBar.Name = "titleBar";
+			titleBar.Size = new Size(372, 30);
+			titleBar.TabIndex = 6;
+			titleBar.Text = "Simple Http Server";
+			titleBar.CloseButtonClick += titleBar_CloseButtonClick;
+			titleBar.CloseButtonMouseUp += titleBar_CloseButtonMouseUp;
+			titleBar.Resize += tileBar_Resize;
+			// 
 			// AboutForm
 			// 
-			AutoSize = true;
 			AutoSizeMode = AutoSizeMode.GrowAndShrink;
 			CancelButton = closeButton;
-			ClientSize = new Size(376, 276);
-			Controls.Add(mainPanel);
+			ClientSize = new Size(374, 306);
+			Controls.Add(dialogPanel);
+			Controls.Add(titleBar);
 			Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+			FormBorderStyle = FormBorderStyle.None;
 			Icon = (Icon)resources.GetObject("$this.Icon");
 			KeyPreview = true;
 			MaximizeBox = false;
 			MinimizeBox = false;
 			Name = "AboutForm";
+			Padding = new Padding(1);
 			ShowInTaskbar = false;
 			Text = "Simple Http Server";
 			MouseDown += noLabel_MouseDown;
-			mainPanel.ResumeLayout(false);
-			mainPanel.PerformLayout();
 			dialogPanel.ResumeLayout(false);
 			dialogPanel.PerformLayout();
 			labelMenu.ResumeLayout(false);
@@ -284,8 +290,7 @@ namespace SimpleHttp
 			PerformLayout();
 		}
 
-		private Label label1;
-        private Label topLabel;
+		private Label topLabel;
         private Label projectLabel;
         private Label middleLabel;
         private Label webSocketLabel;
@@ -302,5 +307,6 @@ namespace SimpleHttp
 		private ToolStripMenuItem copyLinkMenuItem;
 		private ToolStripSeparator copyLinkMenuSeparator1;
 		private ToolStripMenuItem copyAllLinkMenuItem;
+		private TitleBar titleBar;
 	}
 }

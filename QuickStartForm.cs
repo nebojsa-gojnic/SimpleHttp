@@ -424,9 +424,6 @@ namespace SimpleHttp
 		{
 			BeginInvoke ( setLocation ) ;
 			gbCertificate_Resize ( this , e ) ;
-			Size sz = Size ;
-			AutoSize = false ;
-			Size = sz ;
 			base.OnShown ( e ) ;
 			cmdStart_Resize ( cmdStart , e ) ;
 			Opacity = 1.0 ;
@@ -438,12 +435,10 @@ namespace SimpleHttp
 		}
 		protected override void OnFontChanged ( EventArgs e )
 		{
-			Font titleFont ;
-			MonitorForm.CreateTitleFont ( Font , out titleFont ) ;
 			MonitorForm.CreateSemiboldFonts ( Font , out boldFont , out boldUnderlineFont ) ;
 			uriLabel.Font = boldFont ;
-			titleLabel.Font = titleFont ;
-			int h = titleFont.Height ;
+			titleLabel.Font = MonitorForm.GetNewTitleFont ( Font ) ;
+			int h = titleLabel.Font.Height ;
 			closeButton.Size = new Size ( h , h ) ;
 			titlePanel.Height = ( 3 * h ) >> 1 ;
 			base.OnFontChanged ( e ) ;

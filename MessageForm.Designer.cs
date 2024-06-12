@@ -105,7 +105,7 @@
 			mainLayout.Location = new Point(1, 1);
 			mainLayout.Margin = new Padding(0);
 			mainLayout.Name = "mainLayout";
-			mainLayout.Size = new Size(400, 184);
+			mainLayout.Size = new Size(400, 190);
 			mainLayout.TabIndex = 0;
 			// 
 			// messagePanel
@@ -119,8 +119,8 @@
 			messagePanel.Margin = new Padding(0);
 			messagePanel.MinimumSize = new Size(400, 0);
 			messagePanel.Name = "messagePanel";
-			messagePanel.Padding = new Padding(12, 6, 12, 0);
-			messagePanel.Size = new Size(400, 102);
+			messagePanel.Padding = new Padding(12, 12, 12, 0);
+			messagePanel.Size = new Size(400, 108);
 			messagePanel.TabIndex = 3;
 			// 
 			// messagePicturePanel
@@ -128,7 +128,7 @@
 			messagePicturePanel.AutoSize = true;
 			messagePicturePanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 			messagePicturePanel.Controls.Add(messagePicture);
-			messagePicturePanel.Location = new Point(12, 6);
+			messagePicturePanel.Location = new Point(12, 12);
 			messagePicturePanel.Margin = new Padding(0);
 			messagePicturePanel.MinimumSize = new Size(88, 88);
 			messagePicturePanel.Name = "messagePicturePanel";
@@ -151,7 +151,7 @@
 			// 
 			textLabel.AutoSize = true;
 			textLabel.Dock = DockStyle.Left;
-			textLabel.Location = new Point(111, 6);
+			textLabel.Location = new Point(111, 12);
 			textLabel.Name = "textLabel";
 			textLabel.Padding = new Padding(4);
 			textLabel.Size = new Size(79, 96);
@@ -168,7 +168,7 @@
 			buttonPanel.Controls.Add(cmdOk);
 			buttonPanel.Controls.Add(cmdNo);
 			buttonPanel.Controls.Add(cmdCancel);
-			buttonPanel.Location = new Point(161, 135);
+			buttonPanel.Location = new Point(161, 141);
 			buttonPanel.Margin = new Padding(0);
 			buttonPanel.Name = "buttonPanel";
 			buttonPanel.Padding = new Padding(12, 8, 12, 12);

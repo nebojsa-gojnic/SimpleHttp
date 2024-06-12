@@ -53,6 +53,17 @@ namespace SimpleHttp
 		/// </summary>
 		public StartServerMode mode { get ; protected set ; }
 		/// <summary>
+		/// Auxiliary variable for the _jsonText 
+		/// </summary>
+		protected string _jsonText ;
+		/// <summary>
+		/// JSON text
+		/// </summary>
+		public string jsonText 
+		{ 
+			get => _jsonText ;
+		}
+		/// <summary>
 		/// Path to JSON configuration file
 		/// </summary>
 		public string jsonConfigFile { get ; protected set ; }
@@ -72,6 +83,36 @@ namespace SimpleHttp
 			password ,
 			fileServerMode ,
 			resourceServerMode ,
+			dontStart
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="fileName">fileName has to be non-null and longer then 0</param>
+		/// <returns></returns>
+		public static string getFileMessage ( string fileName )
+		{
+			return fileName == null ? 
+				"Null file name." :
+					fileName.Length == 0 ? "Empty file name." :
+					char.IsLetterOrDigit ( fileName  [ 0 ] ) ? File.Exists ( fileName ) ? 
+						"" : "File not found \"" + fileName + "\"." : "Invalid file name \"" + fileName + "\"." ;
+		}
+		public void loadConfigFromJsonFile ( )
+		{
+			if ( File.Exists ( jsonConfigFile ) )
+				try
+				{ 
+					configData = new WebServerConfigData () ;
+					jsonConfigFile = new FileInfo ( jsonConfigFile ).Name ;							
+					configData.loadFromJSONFile ( jsonConfigFile , out _jsonText ) ;
+				}
+				catch ( Exception x )
+				{
+					errorMessage = "Cannot parse json file \"" + jsonConfigFile + "\".\r\n" + x.Message ;
+				}
+			else errorMessage = "File not found \"" + jsonConfigFile + "\"." ;
 		}
 		/// <summary>
 		/// Creates new instance of HttpStartParameters from given program start arguments
@@ -79,6 +120,7 @@ namespace SimpleHttp
 		/// <param name="args">Program start arguments to parse</param>
 		public HttpStartParameters ( string[] args )
 		{
+			_jsonText = "{}" ;
 			bool startFileServer = false ;
 			bool startResourceServer = false ;
 			port = 80 ;
@@ -107,29 +149,35 @@ namespace SimpleHttp
 			string fileSource ;
 			string assemblyName ;
 			string badWord = "" ;
-			if ( args.Length == 1 )
+			switch ( args.Length )
 			{
-				if ( char.IsLetter ( args [ 0 ] [ 0 ] ) )
-				{
+				case 1 :
 					mode = StartServerMode.jsonConfig ;
 					jsonConfigFile = args [ 0 ] ;
-					
-					if ( File.Exists ( jsonConfigFile ) )
-						try
-						{ 
-							configData = new WebServerConfigData () ;
-							jsonConfigFile = new FileInfo ( jsonConfigFile ).Name ;							
-							configData.loadFromJSONFile ( jsonConfigFile ) ;
-						}
-						catch ( Exception x )
-						{
-							errorMessage = "Cannot parse json file \"" + jsonConfigFile + "\".\r\n" + x.Message ;
-						}
-					else errorMessage = "File not found \"" + jsonConfigFile + "\"." ;
-					return ;
-				}
+					if ( ( errorMessage = getFileMessage ( jsonConfigFile ) ) == "" )
+						loadConfigFromJsonFile ( ) ;
+				return ;
+				case 2 :
+					if ( ( args [ 0 ].ToLower() == "/d" ) )
+					{
+						autoStart = false ;
+						mode = StartServerMode.jsonConfig ;
+						jsonConfigFile = args [ 1 ] ;
+						if ( ( errorMessage = getFileMessage ( jsonConfigFile ) ) == "" )
+							loadConfigFromJsonFile ( ) ;
+						return ;
+					}
+					else if ( ( args [ 1 ].ToLower() == "/d" ) )
+					{
+						autoStart = false ;
+						mode = StartServerMode.jsonConfig ;
+						jsonConfigFile = args [ 0 ] ;
+						if ( ( errorMessage = getFileMessage ( jsonConfigFile ) ) == "" )
+							loadConfigFromJsonFile ( ) ;
+						return ;
+					}
+					break ;
 			}
-
 			foreach ( string param in args )
 			{
 				switch ( param [ 0 ] )
@@ -204,7 +252,7 @@ namespace SimpleHttp
 							break ;
 						}
 					break ;
-					default:
+					default:   
 						switch ( command )
 						{
 							case commandEnum.fileServerMode :
@@ -232,6 +280,9 @@ namespace SimpleHttp
 							case commandEnum.password :
 								configData [ "sslCertificatePassword" ] = sslCertificatePassword = param ;
 							break ;
+							case commandEnum.dontStart :
+								configData [ "sslCertificatePassword" ] = sslCertificatePassword = param ;
+							break ;
 							default :
 								badWord = param ;
 								command = commandEnum.none ;
@@ -241,27 +292,34 @@ namespace SimpleHttp
 				}
 				if ( badWord.Length > 0 ) break ; 
 			}
-			if ( startFileServer && startResourceServer )
+			if ( errorMessage == "" )
 			{
-				errorMessage = "Cannot use both file system and Assemblyresources as source.\r\n" + getGeneralSyntaxText () ;
+				if ( startFileServer && startResourceServer )
+				{
+					errorMessage = "Cannot use both file system and Assemblyresources as source.\r\n" + getGeneralSyntaxText () ;
+				}
+				else if ( !startFileServer && !startResourceServer )
+				{
+					errorMessage = "No server type/resource specification found.\r\n" + getGeneralSyntaxText () ;
+				}
+				else if ( badWord != "" )
+				{
+					errorMessage = "Invalid syntax at \"" + badWord + "\".\r\n" + getGeneralSyntaxText () ;
+				}
 			}
-			else if ( !startFileServer && !startResourceServer )
+			try
 			{
-				errorMessage = "No server type/resource specification found.\r\n" + getGeneralSyntaxText () ;
+				switch ( mode )
+				{
+					case StartServerMode.fileServer :
+						configData = new FileWebConfigData ( source , sitename , port , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
+					break ;
+					case StartServerMode.resourceServer :
+						configData = new ResourceWebConfigData ( source , sitename , port , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
+					break ;
+				}
 			}
-			else if ( badWord != "" )
-			{
-				errorMessage = "Invalid syntax at \"" + badWord + "\".\r\n" + getGeneralSyntaxText () ;
-			}
-			switch ( mode )
-			{
-				case StartServerMode.fileServer :
-					configData = new FileWebConfigData ( source , sitename , port , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
-				break ;
-				case StartServerMode.resourceServer :
-					configData = new ResourceWebConfigData ( source , sitename , port , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
-				break ;
-			}
+			catch { }
 		}
 		/// <summary>
 		/// Creates new instance of HttpStartParameters 
@@ -314,7 +372,7 @@ namespace SimpleHttp
 		public string getGeneralSyntaxText ( )
 		{
 			string pr = noPath ( Application.ExecutablePath ) ;
-			return "Syntax:\r\n" + pr + " < [/f <folder path>] | [/r <assembly name or path>] > [/p <port number>] [/c <certificate file path>] [/pw <certificte file password>] [ /tls11 | /tls12 | /tls13 ] [/s <site name>] [/d]\r\n/d is for \"don't start\"" ;
+			return "Syntax:\r\n" + pr + " < [/f <folder path>] | [/r <assembly name or path>] > [/p <port number>] [/c <certificate file path>] [/pw <certificte file password>] [ /tls11 | /tls12 | /tls13 ] [/s <site name>] [/d]\r\n\r\nor\r\n<fileNameJson> [/d]\r\n\r\n/d is for \"don't start\"" ;
 		}
 		public static string noPath ( string path )
 		{
@@ -338,17 +396,19 @@ namespace SimpleHttp
 		}
 		public override string ToString()
 		{
-			return isEmpty ? "" : mode == StartServerMode.jsonConfig ? jsonConfigFile :
-				( ( mode == StartServerMode.resourceServer ? 
+			return isEmpty ? "" : 
+				( ( autoStart ? "" : " /d " ) + 
+				( mode == StartServerMode.jsonConfig ? jsonConfigFile :
+					( ( mode == StartServerMode.resourceServer ? 
 					
-					"/r" : "/f" ) + " \"" + source + "\" /p " + port.ToString() + " " + ( string.IsNullOrEmpty ( sslCertificateSource ) ? "" :
+						"/r" : "/f" ) + " \"" + source + "\" /p " + port.ToString() + " " + ( string.IsNullOrEmpty ( sslCertificateSource ) ? "" :
 
-					( "/c \"" + sslCertificateSource + "\" " + 
-							( string.IsNullOrWhiteSpace ( sslCertificatePassword ) ? 
-							"" : 
-							( "/pw \"" + sslCertificatePassword + "\" " ) ) + "/" + TlsShort ( sslProtocol ) + " " )  ) + 
-						( string.IsNullOrWhiteSpace ( sitename ) ? "" : ( "/s \"" + sitename + "\"" ) )
-					).Trim() ;
+						( "/c \"" + sslCertificateSource + "\" " + 
+								( string.IsNullOrWhiteSpace ( sslCertificatePassword ) ? 
+								"" : 
+								( "/pw \"" + sslCertificatePassword + "\" " ) ) + "/" + TlsShort ( sslProtocol ) + " " )  ) + 
+							( string.IsNullOrWhiteSpace ( sitename ) ? "" : ( "/s \"" + sitename + "\"" ) )
+						).Trim() ) ).Trim()  ;
 		}
 	}
 

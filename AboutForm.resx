@@ -124,6 +124,16 @@
     <value>156, 19</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="titleBar.CloseButtonImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGOfPtRkwAAACBjSFJNAAB6
+        JQAAgIMAAPn/AACA6QAAdTAAAOpgAAA6mAAAF2+SX8VGAAAACXBIWXMAAAsMAAALDAE/QCLIAAAA0ElE
+        QVRYR82VMQ7CMBAE/bXUPIy8JH2+wacMV1iyRiNCgReKkZ3J5Xa7tN77T1GZRGUSlUlUJlGZRGUSlUlU
+        JlFJtm177Pt+P8+zfULN1je2i6gktbC9Ri3MqNn6xnYRlYSLj+O4caYci3LGUEnGwhHAEnN4ncsKMKie
+        zS0rUHcGMpzzV6gkXDiXYLjNv0Ml+asCc3id832UWFaA4fVsblkBBo33LLGsgIUP5hJfL8DFV4yitouo
+        JD//Ga1EZRKVSVQmUZlEZRKVSVQmUZmjtyedfUFGjLhLeQAAAABJRU5ErkJggg==
+</value>
+  </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAMAICAAAAEAIACoEAAANgAAABAQAAABACAAaAQAAN4QAAAYGAAAAQAgAIgJAABGFQAAKAAAACAA

@@ -46,6 +46,8 @@ namespace SimpleHttp
 		public ResourcesForm ( Assembly resourceAssembly )
 		{
 			InitializeComponent() ;
+			titleBar.Font = MonitorForm.GetNewTitleFont ( Font ) ;
+			titleBar.Text = Text ;
 			normalBackBrush = new SolidBrush ( SystemColors.Window ) ;
 			normalInkBrush = new SolidBrush ( SystemColors.WindowText ) ;
 			alternateBackBrush = new SolidBrush ( SystemColors.Control ) ;
@@ -55,6 +57,9 @@ namespace SimpleHttp
 			searchBackBrush = new SolidBrush ( MonitorForm.mixColors ( SystemColors.Highlight , SystemColors.ControlLight ) ) ;
 			//searchInkBrush = new SolidBrush ( SystemColors.HighlightText ) ;
 			searchInkBrush = new SolidBrush ( Color.Yellow ) ;
+			titleBar.Font = MonitorForm.GetNewTitleFont ( Font ) ;
+			titleBar.BackColor = MonitorForm.titleBackColor ;
+			titleBar.ForeColor = MonitorForm.titleForeColor ;
 			this.resourceAssembly = resourceAssembly ;
 		}
 		/// <summary>
@@ -152,6 +157,11 @@ namespace SimpleHttp
 			add => _UIErrorRaised += value ;
 			remove => _UIErrorRaised -= value ;
 		}
+		protected override void OnTextChanged ( EventArgs e )
+		{
+			titleBar.Text = Text ;
+			base.OnTextChanged ( e )  ;
+		}
 		/// <summary>
 		/// Aaa, there is always something to resuze
 		/// </summary>
@@ -161,11 +171,12 @@ namespace SimpleHttp
 		{
 			int p = searchBox.Height - ( searchLabel.Height - searchLabel.Padding.Vertical ) ;
 			searchLabel.Padding = new Padding ( 0 , ( p + 1 ) >> 1 , 0 , p >> 1 ) ;
+			searchPanel.Height = searchBox.Top + searchBox.Bottom ;
 		}
 		private void searchBox_KeyDown ( object sender , KeyEventArgs e )
 		{
-			int position ;
-			int len ;
+			//int position ;
+			//int len ;
 			switch ( e.KeyCode )
 			{
 				//case Keys.Delete :
@@ -177,7 +188,7 @@ namespace SimpleHttp
 				//	searchBox_KeyPress ( sender , new KeyPressEventArgs ( '\b' ) ) ; //backsapce
 				//break ;
 				case Keys.Enter :
-					searchForNextItem ( searchBox.Text ) ;
+					searchForNextItem ( string.IsNullOrEmpty ( searchBox.SelectedText ) ? searchBox.Text : searchBox.SelectedText ) ;
 					e.Handled = true ;
 				break ;
 				case Keys.L :
@@ -189,12 +200,12 @@ namespace SimpleHttp
 					}
 					break ;
 				}
-				case Keys.Left :
-					handleLeftArrow ( e ) ;
-				break ;
-				case Keys.Right :
-					handleRightArrow ( e ) ;
-				break ;
+				//case Keys.Left :
+				//	handleLeftArrow ( e ) ;
+				//break ;
+				//case Keys.Right :
+				//	handleRightArrow ( e ) ;
+				//break ;
 				case Keys.Up :
 					e.Handled = true ;
 					if ( 0 != resourceList.Items.Count ) 
@@ -215,187 +226,7 @@ namespace SimpleHttp
 				break ;
 			}
 		}
-		protected void handleLeftArrow ( KeyEventArgs e )
-		{
-			int position ;
-			int len ;
-			e.Handled = true ;
-			if ( e.Control )
-			{
-				if ( leftToRightSelection )
-				{
-					position = searchBox.SelectionStart + searchBox.SelectionLength ;
-					if ( nextWordLeft ( searchBox.Text , ref position ) )
-					{
-						if ( e.Shift )
-						{
-							if ( position < searchBox.SelectionStart )
-							{
-								len = searchBox.SelectionStart - position ;
-								searchBox.SelectionStart = position ;
-								searchBox.SelectionLength = len ;
-								leftToRightSelection = false ;
-							}
-							else searchBox.SelectionLength = position - searchBox.SelectionStart ;
-						}
-						else 
-						{
-							searchBox.SelectionStart = position ;
-							searchBox.SelectionLength = 0 ;
-							leftToRightSelection = false ;
-						}
-					}
-				}
-				else 
-				{
-					position = searchBox.SelectionStart ;
-					if ( nextWordLeft ( searchBox.Text , ref position ) )
-					{
-						if ( e.Shift )
-						{
-							len = searchBox.SelectionLength - position + searchBox.SelectionStart ;
-							searchBox.SelectionStart = position ;
-							searchBox.SelectionLength = len ;
-						}
-						else 
-						{
-							searchBox.SelectionStart = position ;
-							searchBox.SelectionLength = 0 ;
-						}
-					}
-				}
-			}
-			else 
-			{
-				if ( leftToRightSelection )
-				{
-					if ( e.Shift )
-					{
-						if ( searchBox.SelectionLength > 0 )
-						{
-							searchBox.SelectionLength-- ;
-							leftToRightSelection = false ;
-						}
-						else if ( searchBox.SelectionStart > 0 ) 
-						{
-							searchBox.SelectionStart-- ;
-							searchBox.SelectionLength = 1 ;
-							leftToRightSelection = false ;
-						}
-					}
-					else if ( searchBox.SelectionLength == 0 )
-					{
-						if ( searchBox.SelectionStart > 0 ) searchBox.SelectionStart-- ;
-					}
-					else searchBox.SelectionLength = 0 ;
-				}
-				else 
-				{
-					if ( e.Shift )
-					{
-						if ( searchBox.SelectionStart > 0 )
-						{
-							len = searchBox.SelectionLength ;
-							searchBox.SelectionStart-- ;
-							searchBox.SelectionLength = len + 1 ;
-						}
-					}
-					else if ( searchBox.SelectionLength == 0 ) 
-					{
-						if ( searchBox.SelectionStart > 0 ) searchBox.SelectionStart-- ; 
-					}
-					else searchBox.SelectionLength = 0 ;
-				}
-			}
-		}
-		protected void handleRightArrow ( KeyEventArgs e )
-		{
-			int position ;
-			int len ;
-			e.Handled = true ;
-			if ( e.Control )
-			{
-				if ( leftToRightSelection )
-				{
-					position = searchBox.SelectionStart + searchBox.SelectionLength ;
-					if ( nextWordRight ( searchBox.Text , ref position ) )
-					{
-						if ( e.Shift )
-							searchBox.SelectionLength = position - searchBox.SelectionStart ;
-						else 
-						{
-							searchBox.SelectionStart = position ;
-							searchBox.SelectionLength = 0 ;
-						}
-					}
-				}
-				else
-				{
-					position = searchBox.SelectionStart ;
-					if ( nextWordRight ( searchBox.Text , ref position ) )
-					{
-						if ( e.Shift )
-						{
-							if ( position > searchBox.SelectionStart + searchBox.SelectionLength )
-							{
-								len = position - searchBox.SelectionStart - searchBox.SelectionLength ;
-								searchBox.SelectionStart = searchBox.SelectionStart + searchBox.SelectionLength ;
-								searchBox.SelectionLength = len ;
-								leftToRightSelection = true ;
-							}
-							else 
-							{
-								len = searchBox.SelectionLength - position + searchBox.SelectionStart ;
-								searchBox.SelectionStart = position ;
-								searchBox.SelectionLength = len ;
-							}
-						}
-						else 
-						{
-							searchBox.SelectionStart = position ;
-							searchBox.SelectionLength = 0 ;
-						}
-					}
-				}
-			}
-			else
-			{
-				if ( leftToRightSelection )
-				{
-					if ( e.Shift )
-					{
-						if ( searchBox.SelectionStart + searchBox.SelectionLength < searchBox.TextLength )
-							searchBox.SelectionLength++ ;
-					}
-					else if ( searchBox.SelectionLength == 0 )
-					{
-						if ( searchBox.SelectionStart < searchBox.TextLength ) searchBox.SelectionStart++ ;
-					}
-					else searchBox.SelectionLength = 0 ;
-				}
-				else 
-				{
-					if ( e.Shift )
-					{
-						if ( searchBox.SelectionLength == 0 )
-						{
-							if ( searchBox.SelectionStart > 0 )
-							{
-								len = searchBox.SelectionLength ;
-								searchBox.SelectionStart-- ;
-								searchBox.SelectionLength = len + 1 ;
-							}
-						}
-					}
-					else if ( searchBox.SelectionLength == 0 ) 
-					{
-						if ( searchBox.SelectionStart > 0 ) searchBox.SelectionStart-- ; 
-					}
-					else searchBox.SelectionLength = 0 ;
-				}
-			}
-
-		}
+		
 		public bool nextWordLeft ( string text , ref int selectionStart )
 		{
 			if ( selectionStart <= 0 ) return false ;
@@ -709,13 +540,15 @@ namespace SimpleHttp
 				return true ;
 			}
 		}
+		//		SimpleHttp.exe /f "I:\Code\Nodes\PipeMania\PipeManiaService\Resources" /p 50080 /s "localhost"
+		//		SimpleHttp.exe /f "I:\Code\Nodes\PipeMania\PipeManiaService\Resources" /p 50080
 		public bool searchForNextItem ( string searchText )
 		{
 			if ( resourceList.SelectedIndex == -1 ) 
 				return searchForItem ( searchText ) ;
 			ListBox.ObjectCollection items = resourceList.Items ;
 			int c = items.Count ;
-			int currentLength = searchLength ;
+			int currentLength = Math.Min ( searchText.Length , searchLength ) ; //da da
 			int currentCharIndex = searchPosition ;
 			int itemIndex = -1 ;
 			searchText = searchText.ToLower () ;
@@ -755,7 +588,10 @@ namespace SimpleHttp
 				}
 			return false ;
 		}
-		
+		private void titleBar_CloseButtonClick ( object sender , EventArgs e )
+		{
+			Close () ;
+		}
 		/// <summary>
 		/// Ah selection direction, it all starts here
 		/// </summary>
@@ -790,6 +626,10 @@ namespace SimpleHttp
 		private void resourceList_Resize ( object sender , EventArgs e )
 		{
 			setPageCount () ;
+			mainPanel.Height = resourceList.Bottom + mainPanel.Padding.Bottom ;
+
+			mainPanel.AutoSize = false ;//!!!!
+			//BeginInvoke ( new ThreadStart ( mainPanel.PerformLayout ) ) ;
 		}
 		/// <summary>
 		/// This resize event handler punches a hole in the mainPanel region so that the resize grip becomes visible
@@ -798,15 +638,28 @@ namespace SimpleHttp
 		/// <param name="e">(EventArgs)</param>
 		private void mainPanel_Resize ( object sender , EventArgs e )
 		{
-			Region oldRegion = mainPanel.Region ;
-			GraphicsPath path = new GraphicsPath () ;
-			path.AddRectangle ( new Rectangle ( Point.Empty , mainPanel.Size ) ) ;
-			path.AddRectangle ( new Rectangle ( mainPanel.Width - mainPanel.Padding.Right , mainPanel.Height - ( mainPanel.Padding.Top << 1 ) , mainPanel.Padding.Right , mainPanel.Padding.Top << 1 ) ) ;
-			path.AddRectangle ( new Rectangle ( mainPanel.Width - ( mainPanel.Padding.Right << 1 ) , mainPanel.Height - mainPanel.Padding.Top , mainPanel.Padding.Right , mainPanel.Padding.Top ) ) ;
-			//path.AddRectangle ( new Rectangle ( Width - 120 , Height - 120 , Width , Height ) ) ;
-			Region region = new Region ( path ) ;
-			mainPanel.Region = region ;
-			if ( oldRegion != null ) oldRegion.Dispose () ;
+			Size = new Size ( Width , titleBar.Height + mainPanel.Height + Padding.Vertical ) ;
+			//Region oldRegion = mainPanel.Region ;
+			//GraphicsPath path = new GraphicsPath () ;
+			//path.AddRectangle ( new Rectangle ( Point.Empty , mainPanel.Size ) ) ;
+			//path.AddRectangle ( new Rectangle ( mainPanel.Width - mainPanel.Padding.Right , mainPanel.Height - ( mainPanel.Padding.Top << 1 ) , mainPanel.Padding.Right , mainPanel.Padding.Top << 1 ) ) ;
+			//path.AddRectangle ( new Rectangle ( mainPanel.Width - ( mainPanel.Padding.Right << 1 ) , mainPanel.Height - mainPanel.Padding.Top , mainPanel.Padding.Right , mainPanel.Padding.Top ) ) ;
+			////path.AddRectangle ( new Rectangle ( Width - 120 , Height - 120 , Width , Height ) ) ;
+			//Region region = new Region ( path ) ;
+			//mainPanel.Region = region ;
+			//if ( oldRegion != null ) oldRegion.Dispose () ;
+		}
+		protected override void OnPaintBackground( PaintEventArgs e )
+		{
+			base.OnPaintBackground ( e ) ;
+			MonitorForm.drawBoxBorder ( e.Graphics , Size ) ;
+			//e.Graphics.FillRectangle ( Brushes.Red , new Rectangle ( 0 , 0 , 1000 , 1000 ) ) ;
+			
+		}
+		protected override void OnResize ( EventArgs e )
+		{
+			MonitorForm.SetBoxRegion ( this ) ;
+			base.OnResize ( e ) ;
 		}
 	}
 }
