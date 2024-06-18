@@ -64,6 +64,14 @@ namespace SimpleHttp
 			get => _jsonText ;
 		}
 		/// <summary>
+		/// Line index of the first json error 
+		/// </summary>
+		public int jsonErrorLineIndex  { get ; protected set ; }
+		/// <summary>
+		/// Column index of the first json error 
+		/// </summary>
+		public int jsonErrorColumnIndex  { get ; protected set ; }
+		/// <summary>
 		/// Path to JSON configuration file
 		/// </summary>
 		public string jsonConfigFile { get ; protected set ; }
@@ -87,10 +95,12 @@ namespace SimpleHttp
 		}
 
 		/// <summary>
-		/// 
+		/// Returns empty string if the given file name is correct and file exists,<br/>
+		/// otherwise it returns corresponding error message
 		/// </summary>
 		/// <param name="fileName">fileName has to be non-null and longer then 0</param>
-		/// <returns></returns>
+		/// <returns>Empty string if the given file name is correct and file exists,<br/>
+		/// or corresponding error message</returns>
 		public static string getFileMessage ( string fileName )
 		{
 			return fileName == null ? 
@@ -99,7 +109,12 @@ namespace SimpleHttp
 					char.IsLetterOrDigit ( fileName  [ 0 ] ) ? File.Exists ( fileName ) ? 
 						"" : "File not found \"" + fileName + "\"." : "Invalid file name \"" + fileName + "\"." ;
 		}
-		public void loadConfigFromJsonFile ( )
+		/// <summary>
+		/// Try to load JSON data from jsonConfigFile.<br/>
+		/// It writes error message in to the errorMessage in case of failure
+		/// </summary>
+		/// <returns>Returns true if successful</returns>
+		public bool loadConfigFromJsonFile ( )
 		{
 			if ( File.Exists ( jsonConfigFile ) )
 				try
@@ -107,12 +122,34 @@ namespace SimpleHttp
 					configData = new WebServerConfigData () ;
 					jsonConfigFile = new FileInfo ( jsonConfigFile ).Name ;							
 					configData.loadFromJSONFile ( jsonConfigFile , out _jsonText ) ;
+					return true ;
+				}
+				catch ( JsonReaderException jsonException )
+				{
+					jsonErrorLineIndex = jsonException.LineNumber ;
+					jsonErrorColumnIndex = jsonException.LinePosition ;
+					errorMessage = "Cannot parse json file \"" + jsonConfigFile + "\".\r\n" + 
+									GetFixedTextFromJsonException ( jsonException ) ;
 				}
 				catch ( Exception x )
 				{
 					errorMessage = "Cannot parse json file \"" + jsonConfigFile + "\".\r\n" + x.Message ;
 				}
 			else errorMessage = "File not found \"" + jsonConfigFile + "\"." ;
+			return false ;
+		}
+		/// <summary>
+		/// Returns an exception message with a line break after the first sentence.
+		/// </summary>
+		/// <param name="jsonException"(JsonException instance, can be null</param>
+		/// <returns>An exception message with a line break after the first sentence,br/>
+		/// or "Unknown error" for the null JsonException.
+		/// </returns>
+		public static string GetFixedTextFromJsonException ( JsonException jsonException ) 
+		{
+			string message = jsonException == null ? "Unknown error" : jsonException.Message ;
+			int i = message.IndexOf ( ". Path " ) ;
+			return i == -1 ? message : message.Substring ( 0 , i ) + ".\r\nPath " + message.Substring ( i + 7 ) ;
 		}
 		/// <summary>
 		/// Creates new instance of HttpStartParameters from given program start arguments
@@ -121,6 +158,8 @@ namespace SimpleHttp
 		public HttpStartParameters ( string[] args )
 		{
 			_jsonText = "{}" ;
+			jsonErrorLineIndex = -1 ;
+			jsonErrorColumnIndex = -1 ;
 			bool startFileServer = false ;
 			bool startResourceServer = false ;
 			port = 80 ;

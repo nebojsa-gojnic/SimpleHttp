@@ -19,6 +19,7 @@ using System.Diagnostics.Eventing.Reader ;
 using System.Drawing.Drawing2D ;
 using System.Net.Http.Headers;
 using System.ComponentModel.Design;
+using System.DirectoryServices;
 
 namespace SimpleHttp
 {
@@ -90,7 +91,8 @@ namespace SimpleHttp
 			iconMenuClosingTimeStamp = Environment.TickCount64 ;
 
 			//SetStyle ( ControlStyles.AllPaintingInWmPaint , true ) ;
-			SetStyle ( ControlStyles.ResizeRedraw , true ) ;
+			ResizeRedraw = true ;
+			//SetStyle ( ControlStyles.ResizeRedraw , false ) ;
 			InitializeComponent() ;
 			
 			AssingFlatButtonAppearance ( minimizeButton ) ;
@@ -101,6 +103,8 @@ namespace SimpleHttp
 			AssingFlatButtonAppearance ( monitorSwitch ) ;
 			AssingFlatButtonAppearance ( viewSwitch ) ;
 			AssingFlatButtonAppearance ( menuButton ) ;
+			AssingFlatButtonAppearance ( closePropertiesButton ) ;
+			
 
 			//uriLabel.Text = "" ;
 			resourceLabel.Text = "" ;
@@ -450,6 +454,12 @@ namespace SimpleHttp
 			catch { }
 			jsonEditor.Text = programStartParameters.jsonText ;
 			try
+			{ 
+				if ( programStartParameters.jsonErrorLineIndex > 0 )
+					selectJSONText ( programStartParameters.jsonErrorLineIndex , programStartParameters.jsonErrorColumnIndex ) ;
+			}
+			catch { }
+			try
 			{
 				_jsonConfigFileName = new FileInfo ( programStartParameters.jsonConfigFile ).FullName ;
 			}
@@ -503,18 +513,12 @@ namespace SimpleHttp
 						showWarning ( "Bad starting parameters" , startingMessage ) ;
 				} ) ;
 		}
+		
 		protected override void OnDeactivate ( EventArgs e )
 		{
-			// API.PostMessageA ( jsonEditor.Handle , WindowMessage.WM_SetRedraw , IntPtr.Zero , IntPtr.Zero ) ;
 			if ( !statusPanel.Visible ) reverTitlePanelControls () ; //possible situation if form lose focus during splitter dragging
 			base.OnDeactivate(e) ;
 		}
-		//protected override void OnActivated ( EventArgs e )
-		//{
-		//	if ( Opacity == 0f ) return ;
-		//	//API.SendMessage ( jsonEditor.Handle , WindowMessage.WM_SetRedraw , new IntPtr ( 1 ) , IntPtr.Zero ) ;
-		//	base.OnActivated ( e ) ;
-		//}
 
 		protected void onPipeConnected ( object sender )
 		{
@@ -607,7 +611,12 @@ namespace SimpleHttp
 				int selectionStart = lineStartPosition + columnPosition + 1 ; 
 				jsonEditor.SelectionStart = selectionStart ;
 				jsonEditor.ScrollToCaret () ;
-				jsonEditor.SelectionLength = 2 ;
+				jsonEditor.SelectionLength = Math.Min ( 2 , jsonEditor.Text.Length - jsonEditor.SelectionStart ) ;
+				if ( jsonEditor.SelectionLength == 0 )
+				{
+					jsonEditor.SelectionStart = selectionStart -1 ;
+					jsonEditor.SelectionLength =  1 ;
+				}
 			}
 			catch { }
 		}
@@ -634,11 +643,19 @@ namespace SimpleHttp
 			{
 				if ( string.IsNullOrWhiteSpace ( jsonEditor.Text ) ) 
 				{
-					if ( showErrorMessage && !ignoreEmpty )  showInfo ( "No JSON configuration" , "No text int JSON coniguration box." ) ;
+					if ( showErrorMessage && !ignoreEmpty ) showInfo ( "No JSON configuration" , "No text int JSON coniguration box." ) ;
 					return null ;
 				}
 				JObject jObject = JObject.Parse ( jsonEditor.Text ) ;
-				configData.loadFromJSON ( jObject ) ;
+				try
+				{
+					configData.loadFromJSON ( jObject ) ;
+				}
+				catch ( Exception x1 )
+				{ 
+					if ( showErrorMessage ) showError ( "Bad JSON configuration" , x1 ) ;
+					return null ;
+				}
 				return configData ;
 			}
 			catch ( JsonReaderException jsonException )
@@ -1081,6 +1098,7 @@ namespace SimpleHttp
 		}
 		protected void stopServerAndReflectServerStatus ()
 		{
+			if ( webServer == null ) return ;
 			WebServerConfigData configData = webServer.configData ;
 			webServer.Stop ( true ) ;
 			webServer?.Dispose () ;
@@ -1232,7 +1250,7 @@ namespace SimpleHttp
 		/// </summary>
 		protected void calculateLogItemHeight ()
 		{
-			logItemInnerHeight = testLabel.Height - testLabel.Padding.Vertical - 1 ;
+			logItemInnerHeight = logItemTestLabel.Height - logItemTestLabel.Padding.Vertical - 1 ;
 			Graphics gr = null ;
 			using ( gr = Graphics.FromHwnd ( Handle ) )
 			{
@@ -1301,6 +1319,7 @@ bad:
 			resourceLabel.Font = boldFont ;
 			requestLabel.Font = boldFont ;
 			uriLabel.Font = boldFont ;
+			titleTestLabel.Font =
 			titleLabel.Font = MonitorForm.GetNewTitleFont ( Font ) ;
 			//int h = Font.Height  ;
 			//closeButton.Size = new Size ( h , h ) ;
@@ -1310,7 +1329,7 @@ bad:
 		protected override void OnPaintBackground ( PaintEventArgs e )
 		{
 			base.OnPaintBackground ( e ) ;
-			drawBoxBorder ( e.Graphics , Size ) ;
+			if ( WindowState == FormWindowState.Normal ) drawBoxBorder ( e.Graphics , Size ) ;
 		}
 		public static void SetBoxRegion ( Control control )
 		{
@@ -1545,6 +1564,12 @@ bad:
 		}
 		protected override void OnKeyDown ( KeyEventArgs e )
 		{
+			
+			//statusPanel.Invalidate () ;		
+			//searchPanel.Invalidate () ;
+			//searchBox.Invalidate ( true ) ;
+			//searchBox.Update () ;
+			setTitleLabelPosition() ;
 			base.OnKeyDown(e) ;
 		}
 		private void searchBox_KeyDown ( object sender , KeyEventArgs e )
@@ -2084,12 +2109,24 @@ bad:
 					switch ( buttonKind )
 					{
 						case MessageForm.ButtonKind.ok :
-							webServer?.Stop ( true ) ;
-							webServer?.Dispose () ;
-							Close () ;
+							if ( messageForm.okButtonText == "Save to file" )
+								if ( saveFileDialog.ShowDialog ( this ) == DialogResult.OK )
+									if ( trySaveConfigAs ( saveFileDialog.FileName ) )
+										Close () ;
+							else 
+							{
+								webServer?.Stop ( true ) ;
+								webServer?.Dispose () ;
+								Close () ;
+							}
 						break ;
 						case MessageForm.ButtonKind.no :
-							stopServerAndReflectServerStatus () ;
+							if ( messageForm.noButtonText == "Just close program" )
+							{
+								closeProgramConfirmed = true ;
+								Close () ;
+							}
+							else stopServerAndReflectServerStatus () ;
 						break ;
 					}
 				break ;
@@ -2150,12 +2187,7 @@ bad:
 		{
 			ShowInTaskbar = true ;
 			Visible = true ;
-			string message = jsonException == null ? "Unknown error" : jsonException.Message ;
-
-			int i = message.IndexOf ( ". Path " ) ;
-			if ( i != -1 )
-				message = message.Substring ( 0 , i ) + ".\r\nPath " + message.Substring ( i + 7 ) ;
-			showErrorMessage ( title , message ) ;
+			showErrorMessage ( title , HttpStartParameters.GetFixedTextFromJsonException ( jsonException ) ) ;
 		}
 		public void showError ( string title , Exception exp )
 		{
@@ -2176,9 +2208,15 @@ bad:
 							"Closing program" , "              Do you want to close http server?" ,
 							"Close program and server" , "Just stop server" , "Keep server working" ) ;
 		}
+		protected void showNotSavedClosingQuestion ()
+		{
+			showMessage ( SimpleHttp.Properties.Resources.closeIcon ,
+							"Closing program" , "Current configuration JSON not saved,\r\nDo you want to save it now?" ,
+							"Save to file" , "Just close program" , "Cancel" ) ;
+		}
 		protected override void OnFormClosing ( FormClosingEventArgs e )
 		{
-			if ( closeProgramConfirmed || !isListening )
+			if ( closeProgramConfirmed || !( isListening  || ( configFileNameLabel.Text == "<not saved>" ) ) )
 			{
 				quickStartForm?.Dispose () ;
 				resourcesForm?.Dispose () ;
@@ -2188,7 +2226,9 @@ bad:
 			else 
 			{
 				e.Cancel = true ;
-				showClosingQuestion () ;
+				if ( isListening ) 
+					showClosingQuestion () ;
+				else showNotSavedClosingQuestion () ;
 				//if ( closeProgramDemand || ( messageForm != null )  && ( e.CloseReason == CloseReason.UserClosing ) )
 				//	showClosingQuestion () ;
 				//else
@@ -2657,7 +2697,6 @@ bad:
 					messageForm.BringToFront () ;
 				}
 			}
-			// API.PostMessageA ( jsonEditor.Handle , WindowMessage.WM_SetRedraw , IntPtr.Zero , IntPtr.Zero ) ;
 		}
 
 
@@ -3396,10 +3435,15 @@ endLab:
 			}
 			catch{ }
 		}
+		private void configPanel_Resize ( object sender, EventArgs e )
+		{
+			setTitleLabelPosition () ;
+		}
 		private void searchPanel_Resize ( object sender, EventArgs e )
 		{
 			setSearchBoxMaximumSize () ;
 			searchBox.Width = _searchBoxWidth ;
+			setTitleLabelPosition () ;
 		}
 		private void setSearchBoxMaximumSize ()
 		{
@@ -3460,6 +3504,7 @@ endLab:
 			//}
 			//topPanel.AutoSize = true ;
 			statusPanel.ResumeLayout () ;
+			setTitleLabelPosition () ;
 			//topPanel.ResumeLayout () ;
 			
 		}
@@ -3554,6 +3599,7 @@ endLab:
 			if ( doNotSaveToRegistry ) return ;
 
 			saveSearchBoxWidth () ;
+			setTitleLabelPosition () ;
 		}
 		/// <summary>
 		/// searchBox width
@@ -3682,8 +3728,11 @@ endLab:
 		/// <param name="e">(MouseEventArgs)</param>
 		private void searchSplitter_MouseDown ( object sender , MouseEventArgs e )
 		{
+			bool titleLabelVisible = titleLabel.Visible ;
 			Bitmap bitmap = titlePanelBitmap = new Bitmap ( titlePanel.Width , titlePanel.Height ) ;
 			titlePanel.DrawToBitmap ( bitmap , new Rectangle ( Point.Empty , titlePanel.Size ) ) ;
+			if ( titleLabel.Visible )
+				titleLabel.DrawToBitmap ( bitmap , titleLabel.Bounds ) ;
 			searchBox.Focus () ; //very important
 			searchBoxMouseDownX = e.Location.X ;
 			foreach ( Control control in titlePanel.Controls )
@@ -3716,7 +3765,7 @@ endLab:
 		}
 		private void searchSplitter_KeyDown ( object sender , KeyEventArgs e )
 		{
-			if ( (  e.KeyCode == Keys.Escape ) && ( titlePanelBitmap != null ) )
+			if ( ( e.KeyCode == Keys.Escape ) && ( titlePanelBitmap != null ) )
 			{
 				titlePanelBitmap.Dispose () ;
 				titlePanelBitmap = null ;
@@ -3726,6 +3775,7 @@ endLab:
 		private void searchSplitter_MouseUp ( object sender , MouseEventArgs e )
 		{
 			if ( titlePanelBitmap == null ) return ;
+			API.SendMessageA ( titlePanel.Handle , WindowMessage.WM_SetRedraw , IntPtr.Zero , IntPtr.Zero ) ;
 			reverTitlePanelControls () ;			
 			if ( newSearchBoxWidth > searchBox.MinimumSize.Width )
 			{
@@ -3740,7 +3790,13 @@ endLab:
 				else logList.Focus  () ;
 			}
 			searchSplitter.Cursor = Cursors.VSplit ;
+			API.SendMessageA ( titlePanel.Handle , WindowMessage.WM_SetRedraw , new IntPtr ( 1 ) , IntPtr.Zero ) ;
+			//BeginInvoke ( titlePanel.Invalidate ) ;
+			titlePanel.Invalidate ( true ) ;		
+			//statusPanel.Invalidate () ;		
+			//searchPanel.Invalidate () ;
 		}
+
 		/// <summary>
 		/// Anything that can be clicked MUST recall focus to some text box(Im old)
 		/// </summary>
@@ -3759,10 +3815,10 @@ endLab:
 		protected void reverTitlePanelControls ()
 		{
 			//Bitmap bitmap = topPanel.BackgroundImage as Bitmap ;
-			foreach ( Control control in titlePanel.Controls  )
+			titlePanel.SuspendLayout () ;
+			foreach ( Control control in titlePanel.Controls )
 				control.Visible = true ;
 			setSearchBoxVisible ( _searchBoxVisible , false ) ;
-			//titleLabel.Visible = false ;
 
 			titlePanelBitmap?.Dispose () ;
 			titlePanelBitmap = null ;
@@ -3771,8 +3827,17 @@ endLab:
 			{
 				titlePanel.Paint -= titlePanel_Paint ;
 			}
-			catch { }
-			
+			catch { }			
+			titlePanel.ResumeLayout () ;
+		}
+		protected void setTitleLabelVisibility ()
+		{
+			titleLabel.Visible = titleLabel.Right < configPanel.Left ;
+		}
+		protected void setTitleLabelPosition()
+		{
+			titleLabel.Location = new Point ( searchPanel.Visible ? searchPanel.Left + searchBox.Right + searchSplitter.Width : buttonPanel.Right , searchPanel.Top + searchBox.Bottom - titleLabel.Height ) ;
+			setTitleLabelVisibility () ;
 		}
 		protected void topPanel_MouseDown ( object sender , MouseEventArgs e )
 		{
@@ -3895,7 +3960,7 @@ endLab:
 		}
 		private void closeButton_Click ( object sender, EventArgs e )
 		{
-			closeProgramConfirmed = true ;
+			closeProgramConfirmed = false ;
 			if ( isListening )
 				showClosingQuestion () ;
 			else Close () ;
@@ -3932,6 +3997,9 @@ endLab:
 			toolTipPadding = toolTipPadding >> 1 ;
 			graphics.Dispose () ;
 		}
-		
+		private void originLabel_BackColorChanged ( object sender , EventArgs e )
+		{
+			e = e ;
+		}
 	}
 }

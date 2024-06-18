@@ -18,9 +18,8 @@ namespace SimpleHttp
 			InitializeComponent() ;
 			pressedChar = char.MinValue ;
 			keyDownHandledByUser = false ;
-			titlePanel.BackColor = MonitorForm.titleBackColor ;
-			titlePanel.ForeColor = MonitorForm.titleForeColor ;
-			MonitorForm.AssingFlatButtonAppearance ( closeButton ) ;
+			titleBar.BackColor = MonitorForm.titleBackColor ;
+			titleBar.ForeColor = MonitorForm.titleForeColor ;
 			//closeButton.BackColor = MonitorForm.errorEditBackColor ;
 		}
 		/// <summary>
@@ -70,8 +69,8 @@ namespace SimpleHttp
 		}
 		public string title
 		{
-			get => titleLabel.Text ;
-			set => titleLabel.Text = value ;
+			get => Text ;
+			set => Text = value ;
 		}
 		public void setOkButtonText ( string value )
 		{
@@ -205,9 +204,9 @@ namespace SimpleHttp
 			Text = title ;
 			messageText = caption ;
 		}
-		protected override void OnTextChanged(EventArgs e)
+		protected override void OnTextChanged ( EventArgs e )
 		{
-			titleLabel.Text = Text ;
+			titleBar.Text = Text ;
 			base.OnTextChanged(e) ;
 		}
 		public void setButtonText ( string okButtonText , string noButtonText , string cancelButtonText )
@@ -245,16 +244,8 @@ namespace SimpleHttp
         }
 		protected override void OnFontChanged ( EventArgs e )
 		{
-			titleLabel.Font = MonitorForm.GetNewTitleFont ( Font ) ;
-			int h = titleLabel.Font.Height ;
-			closeButton.Size = new Size ( h , h ) ;
-			titlePanel.Height = ( 3 * h ) >> 1 ;
+			titleBar.Font = MonitorForm.GetNewTitleFont ( Font ) ;
 			base.OnFontChanged ( e ) ;
-		}
-		private void titlePanel_Resize ( object sender , EventArgs e )
-		{
-			int d = ( titlePanel.Height - closeButton.Height ) >> 1 ;
-			closeButton.Location = new Point ( titlePanel.Width - closeButton.Width - d , d ) ;
 		}
 		protected override void OnResize ( EventArgs e )
 		{
@@ -280,7 +271,7 @@ namespace SimpleHttp
 			switch ( e.KeyCode )
 			{
 				case Keys.Escape :
-					closeButton_Click ( closeButton , e ) ;
+					closeButton_Click ( titleBar , e ) ;
 				break ;
 				case Keys.Enter :
 					if ( cmdOk.Visible ) 
@@ -298,7 +289,7 @@ namespace SimpleHttp
 						e.Handled = true ;
 						cmdCancel_Click ( cmdNo , e ) ;
 					}
-					else closeButton_Click ( closeButton , e ) ;
+					else closeButton_Click ( titleBar , e ) ;
 				break ;
 				default :
 				break ;
@@ -308,6 +299,15 @@ namespace SimpleHttp
 		{
 			if ( key == char.MinValue ) return false ;
 			return false ;
+		}
+		private void titleBar_Resize ( object sender , EventArgs e )
+		{
+			mainLayout.Location = new Point ( titleBar.Left , titleBar.Bottom ) ;
+		}
+		private void mainLayout_Resize ( object sender, EventArgs e )
+		{
+			Size = new Size ( Padding.Horizontal + mainLayout.Width , Padding.Vertical + mainLayout.Bottom ) ;
+			titleBar.Width = mainLayout.Width ;
 		}
 		protected override void OnPaint ( PaintEventArgs e )
 		{

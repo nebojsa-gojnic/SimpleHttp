@@ -90,10 +90,10 @@
 			resourceLabel = new CommonLabel();
 			searchPanel = new CommonPanel();
 			searchSplitter = new CommonPanel();
-			searchBox = new TextBox();
+			searchBox = new CodeTextBox();
 			searchLabel = new CommonLabel();
 			searchButton = new Button();
-			testLabel = new CommonLabel();
+			logItemTestLabel = new CommonLabel();
 			configPanel = new CommonFlowLayoutPanel();
 			configLabel = new CommonLabel();
 			configFileNameLabel = new CommonLabel();
@@ -103,6 +103,7 @@
 			saveConfigFileMenuItem = new ToolStripMenuItem();
 			toolStripSeparator5 = new ToolStripSeparator();
 			copyConfigNameMenuItem = new ToolStripMenuItem();
+			titleLabel = new CommonLabel();
 			saveFileDialog = new SaveFileDialog();
 			openFileDialog = new OpenFileDialog();
 			toolTip = new ToolTip(components);
@@ -117,7 +118,7 @@
 			buttonPanel = new CommonFlowLayoutPanel();
 			startStopSwitch = new Button();
 			controlPanel = new FlowLayoutPanel();
-			titleLabel = new CommonLabel();
+			titleTestLabel = new CommonLabel();
 			logListMenu.SuspendLayout();
 			logPanel.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)requestGrid).BeginInit();
@@ -482,7 +483,6 @@
 			// 
 			// responseTopPanel
 			// 
-			responseTopPanel.AutoDragForm = false;
 			responseTopPanel.AutoSize = true;
 			responseTopPanel.Controls.Add(responseLabel);
 			responseTopPanel.Dock = DockStyle.Top;
@@ -495,7 +495,6 @@
 			// 
 			// responseLabel
 			// 
-			responseLabel.AutoDragForm = false;
 			responseLabel.AutoSize = true;
 			responseTopPanel.SetFlowBreak(responseLabel, true);
 			responseLabel.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
@@ -505,6 +504,7 @@
 			responseLabel.Size = new Size(77, 20);
 			responseLabel.TabIndex = 1;
 			responseLabel.Text = "Response:";
+			responseLabel.BackColorChanged += originLabel_BackColorChanged;
 			responseLabel.MouseDown += responseLabel_MouseDown;
 			// 
 			// requestPanel
@@ -540,7 +540,6 @@
 			// 
 			// requestTopPanel
 			// 
-			requestTopPanel.AutoDragForm = false;
 			requestTopPanel.AutoSize = true;
 			requestTopPanel.Controls.Add(errorLabel);
 			requestTopPanel.Controls.Add(originLabel);
@@ -607,7 +606,6 @@
 			// 
 			// originLabel
 			// 
-			originLabel.AutoDragForm = false;
 			originLabel.AutoSize = true;
 			originLabel.ContextMenuStrip = labelContextMenu;
 			requestTopPanel.SetFlowBreak(originLabel, true);
@@ -699,7 +697,6 @@
 			// 
 			// resourceTypeLabel
 			// 
-			resourceTypeLabel.AutoDragForm = false;
 			resourceTypeLabel.AutoSize = true;
 			resourceTypeLabel.ContextMenuStrip = labelContextMenu;
 			resourceTypeLabel.Dock = DockStyle.Left;
@@ -915,7 +912,7 @@
 			searchPanel.MinimumSize = new Size(0, 24);
 			searchPanel.Name = "searchPanel";
 			searchPanel.Padding = new Padding(0, 3, 0, 0);
-			searchPanel.Size = new Size(612, 30);
+			searchPanel.Size = new Size(618, 30);
 			searchPanel.TabIndex = 12;
 			searchPanel.DoubleClick += title_DoubleClick;
 			searchPanel.Resize += searchPanel_Resize;
@@ -926,7 +923,7 @@
 			searchSplitter.BackColor = SystemColors.ControlDark;
 			searchSplitter.CausesValidation = false;
 			searchSplitter.Cursor = Cursors.VSplit;
-			searchSplitter.Location = new Point(608, 3);
+			searchSplitter.Location = new Point(410, 3);
 			searchSplitter.Margin = new Padding(0);
 			searchSplitter.Name = "searchSplitter";
 			searchSplitter.Size = new Size(3, 27);
@@ -945,7 +942,7 @@
 			searchBox.Margin = new Padding(0);
 			searchBox.MinimumSize = new Size(50, 0);
 			searchBox.Name = "searchBox";
-			searchBox.Size = new Size(550, 27);
+			searchBox.Size = new Size(556, 27);
 			searchBox.TabIndex = 0;
 			searchBox.TextChanged += searchBox_TextChanged;
 			searchBox.KeyDown += searchBox_KeyDown;
@@ -955,7 +952,6 @@
 			// 
 			// searchLabel
 			// 
-			searchLabel.AutoDragForm = false;
 			searchLabel.AutoSize = true;
 			searchLabel.ContextMenuStrip = labelContextMenu;
 			searchLabel.Dock = DockStyle.Left;
@@ -989,17 +985,17 @@
 			searchButton.Click += searchButton_Click;
 			searchButton.Resize += Box_Resize;
 			// 
-			// testLabel
+			// logItemTestLabel
 			// 
-			testLabel.AutoDragForm = false;
-			testLabel.AutoSize = true;
-			testLabel.Location = new Point(-399, -271);
-			testLabel.Margin = new Padding(0);
-			testLabel.Name = "testLabel";
-			testLabel.Padding = new Padding(3);
-			testLabel.Size = new Size(90, 26);
-			testLabel.TabIndex = 7;
-			testLabel.Text = "Not started";
+			logItemTestLabel.AutoDragForm = false;
+			logItemTestLabel.AutoSize = true;
+			logItemTestLabel.Location = new Point(-399, -271);
+			logItemTestLabel.Margin = new Padding(0);
+			logItemTestLabel.Name = "logItemTestLabel";
+			logItemTestLabel.Padding = new Padding(3);
+			logItemTestLabel.Size = new Size(90, 26);
+			logItemTestLabel.TabIndex = 7;
+			logItemTestLabel.Text = "Not started";
 			// 
 			// configPanel
 			// 
@@ -1009,20 +1005,22 @@
 			configPanel.Controls.Add(configLabel);
 			configPanel.Controls.Add(configFileNameLabel);
 			configPanel.Dock = DockStyle.Right;
-			configPanel.Location = new Point(769, 0);
+			configPanel.Location = new Point(775, 0);
 			configPanel.Margin = new Padding(0);
 			configPanel.Name = "configPanel";
-			configPanel.Padding = new Padding(6, 2, 0, 0);
-			configPanel.Size = new Size(134, 30);
+			configPanel.Padding = new Padding(0, 2, 0, 0);
+			configPanel.Size = new Size(128, 30);
 			configPanel.TabIndex = 11;
 			configPanel.WrapContents = false;
+			configPanel.Move += configPanel_Resize;
+			configPanel.Resize += configPanel_Resize;
 			// 
 			// configLabel
 			// 
 			configLabel.AutoSize = true;
 			configLabel.ContextMenuStrip = linkContextMenu;
 			configLabel.Dock = DockStyle.Left;
-			configLabel.Location = new Point(6, 2);
+			configLabel.Location = new Point(0, 2);
 			configLabel.Margin = new Padding(0);
 			configLabel.Name = "configLabel";
 			configLabel.Size = new Size(56, 24);
@@ -1038,7 +1036,7 @@
 			configFileNameLabel.Cursor = Cursors.Hand;
 			configFileNameLabel.Dock = DockStyle.Left;
 			configFileNameLabel.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Underline, GraphicsUnit.Point);
-			configFileNameLabel.Location = new Point(62, 2);
+			configFileNameLabel.Location = new Point(56, 2);
 			configFileNameLabel.Margin = new Padding(0);
 			configFileNameLabel.Name = "configFileNameLabel";
 			configFileNameLabel.Padding = new Padding(0, 2, 0, 2);
@@ -1087,6 +1085,21 @@
 			copyConfigNameMenuItem.Name = "copyConfigNameMenuItem";
 			copyConfigNameMenuItem.Size = new Size(203, 24);
 			copyConfigNameMenuItem.Text = "&Copy with full path";
+			// 
+			// titleLabel
+			// 
+			titleLabel.AutoSize = true;
+			titleLabel.ContextMenuStrip = linkContextMenu;
+			titleLabel.Font = new Font("Segoe UI Semibold", 13F, FontStyle.Regular, GraphicsUnit.Point);
+			titleLabel.Location = new Point(651, 0);
+			titleLabel.Margin = new Padding(0);
+			titleLabel.Name = "titleLabel";
+			titleLabel.Padding = new Padding(6, 0, 0, 0);
+			titleLabel.Size = new Size(118, 25);
+			titleLabel.TabIndex = 13;
+			titleLabel.Text = "Simple Http";
+			titleLabel.TextAlign = ContentAlignment.MiddleLeft;
+			titleLabel.DoubleClick += title_DoubleClick;
 			// 
 			// saveFileDialog
 			// 
@@ -1254,6 +1267,7 @@
 			// 
 			// titlePanel
 			// 
+			titlePanel.Controls.Add(titleLabel);
 			titlePanel.Controls.Add(searchPanel);
 			titlePanel.Controls.Add(buttonPanel);
 			titlePanel.Controls.Add(configPanel);
@@ -1320,29 +1334,21 @@
 			controlPanel.TabIndex = 12;
 			controlPanel.WrapContents = false;
 			// 
-			// titleLabel
+			// titleTestLabel
 			// 
-			titleLabel.ContextMenuStrip = linkContextMenu;
-			titleLabel.Font = new Font("Segoe UI Semibold", 13F, FontStyle.Regular, GraphicsUnit.Point);
-			titleLabel.Location = new Point(-231, -2131);
-			titleLabel.Margin = new Padding(0);
-			titleLabel.Name = "titleLabel";
-			titleLabel.Padding = new Padding(6, 0, 6, 0);
-			titleLabel.Size = new Size(609, 30);
-			titleLabel.TabIndex = 13;
-			titleLabel.Text = "Simple Http";
-			titleLabel.TextAlign = ContentAlignment.MiddleLeft;
-			titleLabel.Visible = false;
-			titleLabel.DoubleClick += title_DoubleClick;
+			titleTestLabel.AutoSize = true;
+			titleTestLabel.Location = new Point(-1000, -1000);
+			titleTestLabel.Name = "titleTestLabel";
+			titleTestLabel.Size = new Size(0, 20);
+			titleTestLabel.TabIndex = 8;
 			// 
 			// MonitorForm
 			// 
 			AutoScaleMode = AutoScaleMode.None;
-			BackColor = Color.White;
 			ClientSize = new Size(1003, 572);
 			ControlBox = false;
-			Controls.Add(titleLabel);
-			Controls.Add(testLabel);
+			Controls.Add(logItemTestLabel);
+			Controls.Add(titleTestLabel);
 			Controls.Add(mainPanel);
 			Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
 			FormBorderStyle = FormBorderStyle.None;
@@ -1434,13 +1440,12 @@
         private ToolStripMenuItem labelCopyMenuItem;
         private CommonLabel httpLabel;
         private ToolStripMenuItem openLogMenuItem;
-		private CommonLabel testLabel;
         private ToolStripMenuItem showStartParametersMenuItem;
         private ToolStripSeparator toolStripSeparator3;
         private ToolStripMenuItem aboutMenuItem;
         private ToolStripMenuItem gridSearchMenuItem;
         private ToolStripSeparator gridLine1;
-        private TextBox searchBox;
+        private CodeTextBox searchBox;
         private ToolStripSeparator logMenuLine0;
         private ToolStripSeparator logMenuLine1;
 		private CommonLabel searchLabel;
@@ -1492,5 +1497,7 @@
 		private CommonLabel titleLabel;
 		private ToolStripMenuItem startFromJSONMenuItem;
 		private ToolStripMenuItem startFromQuickStartMenuItem;
+		private CommonLabel logItemTestLabel;
+		private CommonLabel titleTestLabel;
 	}
 }

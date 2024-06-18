@@ -1,6 +1,7 @@
 ﻿using System ;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.PerformanceData;
 using System.Windows.Forms ;
 
 
@@ -13,7 +14,58 @@ namespace SimpleHttp
 	public class CodeTextBox:TextBox
 	{
 		/// <summary>
-		/// We need this for maunal paint
+		/// Auxiliary vairable for the doubleClickX property
+		/// </summary>
+		private static int _doubleClickX ;
+		/// <summary>
+		/// Maximal horizontal distance for double click<br/>
+		/// more then that does not raise the event
+		/// </summary>
+		public static int doubleClickX 
+		{
+			get => _doubleClickX ;
+		}
+		/// <summary>
+		/// Auxiliary vairable for the doubleClickY property
+		/// </summary>
+		private static int _doubleClickY ;
+		/// <summary>
+		/// Maximal vertical distance for double click<br/>
+		/// more then that does not raise the event
+		/// </summary>
+		public static int doubleClickY 
+		{
+			get => _doubleClickY ;
+		}
+		/// <summary>
+		/// Auxiliary vairable for the _doubleClickTime property
+		/// </summary>
+		private static int _doubleClickTime ;
+		/// <summary>
+		/// Double click time in milliseconds
+		/// </summary>
+		public static int doubleClickTime 
+		{
+			get => _doubleClickTime ;
+		}
+		/// <summary>
+		/// Read and set values to doubleClickX, doubleClickY and doubleClickTime.
+		/// </summary>
+		public static void readDoubleClickSettingsFromOS ()
+		{
+			_doubleClickX = API.GetSystemMetrics ( API.SystemMetrics.CXDOUBLECLK ) ;
+			_doubleClickY = API.GetSystemMetrics ( API.SystemMetrics.CYDOUBLECLK ) ;
+			_doubleClickTime = API.GetDoubleClickTime () ;
+		}
+		/// <summary>
+		/// Static construcor. It calls readDoubleClickSettingsFromOS() method in order to read and set values to doubleClickX, doubleClickY and doubleClickTime.
+		/// </summary>
+		static CodeTextBox ()
+		{
+			readDoubleClickSettingsFromOS () ;
+		}
+		/// <summary>
+		/// We need this for manual paint
 		/// </summary>
 		protected API.PaintStruct paintStruct ;
 		/// <summary>
@@ -56,12 +108,46 @@ namespace SimpleHttp
 			paintStruct.rcPaint = new API.APIRect () ;
 			paintStruct.rcPaint.Left = 0 ;
 			paintStruct.rcPaint.Top = 0 ;
+			 _mouseDownThickCount = Environment.TickCount ;
+			_mouseIsDown = false ;
 			//SetStyle ( ControlStyles.AllPaintingInWmPaint , true ) ;
 			//SetStyle ( ControlStyles.UserPaint , true ) ;
 			//SetStyle ( ControlStyles.Opaque , false ) ;
 			//SetStyle ( ControlStyles.SupportsTransparentBackColor , true ) ;
 		}
-
+		/// <summary>
+		/// Auxiliary variable for the mouseIsDown property
+		/// </summary>
+		protected bool _mouseIsDown ;
+		/// <summary>
+		/// True when mouse is down/pressed on this control
+		/// </summary>
+		protected bool mouseIsDown 
+		{
+			get => _mouseIsDown ;
+		}
+		/// <summary>
+		/// Auxiliary variable for the mouseDownThickCount property
+		/// </summary>
+		protected int _mouseDownThickCount ;
+		/// <summary>
+		/// Value of the SelectionThickCount property when mouse was down on control
+		/// </summary>
+		protected int mouseDownThickCount 
+		{
+			get => _mouseDownThickCount ;
+		}
+		/// <summary>
+		/// Auxiliary variable for the mouseDownPosition 
+		/// </summary>
+		protected Point _mouseDownPosition ;
+		/// <summary>
+		/// Realtive mouse coordinates last time when mouse was down
+		/// </summary>
+		protected Point mouseDownPosition 
+		{
+			get => _mouseDownPosition  ;
+		}
 		/// <summary>
 		/// Auxiliary variable for the mouseDownSelectionStart property
 		/// </summary>
@@ -72,6 +158,17 @@ namespace SimpleHttp
 		protected int mouseDownSelectionStart 
 		{
 			get => _mouseDownSelectionStart ;
+		}
+		/// <summary>
+		/// Auxiliary variable for the mouseDownSelectionLength property
+		/// </summary>
+		protected int _mouseDownSelectionLength ;
+		/// <summary>
+		/// Value of the SelectionLength property when mouse was down on control
+		/// </summary>
+		protected int mouseDownSelectionLength 
+		{
+			get => _mouseDownSelectionLength ;
 		}
 		/// <summary>
 		/// Auxiliary variable for the leftToRightSelection property
@@ -98,7 +195,36 @@ namespace SimpleHttp
 		/// <param name="e">(MouseEventArgs)</param>
 		protected override void OnMouseDown ( MouseEventArgs e )
 		{
-			_mouseDownSelectionStart = SelectionStart ;
+			_mouseIsDown = true ;
+			System.Diagnostics.Debug.WriteLine ( "Mouse is down" ) ;
+			System.Diagnostics.Debug.WriteLine ( e.X.ToString () + " , " + e.Y.ToString () ) ;
+			int newTick = Environment.TickCount ;
+			unsafe
+			{
+				//System.Diagnostics.Debug.WriteLine ( newTick - _mouseDownThickCount ) ;
+				//System.Diagnostics.Debug.WriteLine ( doubleClickTime ) ;
+				//System.Diagnostics.Debug.WriteLine ( ( newTick - _mouseDownThickCount ) <= doubleClickTime ) ;
+				//System.Diagnostics.Debug.WriteLine ( doubleClickX )
+				//System.Diagnostics.Debug.WriteLine ( doubleClickY <= Math.Abs ( _mouseDownPosition .Y - e.Location.Y ) ) ;
+				System.Diagnostics.Debug.WriteLine ( doubleClickY.ToString () + " , " + Math.Abs ( _mouseDownPosition .Y - e.Location.Y ).ToString () ) ;
+				if ( ( ( newTick - _mouseDownThickCount ) <= doubleClickTime ) &&
+					 ( doubleClickX >= Math.Abs ( mouseDownPosition.X - e.Location.X ) ) &&
+						 ( doubleClickY >= Math.Abs ( mouseDownPosition.Y - e.Location.Y ) ) )
+				{
+					selectWordFromPosition ( _mouseDownSelectionStart ) ;
+					_mouseDownSelectionStart = SelectionStart ;
+					_mouseDownSelectionLength = SelectionLength ;
+					_mouseDownThickCount = newTick - 10000 ;			//  ha!!!!!!!!!
+				}  
+				else 
+				{
+					_mouseDownSelectionStart = SelectionStart ;
+					_mouseDownSelectionLength = SelectionLength ;
+					_leftToRightSelection = true ;
+					_mouseDownThickCount = newTick ;
+				}
+				_mouseDownPosition = e.Location ;
+			}
 			base.OnMouseDown ( e ) ;
 		}
 		/// <summary>
@@ -108,7 +234,217 @@ namespace SimpleHttp
 		protected override void OnMouseUp ( MouseEventArgs e )
 		{
 			_leftToRightSelection = _mouseDownSelectionStart == SelectionStart ;
+			_mouseIsDown = false ;
+			System.Diagnostics.Debug.WriteLine ( "Mouse is up" ) ;
 			base.OnMouseUp ( e ) ;
+		}
+		/// <summary>
+		/// For the auto selection on doubleclick
+		/// </summary>
+		public enum SelectionContentType
+		{
+			nothing = 0 ,
+			space = 1 ,
+			symbol = 2 ,
+			charOrDiggit = 3 ,
+		}
+		/// <summary>
+		/// Auto selection method(for doubleclick),
+		/// what a chore
+		/// </summary>
+		/// <param name="position">Current curet position</param>
+		protected void selectWordFromPosition ( int position )
+		{
+			int length = Text.Length ;
+			//	end of line or end of text
+			SelectionContentType rightType = length > position ? SelectionContentType.symbol : SelectionContentType.nothing ;
+			int rightPosition = length -1 ;						// ha!
+			if ( rightType != SelectionContentType.nothing )
+				switch ( Text [ position ] )
+				{
+					case '\r' :
+					case '\n' :
+						rightType = SelectionContentType.nothing ;
+					break ;
+					case '\t' :
+					case '\u00A2' :												//	non-breakable space
+					case ' ' :				
+						rightType = SelectionContentType.space ;
+						for ( int i = position ; i < length ; i++ )				//	searching for the space end(SF?)
+							switch ( Text [ i ] )
+							{
+								case '\r' :
+								case '\n' :
+									rightPosition = i - 1 ;   
+									i = length ;								//	break the for loop
+								break ;
+								case '\t' :
+								case '\u00A2' :									//	non-breakable space
+								case ' ' :										//	keep on rolling
+								break ;
+								default :										//	we found the first non-space character
+									rightPosition = i - 1 ;   
+									i = length ;								//	break the for loop
+								break ;
+							}
+					break ;
+					default :													//	not a space or end of line
+						if ( char.IsLetterOrDigit ( Text [ position ] ) )
+						{
+							rightType = SelectionContentType.charOrDiggit ;
+							for ( int i = position ; i < length ; i++ )			//	searching for the neighter char or diggit (SF?)
+								if ( !char.IsLetterOrDigit ( Text [ i ] ) ) 
+								{
+										rightPosition = i - 1 ;   
+										i = length ;							//	break the for loop
+								}
+						}
+						else 
+						{
+							rightType = SelectionContentType.symbol ;
+							for ( int i = position ; i < length ; i++ )			//	searching for the end of "other" sequence
+								switch ( Text [ i ] )
+								{
+									case '\r' :
+									case '\n' :
+										rightPosition = i - 1 ;   
+										i = length ;							//	break the for loop
+									break ;
+									case '\t' :
+									case '\u00A2' :								//	non-breakable space
+									case ' ' :									//	keep on rolling
+										rightPosition = i - 1 ;   
+										i = length ;							//	break the for loop
+									break ;
+									default :									//	we found the first non-space character
+										if ( char.IsLetterOrDigit ( Text [ i ] ) ) 
+										{
+											rightPosition = i - 1 ;				//	break the for loop
+											i = length ;							
+										}
+									break ;
+								}
+						}
+					break ;
+				}
+			int leftPosition = position - 1 ;
+			SelectionContentType leftType = leftPosition >= 0 ? SelectionContentType.symbol : SelectionContentType.nothing ;
+			if ( leftType != SelectionContentType.nothing  )					//  selection is not at the begin, left part is not empty
+				switch ( Text [ leftPosition ] )
+				{
+					case '\r' :
+					case '\n' :
+						leftType = SelectionContentType.nothing ;
+					break ;
+					case '\t' :
+					case '\u00A2' :												//	non-breakable space
+					case ' ' :				
+						leftType = SelectionContentType.space ;
+						for ( int i = leftPosition ; i >= 0 ; i-- )					//	searching for the space start(SF?)
+							switch ( Text [ i ] )
+							{
+								case '\r' :
+								case '\n' :
+									leftPosition = i + 1 ;   
+									i = -1 ;									//	break the for loop
+								break ;
+								case '\t' :
+								case '\u00A2' :									//	non-breakable space
+								case ' ' :										//	keep on rolling
+								break ;
+								default :										//	we found the first non-space character
+									leftPosition = i + 1 ;   
+									i = -1 ;									//	break the for loop
+								break ;
+							}
+					break ;
+					default :													//	not a space or end of line
+						if ( char.IsLetterOrDigit ( Text [ leftPosition ] ) )
+						{
+							leftType = SelectionContentType.charOrDiggit ;
+							for ( int i = leftPosition ; i >= 0 ; i-- )				//	searching for the non char or diggit (SF?)
+								if ( !char.IsLetterOrDigit ( Text [ i ] ) ) 
+								{
+									leftPosition = i + 1 ;   
+									i = -1 ;									//	break the for loop
+								}
+						}
+						else 
+						{
+							leftType = SelectionContentType.symbol ;
+							for ( int i = leftPosition ; i >= 0 ; i-- )			//	searching for the end of "other" sequence
+								switch ( Text [ i ] )
+								{
+									case '\r' :
+									case '\n' :
+									case '\t' :
+									case '\u00A2' :								//	non-breakable space
+									case ' ' :									//	keep on rolling
+										leftPosition = i ;      
+										i = -1 ;								//	break the for loop
+									break ;
+									default :									//	we found the first non-space character
+										if ( char.IsLetterOrDigit ( Text [ i ] ) ) 
+										{
+											leftPosition = i + 1 ;      
+											i = -1 ;								//	break the for loop
+										}
+									break ;
+								}
+						}
+					break ;
+				}
+
+			if ( rightType == SelectionContentType.nothing )
+			{
+				if ( leftType == SelectionContentType.nothing )
+				{
+
+					if ( ( position >= 0 ) && ( position < length ) )
+					{
+						SelectionStart = position ;
+						SelectionLength = 0 ;
+					}
+				}
+				else
+				{
+					SelectionStart = leftPosition ;
+					SelectionLength = position - leftPosition + 1 ;
+				}
+					
+			}
+			else if ( leftType == SelectionContentType.nothing )
+			{
+				SelectionStart = position ;
+				SelectionLength = rightPosition - position + 1 ;
+			}
+			else if ( leftType == rightType )
+			{
+				SelectionStart = leftPosition ;
+				SelectionLength = rightPosition - leftPosition + 1 ;
+			}
+			else if ( leftType < rightType )
+			{
+				SelectionStart = position ;
+				SelectionLength = rightPosition - position + 1 ;
+			}
+			else 
+			{
+				SelectionStart = leftPosition ;
+				SelectionLength = position - leftPosition  ;
+			}
+		}
+		/// <summary>
+		/// This method (re)set value of the mouseDownThickCount property and raises Enter event.
+		/// </summary>
+		/// <param name="e">(EventArgs)</param>
+		protected override void OnEnter ( EventArgs e )
+		{
+			unsafe
+			{
+				_mouseDownThickCount =  Environment.TickCount - 100000 ;
+			}
+			base.OnEnter ( e) ;
 		}
 		protected void handleLeftArrow ( KeyEventArgs e )
 		{
@@ -372,17 +708,28 @@ namespace SimpleHttp
 		}
 		protected bool inPaint ;
 
-		protected bool sc ;
-		[DebuggerStepThroughAttribute]
+		//[DebuggerStepThroughAttribute]
 		protected override void WndProc ( ref Message m )
 		{
 			switch ( m.Msg )
 			{
+				case WindowMessage.WM_LButtonDown :
+					m.Msg = WindowMessage.WM_LButtonDown ;
+				break ;
+				case WindowMessage.WM_LButtonDblClk :
+					// m.Msg = WindowMessage.WM_LButtonDown ;
+					// This is supposed to work but it does not
+					// whoever made .net System.Windows.Forms was a retartd
+
+					// so we do it manualy instead
+					int i = m.LParam.ToInt32 () ;
+					OnMouseDown ( new MouseEventArgs ( MouseButtons.Left , 2 , i & 0xFFFF , i >> 16 , 0 ) ) ;
+				return ;
 				case WindowMessage.WM_EraseBackground :
 					m.Result = new IntPtr ( 1 ) ;
 					return ;
 				case WindowMessage.WM_Paint :
-					if ( inPaint )
+					if ( inPaint || _mouseIsDown )
 						break ;
 					else 
 					{
