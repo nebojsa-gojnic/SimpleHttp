@@ -441,6 +441,11 @@ namespace SimpleHttp
 			int h = titleLabel.Font.Height ;
 			closeButton.Size = new Size ( h , h ) ;
 			titlePanel.Height = ( 3 * h ) >> 1 ;
+			foreach ( Component component in components.Components )
+			{
+				Control Control = component as Control ;
+				if ( Control != null ) Control.Font = Font ;
+			}
 			base.OnFontChanged ( e ) ;
 		}
 		protected override void OnPaintBackground ( PaintEventArgs e )

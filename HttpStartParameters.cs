@@ -152,12 +152,24 @@ namespace SimpleHttp
 			return i == -1 ? message : message.Substring ( 0 , i ) + ".\r\nPath " + message.Substring ( i + 7 ) ;
 		}
 		/// <summary>
+		/// Auxiliary variable for the commandLine property
+		/// </summary>
+		protected string _commandLine;
+		/// <summary>
+		/// Command line, restored from initial arguments
+		/// </summary>
+		public string commandLine
+		{
+			get => _commandLine ;
+		}
+		/// <summary>
 		/// Creates new instance of HttpStartParameters from given program start arguments
 		/// </summary>
 		/// <param name="args">Program start arguments to parse</param>
 		public HttpStartParameters ( string[] args )
 		{
 			_jsonText = "{}" ;
+			_commandLine = "" ;
 			jsonErrorLineIndex = -1 ;
 			jsonErrorColumnIndex = -1 ;
 			bool startFileServer = false ;
@@ -193,6 +205,7 @@ namespace SimpleHttp
 				case 1 :
 					mode = StartServerMode.jsonConfig ;
 					jsonConfigFile = args [ 0 ] ;
+					_commandLine = args [ 0 ].IndexOf ( ' ' ) == -1 ?  args [ 0 ] : ( "\"" + args [ 0 ] + "\"" ) ;
 					if ( ( errorMessage = getFileMessage ( jsonConfigFile ) ) == "" )
 						loadConfigFromJsonFile ( ) ;
 				return ;
@@ -202,6 +215,7 @@ namespace SimpleHttp
 						autoStart = false ;
 						mode = StartServerMode.jsonConfig ;
 						jsonConfigFile = args [ 1 ] ;
+						_commandLine = args [ 0 ] + " " + ( args [ 1 ].IndexOf ( ' ' ) == -1 ? args [ 1 ] : ( "\"" + args [ 1 ] + "\"" ) ) ;
 						if ( ( errorMessage = getFileMessage ( jsonConfigFile ) ) == "" )
 							loadConfigFromJsonFile ( ) ;
 						return ;
@@ -211,6 +225,7 @@ namespace SimpleHttp
 						autoStart = false ;
 						mode = StartServerMode.jsonConfig ;
 						jsonConfigFile = args [ 0 ] ;
+						_commandLine = ( args [ 0 ].IndexOf ( ' ' ) == -1 ?  args [ 0 ] : ( "\"" + args [ 0 ] + "\"" ) ) + " " + args [ 1 ] ;
 						if ( ( errorMessage = getFileMessage ( jsonConfigFile ) ) == "" )
 							loadConfigFromJsonFile ( ) ;
 						return ;
@@ -223,6 +238,7 @@ namespace SimpleHttp
 				{
 					case '/' :
 					case '-' :
+						_commandLine = _commandLine + param + " " ;
 						switch ( param.Substring ( 1 ).Trim().ToLower() )
 						{
 							case "webroot" :
@@ -292,6 +308,7 @@ namespace SimpleHttp
 						}
 					break ;
 					default:   
+						_commandLine = _commandLine + ( param.IndexOf ( ' ' ) == -1 ? param : ( "\"" + param + "\"" ) ) + " " ;
 						switch ( command )
 						{
 							case commandEnum.fileServerMode :
@@ -331,6 +348,7 @@ namespace SimpleHttp
 				}
 				if ( badWord.Length > 0 ) break ; 
 			}
+			_commandLine = _commandLine.TrimEnd () ;
 			if ( errorMessage == "" )
 			{
 				if ( startFileServer && startResourceServer )

@@ -77,7 +77,8 @@
 			showQuickStartMenuItem = new ToolStripMenuItem();
 			toolStripSeparator1 = new ToolStripSeparator();
 			showMainWindowMenuItem = new ToolStripMenuItem();
-			showStartParametersMenuItem = new ToolStripMenuItem();
+			showCommandLineMenuItem = new ToolStripMenuItem();
+			showCurrentParametersMenuItem = new ToolStripMenuItem();
 			toolStripSeparator2 = new ToolStripSeparator();
 			stopServerMenuItem = new ToolStripMenuItem();
 			closeProgramMenuItem = new ToolStripMenuItem();
@@ -722,34 +723,33 @@
 			// 
 			iconMenu.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
 			iconMenu.ImageScalingSize = new Size(1, 1);
-			iconMenu.Items.AddRange(new ToolStripItem[] { aboutMenuItem, toolStripSeparator0, startJSONConfigMenuItem, showQuickStartMenuItem, toolStripSeparator1, showMainWindowMenuItem, showStartParametersMenuItem, toolStripSeparator2, stopServerMenuItem, closeProgramMenuItem });
+			iconMenu.Items.AddRange(new ToolStripItem[] { aboutMenuItem, toolStripSeparator0, startJSONConfigMenuItem, showQuickStartMenuItem, toolStripSeparator1, showMainWindowMenuItem, showCommandLineMenuItem, showCurrentParametersMenuItem, toolStripSeparator2, stopServerMenuItem, closeProgramMenuItem });
 			iconMenu.Name = "iconMenu";
 			iconMenu.RenderMode = ToolStripRenderMode.Professional;
-			iconMenu.Size = new Size(253, 218);
+			iconMenu.Size = new Size(385, 246);
 			iconMenu.Closing += iconMenu_Closing;
 			iconMenu.Opening += iconMenu_Opening;
-			iconMenu.ItemClicked += iconMenu_ItemClicked;
 			// 
 			// aboutMenuItem
 			// 
 			aboutMenuItem.Margin = new Padding(0, 2, 0, 2);
 			aboutMenuItem.Name = "aboutMenuItem";
 			aboutMenuItem.Padding = new Padding(0, 2, 0, 0);
-			aboutMenuItem.Size = new Size(252, 24);
+			aboutMenuItem.Size = new Size(384, 24);
 			aboutMenuItem.Text = "About the program";
 			aboutMenuItem.Click += aboutMenuItem_Click;
 			// 
 			// toolStripSeparator0
 			// 
 			toolStripSeparator0.Name = "toolStripSeparator0";
-			toolStripSeparator0.Size = new Size(249, 6);
+			toolStripSeparator0.Size = new Size(381, 6);
 			// 
 			// startJSONConfigMenuItem
 			// 
 			startJSONConfigMenuItem.Margin = new Padding(0, 2, 0, 2);
 			startJSONConfigMenuItem.Name = "startJSONConfigMenuItem";
 			startJSONConfigMenuItem.Padding = new Padding(0, 2, 0, 0);
-			startJSONConfigMenuItem.Size = new Size(252, 24);
+			startJSONConfigMenuItem.Size = new Size(384, 24);
 			startJSONConfigMenuItem.Text = "Start current configuration";
 			startJSONConfigMenuItem.Click += startJSONConfigMenuItem_Click;
 			// 
@@ -758,44 +758,53 @@
 			showQuickStartMenuItem.Margin = new Padding(0, 2, 0, 2);
 			showQuickStartMenuItem.Name = "showQuickStartMenuItem";
 			showQuickStartMenuItem.Padding = new Padding(0, 2, 0, 0);
-			showQuickStartMenuItem.Size = new Size(252, 24);
+			showQuickStartMenuItem.Size = new Size(384, 24);
 			showQuickStartMenuItem.Text = "Show quick start form";
 			showQuickStartMenuItem.Click += showQuickStartMenuItem_Click;
 			// 
 			// toolStripSeparator1
 			// 
 			toolStripSeparator1.Name = "toolStripSeparator1";
-			toolStripSeparator1.Size = new Size(249, 6);
+			toolStripSeparator1.Size = new Size(381, 6);
 			// 
 			// showMainWindowMenuItem
 			// 
 			showMainWindowMenuItem.Margin = new Padding(0, 2, 0, 2);
 			showMainWindowMenuItem.Name = "showMainWindowMenuItem";
 			showMainWindowMenuItem.Padding = new Padding(0, 2, 0, 0);
-			showMainWindowMenuItem.Size = new Size(252, 24);
+			showMainWindowMenuItem.Size = new Size(384, 24);
 			showMainWindowMenuItem.Text = "Show";
 			showMainWindowMenuItem.Click += showMainWindowMenuItem_Click;
 			// 
-			// showStartParametersMenuItem
+			// showCommandLineMenuItem
 			// 
-			showStartParametersMenuItem.Margin = new Padding(0, 2, 0, 2);
-			showStartParametersMenuItem.Name = "showStartParametersMenuItem";
-			showStartParametersMenuItem.Padding = new Padding(0, 2, 0, 0);
-			showStartParametersMenuItem.Size = new Size(252, 24);
-			showStartParametersMenuItem.Text = "Show starting parameters";
-			showStartParametersMenuItem.Click += showStartParametersMenuItem_Click;
+			showCommandLineMenuItem.Margin = new Padding(0, 2, 0, 2);
+			showCommandLineMenuItem.Name = "showCommandLineMenuItem";
+			showCommandLineMenuItem.Padding = new Padding(0, 2, 0, 0);
+			showCommandLineMenuItem.Size = new Size(384, 24);
+			showCommandLineMenuItem.Text = "Show starting command line";
+			showCommandLineMenuItem.Click += showCommandLineMenuItem_Click;
+			// 
+			// showCurrentParametersMenuItem
+			// 
+			showCurrentParametersMenuItem.Margin = new Padding(0, 2, 0, 2);
+			showCurrentParametersMenuItem.Name = "showCurrentParametersMenuItem";
+			showCurrentParametersMenuItem.Padding = new Padding(0, 2, 0, 0);
+			showCurrentParametersMenuItem.Size = new Size(384, 24);
+			showCurrentParametersMenuItem.Text = "Show parameters for the current configuration";
+			showCurrentParametersMenuItem.Click += showCurrentParametersMenuItem_Click;
 			// 
 			// toolStripSeparator2
 			// 
 			toolStripSeparator2.Name = "toolStripSeparator2";
-			toolStripSeparator2.Size = new Size(249, 6);
+			toolStripSeparator2.Size = new Size(381, 6);
 			// 
 			// stopServerMenuItem
 			// 
 			stopServerMenuItem.Margin = new Padding(0, 2, 0, 2);
 			stopServerMenuItem.Name = "stopServerMenuItem";
 			stopServerMenuItem.Padding = new Padding(0, 2, 0, 0);
-			stopServerMenuItem.Size = new Size(252, 24);
+			stopServerMenuItem.Size = new Size(384, 24);
 			stopServerMenuItem.Text = "Stop http server";
 			stopServerMenuItem.Click += stopServerMenuItem_Click;
 			// 
@@ -804,7 +813,7 @@
 			closeProgramMenuItem.Margin = new Padding(0, 2, 0, 2);
 			closeProgramMenuItem.Name = "closeProgramMenuItem";
 			closeProgramMenuItem.Padding = new Padding(0, 2, 0, 0);
-			closeProgramMenuItem.Size = new Size(252, 24);
+			closeProgramMenuItem.Size = new Size(384, 24);
 			closeProgramMenuItem.Text = "Close program and server";
 			closeProgramMenuItem.Click += closeProgramMenuItem_Click;
 			// 
@@ -912,7 +921,7 @@
 			searchPanel.MinimumSize = new Size(0, 24);
 			searchPanel.Name = "searchPanel";
 			searchPanel.Padding = new Padding(0, 3, 0, 0);
-			searchPanel.Size = new Size(618, 30);
+			searchPanel.Size = new Size(595, 30);
 			searchPanel.TabIndex = 12;
 			searchPanel.DoubleClick += title_DoubleClick;
 			searchPanel.Resize += searchPanel_Resize;
@@ -942,7 +951,7 @@
 			searchBox.Margin = new Padding(0);
 			searchBox.MinimumSize = new Size(50, 0);
 			searchBox.Name = "searchBox";
-			searchBox.Size = new Size(556, 27);
+			searchBox.Size = new Size(533, 27);
 			searchBox.TabIndex = 0;
 			searchBox.TextChanged += searchBox_TextChanged;
 			searchBox.KeyDown += searchBox_KeyDown;
@@ -1005,11 +1014,11 @@
 			configPanel.Controls.Add(configLabel);
 			configPanel.Controls.Add(configFileNameLabel);
 			configPanel.Dock = DockStyle.Right;
-			configPanel.Location = new Point(775, 0);
+			configPanel.Location = new Point(752, 0);
 			configPanel.Margin = new Padding(0);
 			configPanel.Name = "configPanel";
 			configPanel.Padding = new Padding(0, 2, 0, 0);
-			configPanel.Size = new Size(128, 30);
+			configPanel.Size = new Size(151, 30);
 			configPanel.TabIndex = 11;
 			configPanel.WrapContents = false;
 			configPanel.Move += configPanel_Resize;
@@ -1040,9 +1049,9 @@
 			configFileNameLabel.Margin = new Padding(0);
 			configFileNameLabel.Name = "configFileNameLabel";
 			configFileNameLabel.Padding = new Padding(0, 2, 0, 2);
-			configFileNameLabel.Size = new Size(72, 24);
+			configFileNameLabel.Size = new Size(95, 24);
 			configFileNameLabel.TabIndex = 10;
-			configFileNameLabel.Text = "<empty>";
+			configFileNameLabel.Text = "<not saved>";
 			configFileNameLabel.TextAlign = ContentAlignment.MiddleCenter;
 			toolTip.SetToolTip(configFileNameLabel, "Click here for load/save options");
 			configFileNameLabel.MouseDown += configFileNameLabel_MouseDown;
@@ -1440,7 +1449,7 @@
         private ToolStripMenuItem labelCopyMenuItem;
         private CommonLabel httpLabel;
         private ToolStripMenuItem openLogMenuItem;
-        private ToolStripMenuItem showStartParametersMenuItem;
+        private ToolStripMenuItem showCurrentParametersMenuItem;
         private ToolStripSeparator toolStripSeparator3;
         private ToolStripMenuItem aboutMenuItem;
         private ToolStripMenuItem gridSearchMenuItem;
@@ -1499,5 +1508,6 @@
 		private ToolStripMenuItem startFromQuickStartMenuItem;
 		private CommonLabel logItemTestLabel;
 		private CommonLabel titleTestLabel;
+		private ToolStripMenuItem showCommandLineMenuItem;
 	}
 }

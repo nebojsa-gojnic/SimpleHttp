@@ -575,38 +575,38 @@
 			startContextMenu.AccessibleDescription = "";
 			startContextMenu.Items.AddRange(new ToolStripItem[] { startMenuItem, startLine1, makeJSONMenuItem, startLine2, parametersMenuItem });
 			startContextMenu.Name = "siteUriContextMenu";
-			startContextMenu.Size = new Size(192, 82);
+			startContextMenu.Size = new Size(210, 82);
 			startContextMenu.ItemClicked += startContextMenu_ItemClicked;
 			// 
 			// startMenuItem
 			// 
 			startMenuItem.Name = "startMenuItem";
-			startMenuItem.Size = new Size(191, 22);
+			startMenuItem.Size = new Size(209, 22);
 			startMenuItem.Text = "&Start";
 			startMenuItem.Click += startMenuItem_Click;
 			// 
 			// startLine1
 			// 
 			startLine1.Name = "startLine1";
-			startLine1.Size = new Size(188, 6);
+			startLine1.Size = new Size(206, 6);
 			// 
 			// makeJSONMenuItem
 			// 
 			makeJSONMenuItem.Name = "makeJSONMenuItem";
-			makeJSONMenuItem.Size = new Size(191, 22);
+			makeJSONMenuItem.Size = new Size(209, 22);
 			makeJSONMenuItem.Text = "Make JSON";
 			makeJSONMenuItem.Click += makeJSONMenuItem_Click;
 			// 
 			// startLine2
 			// 
 			startLine2.Name = "startLine2";
-			startLine2.Size = new Size(188, 6);
+			startLine2.Size = new Size(206, 6);
 			// 
 			// parametersMenuItem
 			// 
 			parametersMenuItem.Name = "parametersMenuItem";
-			parametersMenuItem.Size = new Size(191, 22);
-			parametersMenuItem.Text = "Show start parameters";
+			parametersMenuItem.Size = new Size(209, 22);
+			parametersMenuItem.Text = "Show current parameters ";
 			parametersMenuItem.Click += parametersMenuItem_Click;
 			// 
 			// titlePanel

@@ -62,6 +62,15 @@ namespace SimpleHttp
 			titleBar.ForeColor = MonitorForm.titleForeColor ;
 			this.resourceAssembly = resourceAssembly ;
 		}
+		protected override void OnFontChanged(EventArgs e)
+		{
+			foreach ( Component component in components.Components )
+			{
+				Control Control = component as Control ;
+				if ( Control != null ) Control.Font = Font ;
+			}
+			base.OnFontChanged ( e ) ;
+		}
 		/// <summary>
 		/// Auxiliary variabel for the resourceAssembly property
 		/// </summary>

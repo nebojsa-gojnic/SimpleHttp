@@ -315,7 +315,8 @@ namespace SimpleHttp
 			FindExSearchLimitToDevices = 2 ,
 			FindExSearchMaxSearchOp = 3
 		} 
-
+		[DllImport("kernel32.dll", CharSet=CharSet.Ansi)]
+		public static extern string GetCommandLineA ( ) ;
 
 
 		[DllImport("kernel32.dll")]

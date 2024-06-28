@@ -33,6 +33,11 @@
 		"commandName": "Project",
 		"commandLineArgs": "/d webconfig.json"
 	},
+	"code test.json": 
+	{
+		"commandName": "Project",
+		"commandLineArgs": "\"code test.json\""
+	},
     "Empty": 
 	{
       "commandName": "Project"

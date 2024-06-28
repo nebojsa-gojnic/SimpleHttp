@@ -64,7 +64,7 @@ namespace SimpleHttp
 					catch { }
 					try
 					{
-						if ( sender != null ) sender.Dispose () ;
+						sender?.Dispose () ;
 					}
 					catch { }
 
@@ -95,7 +95,5 @@ namespace SimpleHttp
 			Application.Run ( new MonitorForm ( new HttpStartParameters ( args ) ) ) ;
 			//Application.Run ( new Form1 ( )  ) ;
 		}
-
-
 	}
 }

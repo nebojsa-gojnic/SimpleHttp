@@ -1,22 +1,42 @@
 {
-	"port": 50080,
-	"sitename": "localhost",
-	"sslCertificate": "I:\\Code\\localhost2.pfx",
-	"sslCertificatePassword": "password",
-	"sslProtocol": "Tls12",
-	"services": [
+	"port": 50080 ,
+	"sitename": "localhost" ,
+	"sslCertificate": "I:\\Code\\localhost2.pfx" ,
+	"sslCertificatePassword": "password" ,
+	"sslProtocol": "Tls12" ,
+	"services": 
+	[
 		{
-			"service": "codeHttpService",
-			"source": "WebSockets.CodeHttpService, WebSockets",
+			"service": "debugHttpService" ,
+			"source": "WebSockets.DebugHttpService, WebSockets" ,
 			"configData": {			}
+		} ,
+		{
+			"service": "fileHttpService" ,
+			"source": "WebSockets.FileHttpService, WebSockets" ,
+			"configData": 
+			{			
+				"webroot": "I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources" 
+			}
 		}
 	] ,
 	"paths" :
 	[
 		{
-			"service": "codeHttpService",
+			"service": "debugHttpService" ,
+			"path": "/debug/*" ,
+		} ,
+		{
+			"service": "debugHttpService" ,
+			"path": "/debug" ,
+		} ,
+		{
+			"service": "debugHttpService" ,
+			"path": "/FormTest.html"
+		} ,
+		{
+			"service": "fileHttpService" ,
 			"path": "/*"
 		}
 	]
 }
-

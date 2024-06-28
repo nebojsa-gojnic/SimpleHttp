@@ -25,6 +25,7 @@ namespace SimpleHttp
 {
 	public partial class MonitorForm : Form
 	{
+		public static readonly Process currentProcess ;
 		public static readonly Pen borderPen ;
 		public static readonly Brush backgroundBush ;
 		public static readonly Color inactiveEditBackColor ; 
@@ -35,6 +36,7 @@ namespace SimpleHttp
 		public static readonly FlatButtonAppearance flatButtonAppearance ;
 		static MonitorForm ()
 		{
+			currentProcess = Process.GetCurrentProcess () ;
 			borderPen = SystemPens.ControlDark ;
 			backgroundBush = SystemBrushes.Control ;
 			inactiveEditBackColor = mixColors ( SystemColors.Window , SystemColors.ButtonFace ) ;
@@ -156,7 +158,7 @@ namespace SimpleHttp
 			darkerPen = new Pen ( SystemColors.ControlDarkDark ) ;
 
 
-
+			
 			
 
 			requestGrid.AlternatingRowsDefaultCellStyle.BackColor = SystemColors.Control ;
@@ -281,9 +283,9 @@ namespace SimpleHttp
 		/// </summary>
 		protected HttpStartParameters programStartParameters ;
 		/// <summary>
-		/// Current start parameters
+		/// Current start parameters if server activated from the quickStartForm otherwise null
 		/// </summary>
-		//protected HttpStartParameters currentStartParameters ;
+		protected HttpStartParameters currentStartParameters ;
 		/// <summary>
 		/// Set method for the monitorActive property
 		/// </summary>
@@ -418,6 +420,10 @@ namespace SimpleHttp
 		protected override void OnShown ( EventArgs e )
 		{
 			base.OnShown ( e ) ;
+			unsafe
+			{
+				iconMenuClosingTimeStamp = Environment.TickCount64 - 10000 ;
+			}
 			if ( !startPipeReciever() ) return ;
 		//	BeginInvoke ( new ThreadStart ( AfterShown ) ) ;
   //      }
@@ -444,6 +450,11 @@ namespace SimpleHttp
 
 			BeginInvoke ( new ThreadStart ( readAndExecuteStartingParameters ) ) ;
         }
+		protected override void OnActivated(EventArgs e)
+		{
+			
+			base.OnActivated(e) ;
+		}
 		protected void readAndExecuteStartingParameters ()
 		{
 			string startingMessage = programStartParameters.errorMessage ;
@@ -470,7 +481,7 @@ namespace SimpleHttp
 
 			try
 			{
-				configFileNameLabel.Text = Path.GetFileName ( jsonConfigFileName ) ;
+				configFileNameLabel.Text = string.IsNullOrWhiteSpace ( Path.GetFileName ( jsonConfigFileName ) ) ? "<empty>" : Path.GetFileName ( jsonConfigFileName ) ;
 			}
 			catch { }
 
@@ -534,7 +545,7 @@ namespace SimpleHttp
 			}
 			catch { }
 			if ( line.Trim().ToLower () == "show" ) 
-				BeginInvoke ( iconMenu_ItemClicked , new object [ 2 ] { iconMenu , new ToolStripItemClickedEventArgs ( showMainWindowMenuItem ) } )  ;
+				restoreForm () ;
 			try
 			{
 				recivier.Disconnect () ;
@@ -567,6 +578,7 @@ namespace SimpleHttp
 			if ( configData == null ) return ;
 			string errorMessage ;
 			string configErrors ;
+			currentStartParameters = null ;
 			if ( ignoreConfigurationErrors )
 			{
 				if ( !startWebServer ( configData , out errorMessage ) )
@@ -758,9 +770,13 @@ namespace SimpleHttp
 			quickStartForm.Select () ;
 		}
 
+		private void showCommandLineMenuItem_Click ( object sender , EventArgs e )
+		{
+			showStartingCommandLine () ;
+		}
 		private void quickStartForm_showStartParameters ( object sender , HttpStartParameters e )
 		{
-			showStartParameters ( "Command line parameters" , e ) ;
+			showStartParameters ( quickStartForm.getStartParameters () ) ;
 		}
 		private void quickStartForm_ExportConfig ( object sender , WebServerConfigData configData )
 		{
@@ -923,7 +939,7 @@ namespace SimpleHttp
 					showMessage ( SimpleHttp.Properties.Resources.warningIcon , "Starting web server" , "Current json configuration is changed but not saved.\r\nDo you want to save it now?" , "Save now" , "Overwrite and run server" , "Cancel" ) ;
 					return ;
 				}
-
+			currentStartParameters = quickStartForm.getStartParameters () ;
 			if ( startWebServer ( e.configData , out errorMessage ) )
 			{
 				jsonEditor.Text = jsonString ;
@@ -1321,6 +1337,12 @@ bad:
 			uriLabel.Font = boldFont ;
 			titleTestLabel.Font =
 			titleLabel.Font = MonitorForm.GetNewTitleFont ( Font ) ;
+			foreach ( Component component in components.Components )
+			{
+				Control Control = component as Control ;
+				if ( Control != null ) Control.Font = Font ;
+			}
+
 			//int h = Font.Height  ;
 			//closeButton.Size = new Size ( h , h ) ;
 			//titlePanel.Height = h << 1 ;
@@ -1432,7 +1454,7 @@ bad:
 			}
 			originLabel.Text = "Origin: " + ( connectionDetails.origin == null ? "?" : connectionDetails.origin.ToString() ) ;
 			int i ;
-			string [] lines = connectionDetails.request.header.Split ( "\r\n" ) ;
+			string [] lines = connectionDetails.request.header.headerText.Split ( "\r\n" ) ;
 			methodLabel.Text = "" ;
 			httpLabel.Text = "" ;
 			if ( lines.Length > 0 )
@@ -2034,6 +2056,18 @@ bad:
 				if ( quickStartForm.Visible )
 					quickStartForm.BringToFront () ;
 		}
+		public bool tryDialogSave ()
+		{
+			try
+			{
+				saveFileDialog.InitialDirectory = Path.GetDirectoryName ( jsonConfigFileName ) ;
+				saveFileDialog.FileName = Path.GetFileName ( jsonConfigFileName ) ;
+			}
+			catch { }
+			if ( saveFileDialog.ShowDialog ( this ) == DialogResult.OK )
+				return trySaveConfigAs ( saveFileDialog.FileName ) ;
+			return false ;					
+		}
 		private void messageForm_buttonClick ( object sender , MessageForm.ButtonKind buttonKind )
 		{
 			if ( messageForm != sender ) return ;
@@ -2055,9 +2089,8 @@ bad:
 					switch ( buttonKind )
 					{
 						case MessageForm.ButtonKind.ok :
-							if ( saveFileDialog.ShowDialog ( this ) == DialogResult.OK )
-								if ( trySaveConfigAs ( saveFileDialog.FileName ) )
-									browseJsonFile ( true ) ;
+							tryDialogSave () ;
+							browseJsonFile ( true ) ;
 						break ;
 						case MessageForm.ButtonKind.no :
 							messageForm.Hide () ;
@@ -2073,20 +2106,21 @@ bad:
 					switch ( buttonKind )
 					{
 						case MessageForm.ButtonKind.ok :
-						if ( saveFileDialog.ShowDialog ( this ) == DialogResult.OK )
-							if ( trySaveConfigAs ( saveFileDialog.FileName ) )
-								if ( quickStartForm != null )
+						if ( tryDialogSave () ) 
+							if ( quickStartForm != null )
+							{
+								string errorMessage ;
+								currentStartParameters = quickStartForm.getStartParameters () ;
+								if ( startWebServer ( quickStartForm.configData , out errorMessage ) )
 								{
-									string errorMessage ;
-									if ( startWebServer ( quickStartForm.configData , out errorMessage ) )
-									{
-										jsonEditor.Text = json2string ( quickStartForm.configData ) ;
-										quickStartForm.Hide () ;
-									}
+									jsonEditor.Text = json2string ( quickStartForm.configData ) ;
+									quickStartForm.Hide () ;
 								}
+							}
 						break ;
 						case MessageForm.ButtonKind.no :
-							( ( Form ) sender ).Dispose () ;
+							//( ( Form ) sender ).Dispose () ;
+							messageForm.Hide () ;
 							if ( quickStartForm != null ) startFromQuickStartForm ( quickStartForm.getStartParameters () , true ) ;
 						break ;
 					}
@@ -2110,14 +2144,17 @@ bad:
 					{
 						case MessageForm.ButtonKind.ok :
 							if ( messageForm.okButtonText == "Save to file" )
-								if ( saveFileDialog.ShowDialog ( this ) == DialogResult.OK )
-									if ( trySaveConfigAs ( saveFileDialog.FileName ) )
-										Close () ;
+							{
+								if ( tryDialogSave () )
+									Close () ;
+							}
 							else 
 							{
 								webServer?.Stop ( true ) ;
 								webServer?.Dispose () ;
+								messageForm.Hide () ;
 								Close () ;
+								return ;	//!!!!!! da
 							}
 						break ;
 						case MessageForm.ButtonKind.no :
@@ -2373,6 +2410,7 @@ bad:
 				startJSONConfigMenuItem.Visible = false ;
 				toolStripSeparator1.Visible = false ;
 				stopServerMenuItem.Visible = true ;
+				showCurrentParametersMenuItem.Visible = currentStartParameters != null ;
 			}
 			else 
 			{
@@ -2380,6 +2418,7 @@ bad:
 				startJSONConfigMenuItem.Visible = true ;
 				toolStripSeparator1.Visible = true ;
 				stopServerMenuItem.Visible = false ;
+				showCurrentParametersMenuItem.Visible = quickStartForm == null ? false : quickStartForm.Visible ;
 			}
 			//if ( 
 			showMainWindowMenuItem.Visible = !Visible || WindowState == FormWindowState.Minimized ;
@@ -2396,41 +2435,6 @@ bad:
 			closeProgramMenuItem.Text = isListening ? "Close http server and program" : "Close program" ;
 		}
 
-		private void iconMenu_ItemClicked ( object sender , ToolStripItemClickedEventArgs e )
-		{
-			return ;
-			if ( e.ClickedItem == aboutMenuItem )
-				restoreForm ( showAboutForm ) ;
-			else if ( e.ClickedItem == showStartParametersMenuItem )
-				restoreForm ( showStartParameters , new object [ 2 ] { "Starting parameters" , programStartParameters } ) ;
-			else if ( e.ClickedItem == showMainWindowMenuItem )
-				restoreForm () ;
-			else if ( e.ClickedItem == showQuickStartMenuItem )
-				restoreForm ( new ThreadStart ( showQuickStartForm ) ) ;
-			else if ( e.ClickedItem == startJSONConfigMenuItem )
-				restoreForm ( startJSONConfigMenuItemClick ) ;
-			else if ( e.ClickedItem == stopServerMenuItem )
-			{
-				if ( isListening )
-					restoreForm ( () =>
-					{
-						closeProgramConfirmed = false ;
-						showMessage ( SimpleHttp.Properties.Resources.warningIcon ,
-												"Stoping server" , "Do you want to stop http server?" ,
-												"Stop server" , "" , "Keep server working" ) ;
-
-					} ) ;
-				else Close () ;
-			}
-			else if ( e.ClickedItem == closeProgramMenuItem )
-			{
-				restoreForm ( () =>
-				{
-					closeProgramConfirmed = false ;
-					Close () ;
-				} ) ;
-			}
-		}
 		private void aboutMenuItem_Click ( object sender , EventArgs e )
 		{
 			restoreForm ( showAboutForm ) ;
@@ -2447,9 +2451,11 @@ bad:
 		{
 			restoreForm () ;
 		}
-		private void showStartParametersMenuItem_Click ( object sender , EventArgs e )
+		private void showCurrentParametersMenuItem_Click ( object sender , EventArgs e )
 		{
-			restoreForm ( showStartParameters , new object [ 2 ] { "Starting parameters" , programStartParameters } ) ;
+			HttpStartParameters parameters = quickStartForm == null ? currentStartParameters : quickStartForm.Visible ? quickStartForm.getStartParameters () : currentStartParameters  ;
+			if ( parameters != null )
+				restoreForm ( showStartParameters  , new object [ 1 ] { parameters } ) ;
 		}
 		private void stopServerMenuItem_Click ( object sender, EventArgs e )
 		{
@@ -2655,14 +2661,16 @@ bad:
 		{
 			if ( message == null ) return ;
 			if ( message.Trim().ToLower () == "show" )
-			{
-				iconMenu_ItemClicked ( iconMenu , new ToolStripItemClickedEventArgs ( showMainWindowMenuItem ) ) ;
-			}
+				restoreForm () ;
+		}
+		public void showStartingCommandLine (  )
+		{
+			showInfo ( "Starting command line" , currentProcess.MainModule.FileName + " " + programStartParameters.commandLine ) ;
 		}
 
-		public void showStartParameters ( string title , HttpStartParameters startParameters )
+		public void showStartParameters ( HttpStartParameters parameters )
 		{
-			showMessage ( null , title , exeName() + " " + startParameters.ToString() , "" , "" , "Continue" ) ;
+			showInfo ( "Command line parameters" , currentProcess.MainModule.FileName + " " + parameters.ToString () ) ;
 		}
 		public void showWarning ( string title , string caption )
 		{
@@ -2672,11 +2680,18 @@ bad:
 		{
 			showMessage ( SimpleHttp.Properties.Resources.textIcon , title , caption , "" , "" , "Continue" ) ;
 		}
-		public void showMessage ( Image image , string title , string caption , 
-									string okButtonText , string noButtonText, string cancelButtonText )
+		public void showMessage ( Image image , string title , string caption )
+		{
+			showMessage ( image , title , caption , "" , "" , "Continue" ) ;
+		}
+		public void showMessage ( Image image , string title , string caption , string cancelButtonText )
+		{
+			showMessage ( image , title , caption , "" , "" , cancelButtonText ) ;
+		}
+		public void showMessage ( Image image , string title , string caption , string okButtonText , string noButtonText , string cancelButtonText )
 		{
 			if ( WindowState == FormWindowState.Minimized ) 
-				restoreForm ( showMessage , new object [ 6 ] { image , title , caption , okButtonText , noButtonText , cancelButtonText } ) ;
+				restoreForm (  new Action<Image,string,string,string,string,string>(showMessage) , new object [ 6 ] { image , title , caption , okButtonText , noButtonText , cancelButtonText } ) ;
 			else 
 			{
 				//just incase
@@ -3252,15 +3267,8 @@ bad:
 		}
 		public void saveConfigFileMenuItem_Click ( object sender , EventArgs e )
 		{
-			try
-			{
-				saveFileDialog.InitialDirectory = Path.GetDirectoryName ( jsonConfigFileName ) ;
-				saveFileDialog.FileName = Path.GetFileName ( jsonConfigFileName ) ;
-			}
-			catch { }
 			messageForm?.Hide () ;
-			if ( saveFileDialog.ShowDialog ( this ) == DialogResult.OK )
-				trySaveConfigAs ( saveFileDialog.FileName ) ;
+			tryDialogSave () ;
 		}
 		public bool tryLoadConfigAs ( string fileName )
 		{
@@ -4001,5 +4009,6 @@ endLab:
 		{
 			e = e ;
 		}
+		
 	}
 }
