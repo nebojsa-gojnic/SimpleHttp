@@ -79,6 +79,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="obj\project.assets.json"/>
+  </ItemGroup>
+  <ItemGroup>
     <None Update="bad.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
