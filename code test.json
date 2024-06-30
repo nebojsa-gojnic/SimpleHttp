@@ -1,6 +1,7 @@
 {
 	"port": 50080 ,
 	"sitename": "localhost" ,
+						/* put your path here, it has be full(both keys) certf. */	
 	"sslCertificate": "I:\\Code\\localhost2.pfx" ,
 	"sslCertificatePassword": "password" ,
 	"sslProtocol": "Tls12" ,
@@ -16,6 +17,7 @@
 			"source": "WebSockets.FileHttpService, WebSockets" ,
 			"configData": 
 			{			
+								/* put your path here */	
 				"webroot": "I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources" 
 			}
 		}

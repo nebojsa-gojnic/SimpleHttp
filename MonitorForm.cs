@@ -458,12 +458,12 @@ namespace SimpleHttp
 		protected void readAndExecuteStartingParameters ()
 		{
 			string startingMessage = programStartParameters.errorMessage ;
+			jsonEditor.Text = programStartParameters.jsonText ;
 			try
 			{
 				if ( programStartParameters.configData.Properties().Count() != 0 ) jsonEditor.Text = json2string ( programStartParameters.configData ) ; //dont reflect yet, no no
 			}
 			catch { }
-			jsonEditor.Text = programStartParameters.jsonText ;
 			try
 			{ 
 				if ( programStartParameters.jsonErrorLineIndex > 0 )
@@ -1117,7 +1117,7 @@ namespace SimpleHttp
 			if ( webServer == null ) return ;
 			WebServerConfigData configData = webServer.configData ;
 			webServer.Stop ( true ) ;
-			webServer?.Dispose () ;
+			webServer?.Dispose () ; 
 			reflectServerStatus ( configData , true ) ;
 		}
 
@@ -1135,7 +1135,7 @@ namespace SimpleHttp
 			ResourceWebConfigData resourceConfigData = configData as ResourceWebConfigData ;
 
 			if ( isListeningActive ) quickStartForm?.Hide () ;
-			bool singleService = configData.serviceDemandCount == 1 ;
+			bool singleService = configData.serviceDemandCount >= 0 ; //ah!!
 			resourceLabel.Text = "" ;
 			resourceTypeLabel.Text = "" ;
 			foreach ( HttpServiceActivator activator in configData.services.Values )
@@ -1156,9 +1156,9 @@ namespace SimpleHttp
 							serverMode = StartServerMode.resourceServer ;
 							notifyIconText = notifyIconText + ", assembly:\r\n" + resourceLabel.Text ;
 							if ( configData.errorList.Count > 0 ) notifyIconText = notifyIconText + "\r\nThere are configuration errors" ;
-							baloonTipTitle = "Resource based http server is " + serverStatus ;
 							baloonTipText = "Assembly: " + resourceLabel.Text  ;
-							
+							notifyIconText = notifyIconText + ", webroot:\r\n" + resourceLabel.Text ;
+							baloonTipTitle = "Resource based http server is " + serverStatus ;
 							if ( autoQuickStartForm  && !isListeningActive )
 								restoreForm ( new Action<WebServerConfigData> ( showQuickStartForm ) , new object [ 1 ] { configData } ) ;
 						}

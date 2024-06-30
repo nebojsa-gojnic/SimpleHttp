@@ -46,7 +46,6 @@
 
   <ItemGroup>
     <None Remove="pinger.html" />
-    <None Remove="PipeManiaService.dll" />
     <None Remove="Resources\rightRewind.png" />
     <None Remove="Resources\Untitled-1.png" />
   </ItemGroup>
@@ -78,14 +77,18 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="obj\project.assets.json"/>
-  </ItemGroup>
+
   <ItemGroup>
     <None Update="bad.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="code test.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="PipeManiaService.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="resource.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="webConfig.json">

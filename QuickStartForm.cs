@@ -73,6 +73,22 @@ namespace SimpleHttp
 			get => _certificatePassword ;
 			set => setCertificatePassword ( value ) ;
 		}
+		/// <summary>
+		/// Set method for the resourceNamePrefix property
+		/// </summary>
+		/// <param name="value">New value for the resourceNamePrefix property</param>
+		public void setResourceNamePrefix ( string value ) 
+		{
+			tbResourceNamePrefix.Text = value ;
+		}
+		/// <summary>
+		/// 
+		/// </summary>
+		public string resourceNamePrefix 
+		{
+			get => tbResourceNamePrefix.Text ;
+			set => setResourceNamePrefix ( value ) ;
+		}
 		
 
 		/// <summary>
@@ -92,11 +108,13 @@ namespace SimpleHttp
 				tbCertificate.Text = value.sslCertificateSource ;
 				sslProtocol = value.sslProtocol ;
 				string path ;
-				mode = getMode ( value , out path ) ;
+				string prefix ;
+				mode = getMode ( value , out path , out prefix ) ;
 				switch ( _mode )
 				{
 					case StartServerMode.resourceServer :
 						insertLoadedAssembly ( AssemblyItem.loadAssemblyItem ( path ) ) ;
+						tbResourceNamePrefix.Text = prefix ;
 					break ;
 					case StartServerMode.fileServer :
 						tbWebroot.Text = path == null ? "" : tbWebroot.Text = path ;
@@ -110,7 +128,6 @@ namespace SimpleHttp
 				_certificateClientError = null ;
 				_certificateServerError = null ;
 				_certificate = null ;
-
 				if ( useSsl ) 
 				{
 					try
@@ -128,10 +145,11 @@ namespace SimpleHttp
 		/// <summary>
 		/// Set method for the configData property
 		/// </summary>
-		public static StartServerMode getMode ( WebServerConfigData value , out string path )
+		public static StartServerMode getMode ( WebServerConfigData value , out string path , out string prefix )
 		{
 			StartServerMode mode = StartServerMode.jsonConfig ;
 			path = null ;
+			prefix = null ;
 			if ( value != null )
 			{
 				JObject httpServiceConfigData = null ;
@@ -145,6 +163,11 @@ namespace SimpleHttp
 						{
 							httpServiceConfigData = activator.configData ;
 							mode = StartServerMode.resourceServer ;
+							obj = httpServiceConfigData [ "resourceNamePrefix" ] ;
+							if ( obj != null ) 
+							{
+								prefix = obj.ToString () ;
+							}
 							obj = httpServiceConfigData [ "resourceAssemblySource" ] ;
 							if ( obj != null ) 
 							{
@@ -175,8 +198,8 @@ namespace SimpleHttp
 		protected void createConfigData ()
 		{
 			_configData = mode == StartServerMode.resourceServer ?
-				new ResourceWebConfigData ( resourceAssemblySource , tbSiteName.Text.Trim () , port , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) :
-				new FileWebConfigData ( tbWebroot.Text.Trim () , tbSiteName.Text.Trim () , port , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) ;
+				new ResourceWebConfigData ( resourceAssemblySource , resourceNamePrefix , port , tbSiteName.Text.Trim () , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) :
+				new FileWebConfigData ( tbWebroot.Text.Trim () , port , tbSiteName.Text.Trim () , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) ;
 		}
 		/// <summary>
 		/// Auxiliary variable for the configData property
@@ -380,6 +403,7 @@ namespace SimpleHttp
 			tbCertificate.BackColor =
 			cbAssemblies.BackColor =
 			tbWebroot.BackColor =
+			tbResourceNamePrefix.BackColor = 
 			cbProtocol.BackColor = MonitorForm.inactiveEditBackColor ;
 			
 			loadAssemblies () ;
@@ -401,7 +425,7 @@ namespace SimpleHttp
 			gbPassword.MouseUp += groupBox_MouseUp ;
 			gbSiteName.MouseUp += groupBox_MouseUp ;
 			gbWebroot.MouseUp += groupBox_MouseUp ;
-			gbAssemblies.MouseUp  += groupBox_MouseUp ;
+			gbAssemblies.MouseUp += groupBox_MouseUp ;
 			gbPort.MouseUp  += groupBox_MouseUp ;
 
 			//gbPassword.Location = new Point ( - gbPassword.Width , - gbPassword.Height ) ;
@@ -920,7 +944,7 @@ namespace SimpleHttp
 		public HttpStartParameters getStartParameters ()
 		{ 
 			return 
-				new HttpStartParameters ( mode , port , source , siteUri == null ? "" : siteUri.Host , 
+				new HttpStartParameters ( mode , port , source , resourceNamePrefix , siteUri == null ? "" : siteUri.Host , 
 											cbProtocol.SelectedIndex > 0 ? tbCertificate.Text : "" , 
 											tbPassword.Text , sslProtocol , true ) ;
 		}
@@ -2054,6 +2078,21 @@ namespace SimpleHttp
 			lastControl = tbWebroot ;
 			tbWebroot.BackColor = SystemColors.Window ;
 		}
+		private void tbResourceNamePrefix_Enter ( object sender, EventArgs e )
+		{
+			
+			lastControl = tbResourceNamePrefix ;
+			tbResourceNamePrefix.BackColor = SystemColors.Window ;
+		}
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="sender">(TextBox)</param>
+		/// <param name="e">(EventArgs)</param>
+		private void tbResourceNamePrefix_TextChanged ( object sender, EventArgs e )
+		{
+			checkPort ( false ) ;
+		}
 		private void cbAssemblies_Leave ( object sender , EventArgs e )
 		{
 			setAssebliesBackColor () ;
@@ -2079,7 +2118,10 @@ namespace SimpleHttp
 		{
 			tbPort.BackColor = MonitorForm.inactiveEditBackColor ;
 		}
-
+		private void tbResourceNamePrefix_Leave(object sender, EventArgs e)
+		{
+			tbResourceNamePrefix.BackColor = MonitorForm.inactiveEditBackColor ;
+		}
 		private void tbSiteName_TextChanged ( object sender , EventArgs e )
 		{
 			setSiteUriText () ;

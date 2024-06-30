@@ -49,6 +49,10 @@ namespace SimpleHttp
 		/// </summary>
 		public SslProtocols sslProtocol { get ; protected set ; }
 		/// <summary>
+		/// Prefix to remove form resource name in resource based service
+		/// </summary>
+		public readonly string resourceNamePrefix ;
+		/// <summary>
 		/// File or resource based server
 		/// </summary>
 		public StartServerMode mode { get ; protected set ; }
@@ -91,6 +95,7 @@ namespace SimpleHttp
 			password ,
 			fileServerMode ,
 			resourceServerMode ,
+			resourceNamePrefix ,
 			dontStart
 		}
 
@@ -169,6 +174,7 @@ namespace SimpleHttp
 		public HttpStartParameters ( string[] args )
 		{
 			_jsonText = "{}" ;
+			resourceNamePrefix = null ;
 			_commandLine = "" ;
 			jsonErrorLineIndex = -1 ;
 			jsonErrorColumnIndex = -1 ;
@@ -239,72 +245,81 @@ namespace SimpleHttp
 					case '/' :
 					case '-' :
 						_commandLine = _commandLine + param + " " ;
-						switch ( param.Substring ( 1 ).Trim().ToLower() )
+						if ( param.Length > 1 )
+							switch ( param.Substring ( 1 ).Trim().ToLower() )
+							{
+								case "webroot" :
+								case "folder" :
+								case "directory" :
+								case "f" :
+									command = commandEnum.fileServerMode ;
+								break ;
+								case "port" :
+								case "p" :
+									command = commandEnum.port ;
+								break ;
+								case "resources" :
+								case "resource" :
+								case "r" :
+									command = commandEnum.resourceServerMode ;
+								break ;
+								case "sitename" :
+								case "s" :
+									command = commandEnum.sitename ;
+								break ;
+								case "certificate" :
+								case "c" :
+									command = commandEnum.certificate ;
+								break ;
+								case "password" :
+								case "pw" :
+									command = commandEnum.password ;
+								break ;
+								case "dialog" :
+								case "dontstart" :
+								case "d" :
+									autoStart = false ;
+								break ;
+								case "tls" :
+									sslProtocol = SslProtocols.Tls ;
+									configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
+									command = commandEnum.none ;
+								break ;
+								case "tls1" :
+									sslProtocol = SslProtocols.Tls ;
+									configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
+									command = commandEnum.none ;
+								break ;
+								case "tls1.1" :
+								case "tls11" :
+									sslProtocol = SslProtocols.Tls11 ;
+									configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
+									command = commandEnum.none ;
+								break ;
+								case "tls1.2" :
+								case "tls12" :
+									sslProtocol = SslProtocols.Tls12 ;
+									configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
+									command = commandEnum.none ;
+								break ;
+								case "tls1.3" :
+								case "tls13" :
+									sslProtocol = SslProtocols.Tls13 ;
+									configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
+									command = commandEnum.none ;
+								break ;
+								case "rnp" :  //
+									command = commandEnum.resourceNamePrefix ;
+								break ;
+								default :
+									badWord = param ;
+									command = commandEnum.none ;
+								break ;
+							}
+						else
 						{
-							case "webroot" :
-							case "folder" :
-							case "directory" :
-							case "f" :
-								command = commandEnum.fileServerMode ;
-							break ;
-							case "port" :
-							case "p" :
-								command = commandEnum.port ;
-							break ;
-							case "resources" :
-							case "resource" :
-							case "r" :
-								command = commandEnum.resourceServerMode ;
-							break ;
-							case "sitename" :
-							case "s" :
-								command = commandEnum.sitename ;
-							break ;
-							case "certificate" :
-							case "c" :
-								command = commandEnum.certificate ;
-							break ;
-							case "password" :
-							case "pw" :
-								command = commandEnum.password ;
-							break ;
-							case "dialog" :
-							case "dontstart" :
-							case "d" :
-								autoStart = false ;
-							break ;
-							case "tls" :
-								sslProtocol = SslProtocols.Tls ;
-								configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
-								command = commandEnum.none ;
-							break ;
-							case "tls1" :
-								sslProtocol = SslProtocols.Tls ;
-								configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
-								command = commandEnum.none ;
-							break ;
-							case "tls1.1" :
-							case "tls11" :
-								sslProtocol = SslProtocols.Tls11 ;
-								configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
-								command = commandEnum.none ;
-							break ;
-							case "tls1.2" :
-							case "tls12" :
-								sslProtocol = SslProtocols.Tls12 ;
-								configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
-								command = commandEnum.none ;
-							break ;
-							case "tls1.3" :
-							case "tls13" :
-								sslProtocol = SslProtocols.Tls13 ;
-								configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
-								command = commandEnum.none ;
-							break ;
-							default :
-								badWord = param ;
-								command = commandEnum.none ;
-							break ;
+							badWord = param ;
+							command = commandEnum.none ;
 						}
 					break ;
 					default:   
@@ -316,6 +331,9 @@ namespace SimpleHttp
 								startFileServer = true ;
 								startResourceServer = false ;
 								mode = StartServerMode.fileServer ;
+							break ;
+							case commandEnum.resourceNamePrefix :
+								resourceNamePrefix = param ;
 							break ;
 							case commandEnum.resourceServerMode :
 								source = assemblyName = param ;
@@ -369,10 +387,10 @@ namespace SimpleHttp
 				switch ( mode )
 				{
 					case StartServerMode.fileServer :
-						configData = new FileWebConfigData ( source , sitename , port , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
+						configData = new FileWebConfigData ( source , port , sitename , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
 					break ;
 					case StartServerMode.resourceServer :
-						configData = new ResourceWebConfigData ( source , sitename , port , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
+						configData = new ResourceWebConfigData ( source , resourceNamePrefix , port , sitename , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
 					break ;
 				}
 			}
@@ -391,7 +409,7 @@ namespace SimpleHttp
 		/// <param name="password">Certificate file password</param>
 		/// <param name="protocol">SSL protocol (Tls 1.1, Tls 1.2, Tls 1.3), default is SslProtocols.Tls12</param>
 		/// <param name="autoStart">Auto start or not</param>
-		public HttpStartParameters ( StartServerMode mode , int port , string source , string sitename , string certificate , string password , SslProtocols protocol , bool autoStart )
+		public HttpStartParameters ( StartServerMode mode , int port , string source , string resourceNamePrefix , string sitename , string certificate , string password , SslProtocols protocol , bool autoStart )
 		{
 			errorMessage = "" ;
 			this.port = port ;
@@ -402,23 +420,24 @@ namespace SimpleHttp
 			this.sslCertificatePassword = password ;
 			this.sslProtocol = protocol ;
 			this.autoStart = autoStart ;
+			this.resourceNamePrefix = resourceNamePrefix  ;
 			switch ( mode )
 			{
 				case StartServerMode.fileServer :
-					configData = new FileWebConfigData ( source , sitename , port , certificate , password , protocol ) ;
+					configData = new FileWebConfigData ( source , port , sitename , certificate , password , protocol ) ;
 				break ;
 				case StartServerMode.resourceServer :
-					configData = new ResourceWebConfigData ( source , sitename , port , certificate , password , protocol ) ;
+					configData = new ResourceWebConfigData ( source , resourceNamePrefix , port , sitename , certificate , password , protocol ) ;
 				break ;
 			}
 		}
 		public HttpStartParameters ( WebServerConfigData configData , string jsonConfigFile ):
-			this ( StartServerMode.jsonConfig , configData.port , "" , configData.sitename , configData.sslCertificateSource , "" , configData.sslProtocol , true )
+			this ( StartServerMode.jsonConfig , configData.port , "" , "" , configData.sitename , configData.sslCertificateSource , "" , configData.sslProtocol , true )
 		{
 			this.jsonConfigFile = jsonConfigFile ;
 		}
 		public HttpStartParameters ( HttpStartParameters prms , string jsonConfigFile ) :
-			this ( StartServerMode.jsonConfig , prms.port , prms.source , prms.sitename , prms.source , prms.sslCertificatePassword , prms.sslProtocol , true )
+			this ( StartServerMode.jsonConfig , prms.port , prms.source , prms.resourceNamePrefix , prms.sitename , prms.source , prms.sslCertificatePassword , prms.sslProtocol , true )
 		{
 			this.jsonConfigFile = jsonConfigFile ;
 		}

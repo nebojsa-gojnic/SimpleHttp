@@ -32,6 +32,10 @@
 			assembliesShowMenuItem = new ToolStripMenuItem();
 			folders = new FolderBrowserDialog();
 			gbAssemblies = new CommonGroupBox();
+			assembliesBottomPanel = new CommonPanel();
+			tbResourceNamePrefix = new TextBox();
+			namePrefixLabel = new CommonLabel();
+			assembliesTopPanel = new CommonPanel();
 			cbAssemblies = new ComboBox();
 			cmdLoadAssembly = new Button();
 			buttonLayout = new CommonFlowLayoutPanel();
@@ -83,6 +87,8 @@
 			gbWebroot.SuspendLayout();
 			assembliesContextMenu.SuspendLayout();
 			gbAssemblies.SuspendLayout();
+			assembliesBottomPanel.SuspendLayout();
+			assembliesTopPanel.SuspendLayout();
 			buttonLayout.SuspendLayout();
 			mainLayout.SuspendLayout();
 			statusPanel.SuspendLayout();
@@ -201,24 +207,68 @@
 			// 
 			// gbAssemblies
 			// 
-			gbAssemblies.Controls.Add(cbAssemblies);
-			gbAssemblies.Controls.Add(cmdLoadAssembly);
+			gbAssemblies.Controls.Add(assembliesBottomPanel);
+			gbAssemblies.Controls.Add(assembliesTopPanel);
 			gbAssemblies.Location = new Point(8, 319);
 			gbAssemblies.Margin = new Padding(0, 4, 0, 8);
 			gbAssemblies.Name = "gbAssemblies";
 			gbAssemblies.Padding = new Padding(14, 12, 14, 14);
-			gbAssemblies.Size = new Size(432, 74);
+			gbAssemblies.Size = new Size(432, 107);
 			gbAssemblies.TabIndex = 4;
 			gbAssemblies.TabStop = false;
 			gbAssemblies.Text = " Assemblies: ";
+			// 
+			// assembliesBottomPanel
+			// 
+			assembliesBottomPanel.Controls.Add(tbResourceNamePrefix);
+			assembliesBottomPanel.Controls.Add(namePrefixLabel);
+			assembliesBottomPanel.Dock = DockStyle.Top;
+			assembliesBottomPanel.Location = new Point(14, 72);
+			assembliesBottomPanel.Name = "assembliesBottomPanel";
+			assembliesBottomPanel.Size = new Size(404, 36);
+			assembliesBottomPanel.TabIndex = 6;
+			// 
+			// tbResourceNamePrefix
+			// 
+			tbResourceNamePrefix.BackColor = SystemColors.ControlLight;
+			tbResourceNamePrefix.Dock = DockStyle.Fill;
+			tbResourceNamePrefix.Location = new Point(94, 0);
+			tbResourceNamePrefix.Margin = new Padding(0);
+			tbResourceNamePrefix.MaxLength = 0;
+			tbResourceNamePrefix.Name = "tbResourceNamePrefix";
+			tbResourceNamePrefix.Size = new Size(310, 27);
+			tbResourceNamePrefix.TabIndex = 1;
+			tbResourceNamePrefix.Text = "localhost";
+			tbResourceNamePrefix.Enter += tbResourceNamePrefix_Enter;
+			// 
+			// namePrefixLabel
+			// 
+			namePrefixLabel.AutoSize = true;
+			namePrefixLabel.Dock = DockStyle.Left;
+			namePrefixLabel.Location = new Point(0, 0);
+			namePrefixLabel.Name = "namePrefixLabel";
+			namePrefixLabel.Padding = new Padding(0, 2, 0, 0);
+			namePrefixLabel.Size = new Size(94, 22);
+			namePrefixLabel.TabIndex = 0;
+			namePrefixLabel.Text = "Name prefix:";
+			// 
+			// assembliesTopPanel
+			// 
+			assembliesTopPanel.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			assembliesTopPanel.Controls.Add(cbAssemblies);
+			assembliesTopPanel.Controls.Add(cmdLoadAssembly);
+			assembliesTopPanel.Dock = DockStyle.Top;
+			assembliesTopPanel.Location = new Point(14, 32);
+			assembliesTopPanel.Name = "assembliesTopPanel";
+			assembliesTopPanel.Size = new Size(404, 40);
+			assembliesTopPanel.TabIndex = 5;
 			// 
 			// cbAssemblies
 			// 
 			cbAssemblies.BackColor = SystemColors.ControlLight;
 			cbAssemblies.ContextMenuStrip = assembliesContextMenu;
-			cbAssemblies.Dock = DockStyle.Fill;
 			cbAssemblies.IntegralHeight = false;
-			cbAssemblies.Location = new Point(14, 32);
+			cbAssemblies.Location = new Point(0, 0);
 			cbAssemblies.Margin = new Padding(0);
 			cbAssemblies.MaxDropDownItems = 12;
 			cbAssemblies.Name = "cbAssemblies";
@@ -236,8 +286,7 @@
 			// cmdLoadAssembly
 			// 
 			cmdLoadAssembly.ContextMenuStrip = assembliesContextMenu;
-			cmdLoadAssembly.Dock = DockStyle.Right;
-			cmdLoadAssembly.Location = new Point(378, 32);
+			cmdLoadAssembly.Location = new Point(364, 0);
 			cmdLoadAssembly.Margin = new Padding(0);
 			cmdLoadAssembly.Name = "cmdLoadAssembly";
 			cmdLoadAssembly.Size = new Size(40, 28);
@@ -289,7 +338,7 @@
 			mainLayout.Margin = new Padding(0);
 			mainLayout.Name = "mainLayout";
 			mainLayout.Padding = new Padding(8);
-			mainLayout.Size = new Size(448, 472);
+			mainLayout.Size = new Size(448, 505);
 			mainLayout.TabIndex = 7;
 			mainLayout.WrapContents = false;
 			mainLayout.Resize += mainLayout_Resize;
@@ -467,7 +516,7 @@
 			startPanel.ColumnStyles.Add(new ColumnStyle());
 			startPanel.Controls.Add(gbSiteUri, 0, 0);
 			startPanel.Controls.Add(cmdStart, 1, 0);
-			startPanel.Location = new Point(8, 401);
+			startPanel.Location = new Point(8, 434);
 			startPanel.Margin = new Padding(0);
 			startPanel.Name = "startPanel";
 			startPanel.RowStyles.Add(new RowStyle());
@@ -806,6 +855,9 @@
 			gbWebroot.PerformLayout();
 			assembliesContextMenu.ResumeLayout(false);
 			gbAssemblies.ResumeLayout(false);
+			assembliesBottomPanel.ResumeLayout(false);
+			assembliesBottomPanel.PerformLayout();
+			assembliesTopPanel.ResumeLayout(false);
 			buttonLayout.ResumeLayout(false);
 			mainLayout.ResumeLayout(false);
 			mainLayout.PerformLayout();
@@ -894,5 +946,9 @@
 		private Button closeButton;
 		private CommonLabel titleLabel;
 		private CommonLabel uriLabel;
+		private CommonPanel assembliesTopPanel;
+		private CommonPanel assembliesBottomPanel;
+		private TextBox tbResourceNamePrefix;
+		private CommonLabel namePrefixLabel;
 	}
 }
