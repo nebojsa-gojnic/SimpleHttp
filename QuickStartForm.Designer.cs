@@ -61,7 +61,6 @@
 			siteUriLine1 = new ToolStripSeparator();
 			siteUriCopyItem = new ToolStripMenuItem();
 			clientTargetPanel = new CommonFlowLayoutPanel();
-			button3 = new Button();
 			cmdStart = new Button();
 			startContextMenu = new ContextMenuStrip(components);
 			startMenuItem = new ToolStripMenuItem();
@@ -72,6 +71,10 @@
 			titlePanel = new CommonPanel();
 			closeButton = new Button();
 			titleLabel = new CommonLabel();
+			gbPassword = new CommonGroupBox();
+			cmdClosePasswordPanel = new Button();
+			cmdAcceptPassword = new Button();
+			tbPassword = new TextBox();
 			openAssemblyDialog = new OpenFileDialog();
 			openFileDialog1 = new OpenFileDialog();
 			openFileDialog2 = new OpenFileDialog();
@@ -79,10 +82,6 @@
 			openCertificateDialog = new OpenFileDialog();
 			passwordPanel = new CommonPanel();
 			certificateWaitLabel = new CommonLabel();
-			gbPassword = new CommonGroupBox();
-			cmdClosePasswordPanel = new Button();
-			cmdAcceptPassword = new Button();
-			tbPassword = new TextBox();
 			cmdStartOptions = new Button();
 			gbWebroot.SuspendLayout();
 			assembliesContextMenu.SuspendLayout();
@@ -101,8 +100,8 @@
 			siteUriContextMenu.SuspendLayout();
 			startContextMenu.SuspendLayout();
 			titlePanel.SuspendLayout();
-			passwordPanel.SuspendLayout();
 			gbPassword.SuspendLayout();
+			passwordPanel.SuspendLayout();
 			SuspendLayout();
 			// 
 			// cmdResourceMode
@@ -140,6 +139,7 @@
 			tbWebroot.Name = "tbWebroot";
 			tbWebroot.Size = new Size(364, 27);
 			tbWebroot.TabIndex = 4;
+			tbWebroot.TextChanged += tbWebroot_TextChange;
 			tbWebroot.Enter += tbWebroot_Enter;
 			tbWebroot.Leave += tbWebroot_Leave;
 			tbWebroot.MouseUp += edit_MouseUp;
@@ -163,25 +163,27 @@
 			assembliesContextMenu.Name = "assembliesContextMenu";
 			assembliesContextMenu.Size = new Size(166, 120);
 			assembliesContextMenu.Opening += assembliesContextMenu_Opening;
-			assembliesContextMenu.ItemClicked += assembliesContextMenu_ItemClicked;
 			// 
 			// assembliesCopyMenuItem
 			// 
 			assembliesCopyMenuItem.Name = "assembliesCopyMenuItem";
 			assembliesCopyMenuItem.Size = new Size(165, 22);
 			assembliesCopyMenuItem.Text = "Copy";
+			assembliesCopyMenuItem.Click += assembliesCopyMenuItem_Click;
 			// 
 			// assembliesCutMenuItem
 			// 
 			assembliesCutMenuItem.Name = "assembliesCutMenuItem";
 			assembliesCutMenuItem.Size = new Size(165, 22);
 			assembliesCutMenuItem.Text = "Cut";
+			assembliesCutMenuItem.Click += assembliesCutMenuItem_Click;
 			// 
 			// assembliesPasteMenuItem
 			// 
 			assembliesPasteMenuItem.Name = "assembliesPasteMenuItem";
 			assembliesPasteMenuItem.Size = new Size(165, 22);
 			assembliesPasteMenuItem.Text = "Paste";
+			assembliesPasteMenuItem.Click += assembliesPasteMenuItem_Click;
 			// 
 			// assembliesLine1
 			// 
@@ -193,12 +195,14 @@
 			assembliesBrowseMenuItem.Name = "assembliesBrowseMenuItem";
 			assembliesBrowseMenuItem.Size = new Size(165, 22);
 			assembliesBrowseMenuItem.Text = "Browse from disk";
+			assembliesBrowseMenuItem.Click += assembliesBrowseMenuItem_Click;
 			// 
 			// assembliesShowMenuItem
 			// 
 			assembliesShowMenuItem.Name = "assembliesShowMenuItem";
 			assembliesShowMenuItem.Size = new Size(165, 22);
 			assembliesShowMenuItem.Text = "Show resources";
+			assembliesShowMenuItem.Click += assembliesShowMenuItem_Click;
 			// 
 			// folders
 			// 
@@ -225,7 +229,7 @@
 			assembliesBottomPanel.Dock = DockStyle.Top;
 			assembliesBottomPanel.Location = new Point(14, 72);
 			assembliesBottomPanel.Name = "assembliesBottomPanel";
-			assembliesBottomPanel.Size = new Size(404, 36);
+			assembliesBottomPanel.Size = new Size(404, 30);
 			assembliesBottomPanel.TabIndex = 6;
 			// 
 			// tbResourceNamePrefix
@@ -528,7 +532,6 @@
 			gbSiteUri.Anchor = AnchorStyles.Left | AnchorStyles.Right;
 			gbSiteUri.Controls.Add(uriLabel);
 			gbSiteUri.Controls.Add(clientTargetPanel);
-			gbSiteUri.Controls.Add(button3);
 			gbSiteUri.Location = new Point(0, 0);
 			gbSiteUri.Margin = new Padding(0);
 			gbSiteUri.Name = "gbSiteUri";
@@ -560,13 +563,13 @@
 			siteUriContextMenu.Items.AddRange(new ToolStripItem[] { siteUriOpenItem, siteUriLine1, siteUriCopyItem });
 			siteUriContextMenu.Name = "siteUriContextMenu";
 			siteUriContextMenu.Size = new Size(104, 54);
-			siteUriContextMenu.ItemClicked += siteUriContextMenu_ItemClicked;
 			// 
 			// siteUriOpenItem
 			// 
 			siteUriOpenItem.Name = "siteUriOpenItem";
 			siteUriOpenItem.Size = new Size(103, 22);
 			siteUriOpenItem.Text = "Open";
+			siteUriOpenItem.Click += siteUriOpenItem_Click;
 			// 
 			// siteUriLine1
 			// 
@@ -578,6 +581,7 @@
 			siteUriCopyItem.Name = "siteUriCopyItem";
 			siteUriCopyItem.Size = new Size(103, 22);
 			siteUriCopyItem.Text = "Copy";
+			siteUriCopyItem.Click += siteUriCopyItem_Click;
 			// 
 			// clientTargetPanel
 			// 
@@ -588,20 +592,6 @@
 			clientTargetPanel.Name = "clientTargetPanel";
 			clientTargetPanel.Size = new Size(0, 0);
 			clientTargetPanel.TabIndex = 5;
-			// 
-			// button3
-			// 
-			button3.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-			button3.AutoSize = true;
-			button3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-			button3.Location = new Point(904, 24);
-			button3.Margin = new Padding(0);
-			button3.Name = "button3";
-			button3.Size = new Size(63, 30);
-			button3.TabIndex = 1;
-			button3.TabStop = false;
-			button3.Text = "   OK   ";
-			button3.UseVisualStyleBackColor = true;
 			// 
 			// cmdStart
 			// 
@@ -624,8 +614,7 @@
 			startContextMenu.AccessibleDescription = "";
 			startContextMenu.Items.AddRange(new ToolStripItem[] { startMenuItem, startLine1, makeJSONMenuItem, startLine2, parametersMenuItem });
 			startContextMenu.Name = "siteUriContextMenu";
-			startContextMenu.Size = new Size(210, 82);
-			startContextMenu.ItemClicked += startContextMenu_ItemClicked;
+			startContextMenu.Size = new Size(210, 104);
 			// 
 			// startMenuItem
 			// 
@@ -703,62 +692,12 @@
 			titleLabel.Text = "Quick Start";
 			titleLabel.TextAlign = ContentAlignment.MiddleLeft;
 			// 
-			// openAssemblyDialog
-			// 
-			openAssemblyDialog.DefaultExt = "dll";
-			openAssemblyDialog.Filter = "Default (*.dll;*.exe)|*.dll;*.exe|Libraries (*.dll)|*.dll|Executables (*.exe)|*.exe|Any|*.*";
-			// 
-			// openFileDialog1
-			// 
-			openFileDialog1.DefaultExt = "dll";
-			openFileDialog1.Filter = "Default (*.dll;*.exe)|*.dll;*.exe|Libraries (*.dll)|*.dll|Executables (*.exe)|*.exe|Any|*.*";
-			// 
-			// openFileDialog2
-			// 
-			openFileDialog2.DefaultExt = "dll";
-			openFileDialog2.Filter = "Default (*.dll;*.exe)|*.dll;*.exe|Libraries (*.dll)|*.dll|Executables (*.exe)|*.exe|Any|*.*";
-			// 
-			// openFileDialog3
-			// 
-			openFileDialog3.DefaultExt = "dll";
-			openFileDialog3.Filter = "Default (*.dll;*.exe)|*.dll;*.exe|Libraries (*.dll)|*.dll|Executables (*.exe)|*.exe|Any|*.*";
-			// 
-			// openCertificateDialog
-			// 
-			openCertificateDialog.Filter = "Default (*.cer,*.pfx)|*.cer;*.pfx|Certificate file format (*.cer)|*.cer|Personal Information Exchange (*.pkx)|*.pfx|All files(*.*)|*.*";
-			// 
-			// passwordPanel
-			// 
-			passwordPanel.Controls.Add(certificateWaitLabel);
-			passwordPanel.Controls.Add(gbPassword);
-			passwordPanel.Dock = DockStyle.Fill;
-			passwordPanel.Location = new Point(1, 1);
-			passwordPanel.Name = "passwordPanel";
-			passwordPanel.Size = new Size(609, 504);
-			passwordPanel.TabIndex = 9;
-			passwordPanel.Visible = false;
-			passwordPanel.Resize += passwordPanel_Resize;
-			// 
-			// certificateWaitLabel
-			// 
-			certificateWaitLabel.AutoSize = true;
-			certificateWaitLabel.BackColor = Color.Transparent;
-			certificateWaitLabel.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point);
-			certificateWaitLabel.ForeColor = Color.White;
-			certificateWaitLabel.Location = new Point(70, 151);
-			certificateWaitLabel.Name = "certificateWaitLabel";
-			certificateWaitLabel.Size = new Size(305, 50);
-			certificateWaitLabel.TabIndex = 10;
-			certificateWaitLabel.Text = "Loading certificate,\rthis may take more then 5 minutes.";
-			certificateWaitLabel.TextAlign = ContentAlignment.MiddleLeft;
-			certificateWaitLabel.Visible = false;
-			// 
 			// gbPassword
 			// 
 			gbPassword.Controls.Add(cmdClosePasswordPanel);
 			gbPassword.Controls.Add(cmdAcceptPassword);
 			gbPassword.Controls.Add(tbPassword);
-			gbPassword.Location = new Point(11, 0);
+			gbPassword.Location = new Point(0, 215);
 			gbPassword.Margin = new Padding(0);
 			gbPassword.Name = "gbPassword";
 			gbPassword.Padding = new Padding(0);
@@ -766,6 +705,7 @@
 			gbPassword.TabIndex = 9;
 			gbPassword.TabStop = false;
 			gbPassword.Text = " Certificate file password(it can be empty): ";
+			gbPassword.EnabledChanged += gbPassword_EnabledChange;
 			// 
 			// cmdClosePasswordPanel
 			// 
@@ -808,6 +748,57 @@
 			tbPassword.Text = "I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources";
 			tbPassword.KeyDown += tbPassword_KeyDown;
 			// 
+			// openAssemblyDialog
+			// 
+			openAssemblyDialog.DefaultExt = "dll";
+			openAssemblyDialog.Filter = "Default (*.dll;*.exe)|*.dll;*.exe|Libraries (*.dll)|*.dll|Executables (*.exe)|*.exe|Any|*.*";
+			// 
+			// openFileDialog1
+			// 
+			openFileDialog1.DefaultExt = "dll";
+			openFileDialog1.Filter = "Default (*.dll;*.exe)|*.dll;*.exe|Libraries (*.dll)|*.dll|Executables (*.exe)|*.exe|Any|*.*";
+			// 
+			// openFileDialog2
+			// 
+			openFileDialog2.DefaultExt = "dll";
+			openFileDialog2.Filter = "Default (*.dll;*.exe)|*.dll;*.exe|Libraries (*.dll)|*.dll|Executables (*.exe)|*.exe|Any|*.*";
+			// 
+			// openFileDialog3
+			// 
+			openFileDialog3.DefaultExt = "dll";
+			openFileDialog3.Filter = "Default (*.dll;*.exe)|*.dll;*.exe|Libraries (*.dll)|*.dll|Executables (*.exe)|*.exe|Any|*.*";
+			// 
+			// openCertificateDialog
+			// 
+			openCertificateDialog.Filter = "Default (*.cer,*.pfx)|*.cer;*.pfx|Certificate file format (*.cer)|*.cer|Personal Information Exchange (*.pkx)|*.pfx|All files(*.*)|*.*";
+			// 
+			// passwordPanel
+			// 
+			passwordPanel.Controls.Add(certificateWaitLabel);
+			passwordPanel.Controls.Add(gbPassword);
+			passwordPanel.Dock = DockStyle.Fill;
+			passwordPanel.Location = new Point(1, 27);
+			passwordPanel.Name = "passwordPanel";
+			passwordPanel.Size = new Size(609, 478);
+			passwordPanel.TabIndex = 9;
+			passwordPanel.Visible = false;
+			passwordPanel.Resize += passwordPanel_Resize;
+			// 
+			// certificateWaitLabel
+			// 
+			certificateWaitLabel.AutoSize = true;
+			certificateWaitLabel.BackColor = Color.FromArgb(100, 255, 255, 255);
+			certificateWaitLabel.Font = new Font("Segoe UI", 14.25F, FontStyle.Regular, GraphicsUnit.Point);
+			certificateWaitLabel.ForeColor = Color.White;
+			certificateWaitLabel.Location = new Point(70, 151);
+			certificateWaitLabel.Name = "certificateWaitLabel";
+			certificateWaitLabel.Size = new Size(176, 25);
+			certificateWaitLabel.TabIndex = 10;
+			certificateWaitLabel.Text = "Testing certificate ...";
+			certificateWaitLabel.TextAlign = ContentAlignment.MiddleCenter;
+			certificateWaitLabel.Visible = false;
+			certificateWaitLabel.Resize += certificateWaitLabel_Resize;
+			// 
 			// cmdStartOptions
 			// 
 			cmdStartOptions.Anchor = AnchorStyles.Right;
@@ -834,8 +825,8 @@
 			ClientSize = new Size(611, 506);
 			ControlBox = false;
 			Controls.Add(mainLayout);
-			Controls.Add(titlePanel);
 			Controls.Add(passwordPanel);
+			Controls.Add(titlePanel);
 			Controls.Add(cmdStartOptions);
 			DoubleBuffered = true;
 			Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
@@ -875,10 +866,10 @@
 			siteUriContextMenu.ResumeLayout(false);
 			startContextMenu.ResumeLayout(false);
 			titlePanel.ResumeLayout(false);
-			passwordPanel.ResumeLayout(false);
-			passwordPanel.PerformLayout();
 			gbPassword.ResumeLayout(false);
 			gbPassword.PerformLayout();
+			passwordPanel.ResumeLayout(false);
+			passwordPanel.PerformLayout();
 			ResumeLayout(false);
 			PerformLayout();
 		}

@@ -505,7 +505,6 @@
 			responseLabel.Size = new Size(77, 20);
 			responseLabel.TabIndex = 1;
 			responseLabel.Text = "Response:";
-			responseLabel.BackColorChanged += originLabel_BackColorChanged;
 			responseLabel.MouseDown += responseLabel_MouseDown;
 			// 
 			// requestPanel

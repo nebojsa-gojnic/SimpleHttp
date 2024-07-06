@@ -37,6 +37,11 @@
 			"path": "/FormTest.html"
 		} ,
 		{
+			"service": "debugHttpService" ,
+			"path": "/" ,
+			"noSubPaths": true
+		} ,
+		{
 			"service": "fileHttpService" ,
 			"path": "/*"
 		}

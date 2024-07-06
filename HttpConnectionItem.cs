@@ -294,7 +294,6 @@ namespace SimpleHttp
 			if ( startingPosition > source.Length - length ) return false ;
 			int foundLength = 0 ;
 			int foundPosition = -1 ;
-			if ( comparison == null ) comparison = StringComparison.OrdinalIgnoreCase ;
 			for ( int currentLength = startingLength ; currentLength <= c ; currentLength++ )
 			{
 				int currentPosition = source.IndexOf ( search.Substring ( 0 , currentLength ) , startingPosition , comparison ) ;

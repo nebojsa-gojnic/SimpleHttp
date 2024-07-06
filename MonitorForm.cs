@@ -798,8 +798,7 @@ namespace SimpleHttp
 				reflectServerStatus ( quickStartForm.configData , false ) ;
 			}
 		}
-		
-		private void quickStartForm_resourceViewNeeded ( object sender , Assembly assembly )
+		private void showResourceForm ( Assembly assembly )
 		{
 			if ( resourcesForm == null )
 			{
@@ -818,6 +817,10 @@ namespace SimpleHttp
 				resourcesForm.BringToFront () ;
 				resourcesForm.Select () ;
 			}
+		}
+		private void quickStartForm_resourceViewNeeded ( object sender , Assembly assembly )
+		{
+			showResourceForm ( assembly ) ;
 		}
 		private void resourcesForm_Shown ( object? sender , EventArgs e )
 		{
@@ -950,9 +953,16 @@ namespace SimpleHttp
 				BeginInvoke ( ()=>
 				{
 					showErrorMessage ( "Error starting " + ( quickStartForm.mode == StartServerMode.fileServer ? "file" : "resource" ) + " based server" , errorMessage ) ;
-					quickStartForm.SendToBack () ;
+					//quickStartForm.SendToBack () ;  //fuuuck this does OPOSITE!!!!
+					//quickStartForm.Activated += quickStartForm1_Activated;
 				} ) ;
 		}
+
+		private void quickStartForm1_Activated(object? sender, EventArgs e)
+		{
+			quickStartForm.Activated -= quickStartForm1_Activated;
+		}
+
 		private void quickStartForm_assemblyLoadFailed ( object sender , ErrorEventArgs e )
 		{
 			InvokeShowErrorMessage ( "Error loading assembly" , e.GetException() ) ;
@@ -1123,10 +1133,10 @@ namespace SimpleHttp
 
 		protected void reflectServerStatus ( WebServerConfigData configData , bool autoQuickStartForm )
 		{
-			string baloonTipText = "" ;
-			string baloonTipTitle = "" ;
+			string baloonTipText = "." ;
+			string baloonTipTitle = "." ;
 			string notifyIconText = ( string.IsNullOrWhiteSpace ( configData.sslCertificateSource ) ? "Flat http" : 
-				QuickStartForm.getProtocolName ( configData.sslProtocol ) ) + " on port " + configData.port.ToString () ;
+				QuickStartForm.sslProtocolsShort [ configData.sslProtocol ] ) + " on port " + configData.port.ToString () ;
 			notifyIcon.Icon = SimpleHttp.Properties.Resources.mainIcon ;
 			setSiteUri ( configData ) ;
 
@@ -1135,7 +1145,7 @@ namespace SimpleHttp
 			ResourceWebConfigData resourceConfigData = configData as ResourceWebConfigData ;
 
 			if ( isListeningActive ) quickStartForm?.Hide () ;
-			bool singleService = configData.serviceDemandCount >= 0 ; //ah!!
+			bool singleService = configData.serviceDemandCount == 1 ;
 			resourceLabel.Text = "" ;
 			resourceTypeLabel.Text = "" ;
 			foreach ( HttpServiceActivator activator in configData.services.Values )
@@ -1871,43 +1881,6 @@ bad:
 		private bool markSearchInGrid ( int currentLength , DataGridView grid )
 		{
 			return markSearchInGrid ( searchBox.Text , searchPosition , searchLength , currentLength , grid ) ;
-
-			if ( searchPosition < 0 ) return false ;
-			if ( searchLength <= 0 ) return false ;
-			if ( searchLength > searchBox.Text.Length ) return false ; //!!!
-			
-			int rowCount = grid.RowCount ;
-			DataGridViewCell cell = null ;
-			int maxLength = 0 ;
-			string search = searchBox.Text.Substring ( 0 , searchLength ) ;
-			for ( int rowIndex = 0 ; rowIndex < rowCount ; rowIndex++ )
-			{
-				DataGridViewRow row = grid.Rows [ rowIndex ] ;
-				for ( int columnIndex = 0 ; columnIndex < 2 ; columnIndex++ )
-				{
-					string cellText = ( string ) row.Cells [ columnIndex ].Value ;
-					currentLength += cellText.Length ;
-					if ( ( currentLength >= searchPosition ) && ( cellText.Length > maxLength ) )
-					{
-						int currentCharIndex = -1 ;
-						if ( HttpConnectionItem.matchLongestLength ( search , cellText , ref currentCharIndex , ref maxLength , true ) )
-						{
-							cell = row.Cells [ columnIndex ] ;
-							break ;
-						}
-					}
-					currentLength ++ ;
-				}
-			}
-			if ( cell == null )
-				return false ;
-			else 
-			{
-				grid.ClearSelection () ;
-				cell.Selected = true ;
-				scrollToCell ( cell ) ;
-				return true ;
-			}
 		}
 		public static bool markSearchInGrid ( string searchText , int searchPosition , int searchLength  , int currentLength , DataGridView grid )
 		{
@@ -2527,39 +2500,8 @@ bad:
 			}
 			catch { }
 		}
-		
-		/// <summary>
-        /// Skida x,y-koordinate iz 32-bitnog int-a.
-        /// </summary>
-        /// <param name="Par">prvix 16 bita je x, drugih 16 je y</param>
-        /// <param name="Left">Ovo se ODUZIMA (pozicija forme)</param>
-        /// <param name="Top">Ovo se ODUZIMA (pozicija forme)</param>
-        /// <returns>Tacka sa relativnim koordinatama</returns>
-        public static Point PointFromParam ( IntPtr Par , int Left , int Top )
-        {
-            int lp = Par.ToInt32 () ;
-            int x = ( lp & 65535 ) - Left ;
-            int y = ( lp >> 16 ) - Top ;
-            return new Point ( x , y ) ;
-        }
-        /// <summary>
-        /// Skida x,y-koordinate iz 32-bitnog int-a.Oduzima koordinate ove forme da bi se dobile relativne koordinate.
-        /// </summary>
-        /// <param name="Par">prvix 16 bita je x, drugih 16 je y</param>
-        /// <returns>Tacka sa relativnim koordinatama</returns>
-        public Point PointFromParam ( IntPtr Par )
-        {
-            return PointFromParam ( Par , Left , Top ) ;
-        }
-        /// <summary>
-        /// Skida x,y-koordinate iz 32-bitnog int-a (LParam iz Message strukture).Oduzima koordinate ove forme da bi se dobile relativne koordinate.
-        /// </summary>
-        /// <param name="Par">prvix 16 bita je x, drugih 16 je y</param>
-        /// <returns>Tacka sa relativnim koordinatama</returns>
-        public Point PointFromParam ( Message m )
-        {
-             return PointFromParam ( m.LParam ) ;
-        }
+	
+       
 		/// <summary>
 		/// We need this to make borderless form sizeable.
 		/// </summary>
@@ -2568,7 +2510,7 @@ bad:
 		protected virtual bool ProccessNCHitTest ( ref Message m )
         {
             //if ( ProccessNCLButtonDown ( ref m ) ) return true ;
-            Point po = PointFromParam ( m ) ;
+            Point po = API.PointFromParam ( m ) ;
             int w2 = ( Width - ClientSize.Width ) / 2 ;
 			bool done = false ;
 			if ( po.X < 6 )
@@ -2937,7 +2879,7 @@ bad:
 				gridContextMenu_Opening ( responseGrid , e ) ;
 			else e.Cancel = true ;
 		}
-		private void gridContextMenu_Opening ( DataGridView grid , System.ComponentModel.CancelEventArgs e )
+		private void gridContextMenu_Opening ( DataGridView grid , CancelEventArgs e )
 		{
 			gridContextMenu.Tag = grid ;
 			if ( grid.SelectedCells.Count == 0 )
@@ -3086,32 +3028,16 @@ bad:
 		}
 		private void resourceLabel_MouseDown ( object sender , MouseEventArgs e )
 		{
-			try
-			{
-				if ( e.Button == MouseButtons.Left )
-					switch ( serverMode )
-					{
-						case StartServerMode.fileServer :
-							openWebrootFolder () ;
-						break ;
-						case StartServerMode.resourceServer:
-							quickStartForm_resourceViewNeeded ( sender , FindAssemblyBySource ( resourceLabel.Text ) ) ;
-						break ;
-						default:
-							openWebrootFolder () ;
-							//jsonEditorVisible = !jsonEditorVisible ;
-						break ;
-					}
-				else linkContextMenu.Tag = resourceLabel ;
-			}
-			catch { }
+			if ( e.Button == MouseButtons.Left )
+				folderOpenMenuItem_Click ( folderOpenMenuItem , e ) ;
+			else linkContextMenu.Tag = resourceLabel ;
 		}
 		protected void openWebrootFolder ()
 		{
 			Exception error ;
 			if ( resourceLabel.Text == "<not saved>" )
 				jsonEditorVisible = !jsonEditorVisible ;
-			else if ( !openLink ( resourceLabel.Text , out error ) )
+			else if ( !openFolder ( resourceLabel.Text , out error ) )
 				showError ( "Cannot open uri" , error ) ;
 		}
 		protected void openConfigFolder ()
@@ -3151,21 +3077,21 @@ bad:
 			}
 			if ( error != null ) showError ( "Error" , error ) ;
 		}
-		public static bool openFolder ( string uri , out Exception error )
+		public static bool openFolder ( string folder , out Exception error )
 		{
-			int i = uri.LastIndexOf ( '\\' ) ;
-			if ( i == -1 ) 
+			error = null ;
+			try
 			{
-				error = new IOException ( "No path in \"" + uri + "\"" ) ;
-				return false ;
+				ProcessStartInfo startInfo = new ProcessStartInfo ( "\"" + folder + "\"" ) ; //not "explorer" !
+				startInfo.UseShellExecute = true ; //o yeeeaa!
+				Process.Start ( startInfo ) ;
+				return true ;
 			}
-			//else
-			//{
-			//	error = null ;
-			//	IntPtr mainWindowHandle = Process.Start ( "explorer.exe", "/select,\"" + uri + "\"" ).MainWindowHandle ;
-			//	return mainWindowHandle != IntPtr.Zero  ;
-			//}
-			else return openLink ( uri.Substring ( 0 , i ) , out error ) ;
+			catch ( Exception x )
+			{
+				error = x.InnerException == null ? x : x.InnerException ;
+			}
+			return false ;
 		}
 		public static bool openLink ( string uri , out Exception error )
 		{
@@ -3210,7 +3136,15 @@ bad:
 		}
 		private void folderOpenMenuItem_Click ( object sender , EventArgs e )
 		{
-			openConfigFolder () ;
+			switch ( serverMode )
+			{
+				case StartServerMode.fileServer :
+					openWebrootFolder () ;
+				break ;
+				case StartServerMode.resourceServer :
+					showResourceForm ( FindAssemblyBySource ( resourceLabel.Text ) ) ;
+				break ;
+			}
 		}
 		private void linkCopyMenuItem_Click ( object sender , EventArgs e )
 		{
@@ -3416,7 +3350,7 @@ endLab:
 			}
 			else 
 			{
-				folderOpenMenuItem.Visible = false ;
+				folderOpenMenuItem.Visible = ( linkContextMenu.Tag == resourceLabel ) && ( serverMode == StartServerMode.fileServer ) ;
 				linkContextMenuLine1.Visible = false ;
 				if ( isListening )
 				{
@@ -4005,10 +3939,5 @@ endLab:
 			toolTipPadding = toolTipPadding >> 1 ;
 			graphics.Dispose () ;
 		}
-		private void originLabel_BackColorChanged ( object sender , EventArgs e )
-		{
-			e = e ;
-		}
-		
 	}
 }

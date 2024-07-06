@@ -160,6 +160,40 @@ namespace SimpleHttp
 	}
 	public struct API
 	{
+		/// <summary>
+        /// Transforms given point(messageLParam) into the point relative to the given location 
+        /// </summary>
+		/// <param name="location">Coordinate system center</param>
+        /// <param name="messageLParam">first 16 bits for X, next 16 bits for Y </param>
+        /// <returns>Point relative to given location</returns>
+        public Point PointFromParam ( IntPtr messageLParam , Point location )
+        {
+            return PointFromParam ( messageLParam , location.X , location.Y ) ;
+        }
+			
+		/// <summary>
+        /// Transforms given point(messageLParam) into the point relative to the given location 
+        /// </summary>
+		/// <param name="left">Coordinate system x zero</param>
+		/// <param name="top">Coordinate system y zero</param>
+        /// <param name="messageLParam">first 16 bits for X, next 16 bits for Y </param>
+        /// <returns>Point relative to given location</returns>
+        public static Point PointFromParam ( IntPtr messageLParam , int left , int top )
+        {
+            int lp = messageLParam.ToInt32 () ;
+            int x = ( lp & 65535 ) - left ;
+            int y = ( lp >> 16 ) - top ;
+            return new Point ( x , y ) ;
+        }
+        /// <summary>
+        /// Point from message.LParam ( first 16 bits for X, next 16 bits for Y )
+        /// </summary>
+        /// <returns>Point from IntPtr </returns>
+        public static Point PointFromParam ( Message m )
+        {
+			int lp = m.LParam.ToInt32 () ;
+            return new Point ( lp & 65535 , lp >> 16 ) ;
+        }
 
 		public const int MaxPath = 260 ;
 

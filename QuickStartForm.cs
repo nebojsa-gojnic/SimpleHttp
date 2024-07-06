@@ -1,6 +1,7 @@
 ﻿using System ;
 using System.Drawing ;
 using System.Collections.Generic ;
+using System.Collections.ObjectModel ;
 using System.ComponentModel ;
 using System.Security.Cryptography.X509Certificates ;
 using System.Reflection ;
@@ -14,8 +15,8 @@ using System.Security.Authentication ;
 using System.Security.Cryptography ;
 using System.Net.Sockets ;
 using WebSockets ;
-using System.Diagnostics;
-using Newtonsoft.Json.Linq;
+using System.Diagnostics ;
+using Newtonsoft.Json.Linq ;
 
 //I:\Code\Nodes\PipeMania\PipeManiaService\Resources
 //I:\Code\localhost2.pfx
@@ -26,7 +27,8 @@ namespace SimpleHttp
 		//Personal Information Exchange (*.pkx)|*.pkx
 		protected StartServerMode _mode ;
 		protected Bitmap mainLayoutBitmap ;
-		protected Brush mainLayoutGrayBrush ;
+		protected SolidBrush mainLayoutGrayBrush ;
+		protected SolidBrush mainLayoutGrayBrushLighter ;
 		protected Brush mainLayoutWindowBrush ;
 		protected Dictionary <string,Dictionary<SslProtocols,CertificateTest>> certificateTests ;
 		protected CertificateTest runningTest ;
@@ -409,6 +411,7 @@ namespace SimpleHttp
 			loadAssemblies () ;
 			mainLayoutBitmap = null ;
 			mainLayoutGrayBrush = new SolidBrush ( Color.FromArgb ( 150 , Color.Gray ) ) ;
+			mainLayoutGrayBrushLighter = new SolidBrush ( Color.FromArgb ( 70 , Color.Gray ) ) ;
 			mainLayoutWindowBrush = new SolidBrush ( SystemColors.Control ) ;
 
 			cbProtocol.Items.Add ( new EnumItem<SslProtocols> ( "Flat HTTP" , SslProtocols.None ) ) ;
@@ -470,6 +473,8 @@ namespace SimpleHttp
 				Control Control = component as Control ;
 				if ( Control != null ) Control.Font = Font ;
 			}
+			certificateWaitLabel.Font = titleLabel.Font ;
+			certificateWaitLabel.Padding = new Padding ( certificateWaitLabel.Font.Height ) ;
 			base.OnFontChanged ( e ) ;
 		}
 		protected override void OnPaintBackground ( PaintEventArgs e )
@@ -482,13 +487,18 @@ namespace SimpleHttp
 			MonitorForm.SetBoxRegion ( this ) ;
 			base.OnResize ( e ) ;
 		}
-		private void mainLayout_Resize ( object sender , EventArgs e )
+		private void mainLayout_Resize( object sender , EventArgs e )
 		{
 			mainLayout.Location = new Point ( Padding.Left , titlePanel.Bottom ) ;
 			Size = new Size ( Padding.Horizontal + mainLayout.Width , Padding.Vertical + mainLayout.Bottom ) ;
 			
 			//Height = Padding.Vertical + mainLayout.Bottom  ;
 		}
+		private void certificateWaitLabel_Resize ( object sender , EventArgs e )
+		{
+			MonitorForm.SetBoxRegion ( certificateWaitLabel ) ;
+		}
+		
 		private void titlePanel_Resize ( object sender , EventArgs e )
 		{
 			int d = ( titlePanel.Height - closeButton.Height ) >> 1 ;
@@ -901,7 +911,6 @@ namespace SimpleHttp
 		}
 		protected bool validateValues ( bool raiseEvents , bool focusErrorControl )
 		{
-			if ( !checkAndReflectCertificate ( raiseEvents , focusErrorControl ) ) return false ;
 
 			if ( mode == StartServerMode.fileServer )
 			{
@@ -913,6 +922,7 @@ namespace SimpleHttp
 			}
 
 			if ( !checkPort ( raiseEvents ) ) return false ;
+			if ( !checkAndReflectCertificate ( raiseEvents , focusErrorControl ) ) return false ;
 
 			createConfigData () ;
 			return true ;
@@ -1288,7 +1298,7 @@ namespace SimpleHttp
 			_certificateServerError = e.GetException() ;
 			certificateWaitLabel.Visible = false ;
 			if ( _certificateServerError.InnerException != null ) _certificateServerError = _certificateServerError.InnerException ;
-			tbCertificate.BackColor = Color.MistyRose ;
+			tbCertificate.BackColor = MonitorForm.errorEditBackColor ;
 			_certificateFailedOnServer?.Invoke ( this , e ) ;
 			passwordPanel.Enabled = true ;
 			UseWaitCursor = false ;
@@ -1302,7 +1312,7 @@ namespace SimpleHttp
 			certificateWaitLabel.Visible = false ;
 			_certificate = null ;
 			_certificateClientError = e.GetException() ;
-			tbCertificate.BackColor = Color.MistyRose ;
+			tbCertificate.BackColor = MonitorForm.errorEditBackColor ;
 			if ( _certificateClientError.InnerException != null ) _certificateClientError = _certificateClientError.InnerException ;
 			addCertificateTest ( certificateTest ) ;
 			_certificateFailedOnClient?.Invoke ( this , e ) ; ;
@@ -1383,9 +1393,9 @@ namespace SimpleHttp
 		private void showCertificatePassword ()
 		{
 			_loadedCertificate = null ;
-			gbPassword.Visible = true ;
+			
 			certificateWaitLabel.Visible = false ;
-			setCertificatePasswordBackground () ;
+			setCertificatePasswordBackground () ; // passwordPanel.Visible = true   is inside of setCertificatePasswordBackground call
 			BeginInvoke ( () =>
 			{
 				if ( IsDisposed ) return ;
@@ -1394,13 +1404,12 @@ namespace SimpleHttp
 		}
 
 		/// <summary>
-		/// This method tries to load certificate and connect over SSL with it.
+		/// 
 		/// </summary>
 		private void setCertificatePasswordBackground ()
 		{
 			if ( mainLayoutBitmap != null )
 				if ( ( mainLayoutBitmap.Width != mainLayout.Width ) || ( mainLayoutBitmap.Height != mainLayout.Height ) )
-					//|| ( passwordVisible != gbPassword.Visible ) ) 
 				{
 					mainLayoutBitmap.Dispose () ;
 					mainLayoutBitmap = null ;
@@ -1408,9 +1417,10 @@ namespace SimpleHttp
 			if ( mainLayoutBitmap == null ) mainLayoutBitmap = new Bitmap ( mainLayout.Width , mainLayout.Height ) ;
 			mainLayout.DrawToBitmap ( mainLayoutBitmap , new Rectangle ( Point.Empty , mainLayout.Size ) ) ;
 			
-			drawPasswordPanelBackground ( gbPassword.Bounds ) ;
+			drawGrayOnMainLayoutBitmap ( ) ;
 			passwordPanel.BackgroundImageLayout = ImageLayout.None ;
 			passwordPanel.BackgroundImage = mainLayoutBitmap ;
+			//passwordPanel.BackColor = Color.Red ;
 			try
 			{
 				passwordPanel.Visible = true ;
@@ -1419,23 +1429,31 @@ namespace SimpleHttp
 			}
 			catch { }
 		}
-		private void drawPasswordPanelBackground ( Rectangle panelBounds )
+		private void gbPassword_EnabledChange ( object sender , EventArgs e )
 		{
-			Rectangle rect = new Rectangle ( Point.Empty , mainLayout.Size ) ;
+			gbPassword.Visible = gbPassword.Enabled ;
+			//gbPassword.BackColor = gbPassword.Enabled ? passwordPanel.BackColor : mainLayoutGrayBrush.Color ;
+			//tbPassword.BackColor = gbPassword.Enabled ? SystemColors.Window : Color.LightGray ;
+			//if ( !gbPassword.Enabled ) e.Graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( Point.Empty , gbPassword.Size ) ) ;
+		}
+		private void drawGrayOnMainLayoutBitmap ( )
+		{
 			using ( Graphics graphics = Graphics.FromImage ( mainLayoutBitmap ) )
 			{
-				graphics.FillRectangle ( mainLayoutGrayBrush , rect ) ;
-				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , 0 , mainLayout.Width , panelBounds.Top - 2 ) ) ;
-				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , panelBounds.Top - 2 , panelBounds.Left - 4 , panelBounds.Height + 6 ) ) ;
-				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , panelBounds.Bottom + 4 , mainLayout.Width , mainLayout.Height - panelBounds.Bottom - 4 ) ) ;
-				//graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( panelBounds.Right + 4 , panelBounds.Top - 2 , mainLayout.Width - panelBounds.Right + 4 , panelBounds.Height + 6  ) ) ;
+				graphics.FillRectangle ( mainLayoutGrayBrush ,  new Rectangle ( Point.Empty , mainLayout.Size )  ) ;
+				gbPassword.DrawToBitmap ( mainLayoutBitmap , gbPassword.Bounds ) ;
+				graphics.FillRectangle ( mainLayoutGrayBrushLighter , gbPassword.Bounds ) ;
+				////graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , 0 , mainLayout.Width , panelBounds.Top - 2 ) ) ;
+				////graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , panelBounds.Top - 2 , panelBounds.Left - 4 , panelBounds.Height + 6 ) ) ;
+				////graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( 0 , panelBounds.Bottom + 4 , mainLayout.Width , mainLayout.Height - panelBounds.Bottom - 4 ) ) ;
+				////graphics.FillRectangle ( mainLayoutGrayBrush , new Rectangle ( panelBounds.Right + 4 , panelBounds.Top - 2 , mainLayout.Width - panelBounds.Right + 4 , panelBounds.Height + 6  ) ) ;
 				
-				//graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Left - 4 , panelBounds.Top - 2 , panelBounds.Width + 8 , panelBounds.Height + 6 ) ) ;
+				////graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Left - 4 , panelBounds.Top - 2 , panelBounds.Width + 8 , panelBounds.Height + 6 ) ) ;
 
-				graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Left - 5 , panelBounds.Top - 3 , panelBounds.Width + 10 , panelBounds.Height + 7 ) ) ;
+				//graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Left - 5 , panelBounds.Top - 3 , panelBounds.Width + 10 , panelBounds.Height + 7 ) ) ;
 
-				graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Left - 6 , panelBounds.Top - 2 , 1 , panelBounds.Height + 5 ) ) ;
-				graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Right + 5 , panelBounds.Top - 2 , 1 , panelBounds.Height + 5 ) ) ;
+				//graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Left - 6 , panelBounds.Top - 2 , 1 , panelBounds.Height + 5 ) ) ;
+				//graphics.FillRectangle ( mainLayoutWindowBrush , new Rectangle ( panelBounds.Right + 5 , panelBounds.Top - 2 , 1 , panelBounds.Height + 5 ) ) ;
 				
 			}
 		}
@@ -1443,9 +1461,8 @@ namespace SimpleHttp
 		{
 			gbPassword.Location = new Point ( ( passwordPanel.Width - gbPassword.Width ) >> 1 , gbCertificate.Bottom ) ;
 			int h1 = ClientSize.Height - gbPassword.Bottom ;
-			certificateWaitLabel.Location = new Point ( ( ClientSize.Width - certificateWaitLabel.Width ) >> 1 , 
-						h1 < gbPassword.Top ? ( gbPassword.Top - certificateWaitLabel.Height ) >> 1 : 
-											  ( gbPassword.Bottom - ( ( h1 - certificateWaitLabel.Height ) >> 1 ) ) ) ;
+			certificateWaitLabel.MaximumSize = passwordPanel.Size ;
+			certificateWaitLabel.Location = new Point ( ( ClientSize.Width - certificateWaitLabel.Width ) >> 1 , ( gbPassword.Top - certificateWaitLabel.Height ) >> 1 ) ;
 			if ( passwordPanel.Visible ) setCertificatePasswordBackground () ;
 		}
 		private void cmdAcceptPassword_Click ( object sender, EventArgs e )
@@ -1535,6 +1552,7 @@ namespace SimpleHttp
 		/// <param name="e">(EventArgs)</param>
 		private void certificateTest_certificateAccepted ( object? sender , EventArgs e )
 		{
+			//Thread.Sleep ( 10000 ) ;
 			BeginInvoke ( () =>
 			{
 				acceptCertificate ( ( CertificateTest ) sender ) ;
@@ -1592,12 +1610,12 @@ namespace SimpleHttp
 		{
 			if ( Directory.Exists ( tbWebroot.Text ) )
 			{
-				tbWebroot.BackColor = SystemColors.Window ;
+				tbWebroot.BackColor = tbWebroot.Focused ? SystemColors.Window : MonitorForm.inactiveEditBackColor ;
 				return true ;
 			}
 			else 
 			{
-				tbWebroot.BackColor = Color.MistyRose ; 
+				tbWebroot.BackColor = MonitorForm.errorEditBackColor ;
 				if ( focusOnError ) tbWebroot.Focus () ;
 				if ( raiseEvent ) _invalidWebrootFolder?.Invoke ( this , tbWebroot.Text ) ;
 				return false ;
@@ -1713,7 +1731,7 @@ namespace SimpleHttp
 			else 
 			{
 				_resourceAssembly = ( ( AssemblyItem ) cbAssemblies.SelectedItem ).assembly ;
-				_resourceAssemblySource = cbAssemblies.SelectedItem.ToString () [ 0 ] == '<' ? _resourceAssembly.Location : _resourceAssembly.FullName ; 
+				_resourceAssemblySource = cbAssemblies.SelectedItem.ToString () [ 0 ] == '<' ? ResourcesHttpService.ResourcesHttpServiceData.getAssemlyLocation ( _resourceAssembly ) : _resourceAssembly.FullName ; 
 			}
 				
 			setAssebliesBackColor () ;
@@ -2078,6 +2096,10 @@ namespace SimpleHttp
 			lastControl = tbWebroot ;
 			tbWebroot.BackColor = SystemColors.Window ;
 		}
+		private void tbWebroot_TextChange ( object sender, EventArgs e )
+		{
+			if ( !tbWebroot.Focused ) checkFolderSelection ( false , false ) ;
+		}
 		private void tbResourceNamePrefix_Enter ( object sender, EventArgs e )
 		{
 			
@@ -2112,7 +2134,7 @@ namespace SimpleHttp
 		}
 		private void tbWebroot_Leave ( object sender, EventArgs e )
 		{
-			tbWebroot.BackColor = MonitorForm.inactiveEditBackColor ;
+			checkFolderSelection ( false , false ) ;
 		}
 		private void tbPort_Leave ( object sender, EventArgs e )
 		{
@@ -2135,49 +2157,99 @@ namespace SimpleHttp
 		{
 
 		}
-		protected static EnumItem<SslProtocols> [] _sslProtocols ;
-		protected static EnumItem<SslProtocols> [] getSslProtocols ()
+		/// <summary>
+		/// Auxiliary variable for the sslProtocols property.
+		/// </summary>
+		protected static IDictionary<SslProtocols,string> _sslProtocolsSource ;
+		/// <summary>
+		/// Auxiliary variable for the sslProtocols property.
+		/// </summary>
+		protected static IReadOnlyDictionary<SslProtocols,string> _sslProtocols ;
+		/// <summary>
+		/// Get method for the sslProtocols property.
+		/// </summary>
+		/// <returns>Unique list of all SslProtocols items with long descriptions.</returns>
+		protected static IReadOnlyDictionary<SslProtocols,string> getSslProtocols ()
 		{
 			if ( _sslProtocols == null )
-				_sslProtocols = new EnumItem<SslProtocols> [ 6 ]
-				{
-					new EnumItem<SslProtocols> ( "None (operating system default protocol)" , SslProtocols.None ) ,
-					new EnumItem<SslProtocols> ( "Defualt (obsolete, SSL 3 and TLS 1.0)" , SslProtocols.Default ) ,
-					new EnumItem<SslProtocols> ( "TLS (TLS 1.0, provided for backward compatibility)" , SslProtocols.Tls ) ,
-					new EnumItem<SslProtocols> ( "TLS 1.0 (obsolete)" , SslProtocols.Tls11 ) ,
-					new EnumItem<SslProtocols> ( "TLS 1.2" , SslProtocols.Tls12 ) ,
-					new EnumItem<SslProtocols> ( "TLS 1.3" , SslProtocols.Tls13 ) 	
-				} ;
+				_sslProtocols = new ReadOnlyDictionary<SslProtocols,string> (
+					_sslProtocolsSource = new Dictionary <SslProtocols,string> (
+						new KeyValuePair<SslProtocols,string> [ 6 ]
+						{
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.None , "None (operating system default protocol)" ) ,
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.Default ,"Defualt (obsolete, SSL 3 and TLS 1.0)" ) ,
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.Tls , "TLS (TLS 1.0, provided for backward compatibility)" ) ,
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.Tls11 , "TLS 1.0 (obsolete)" ) ,
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.Tls12 , "TLS 1.2" ) ,
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.Tls13 , "TLS 1.3" ) 	
+						} ) ) ;
 			return _sslProtocols ;
 		}
-		protected static EnumItem<SslProtocols> [] _sslProtocolsShort ;
-		protected static EnumItem<SslProtocols> [] getSslProtocolsShort ()
+		/// <summary>
+		/// It returns unique list of all SslProtocols items with long descriptions.
+		/// </summary>
+		public static IReadOnlyDictionary<SslProtocols,string> sslProtocols 
 		{
+			get=> getSslProtocols () ;
+		}
+		/// <summary>
+		/// Auxiliary variable for the sslProtocolsShort property.
+		/// </summary>
+		protected static IDictionary<SslProtocols,string> _sslProtocolsShortSource ;
+		/// <summary>
+		/// Auxiliary variable for the sslProtocolsShort property.
+		/// </summary>
+		protected static IReadOnlyDictionary<SslProtocols,string> _sslProtocolsShort ;
+		/// <summary>
+		/// Get method for the sslProtocolsShort property.
+		/// </summary>
+		protected static IReadOnlyDictionary<SslProtocols,string>getSslProtocolsShort ()
+		{
+			
 			if ( _sslProtocolsShort == null )
-				_sslProtocolsShort = new EnumItem<SslProtocols> [ 6 ]
-				{
-					new EnumItem<SslProtocols> ( "OS default" , SslProtocols.None ) ,
-					new EnumItem<SslProtocols> ( "SSL 3 or TLS 1.0" , SslProtocols.Default ) ,
-					new EnumItem<SslProtocols> ( "TLS 1.0" , SslProtocols.Tls ) ,
-					new EnumItem<SslProtocols> ( "TLS 1.0" , SslProtocols.Tls11 ) ,
-					new EnumItem<SslProtocols> ( "TLS 1.2" , SslProtocols.Tls12 ) ,
-					new EnumItem<SslProtocols> ( "TLS 1.3" , SslProtocols.Tls13 ) 	
-				} ;
+				_sslProtocolsShort = new ReadOnlyDictionary <SslProtocols,string> (
+					_sslProtocolsShortSource = new Dictionary<SslProtocols,string> ( 
+						new KeyValuePair<SslProtocols,string> [ 6 ]
+						{
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.None , "OS default" ) ,
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.Default , "SSL 3 or TLS 1.0" ) ,
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.Tls , "TLS 1.0" ) ,
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.Tls11 , "TLS 1.0" ) ,
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.Tls12 , "TLS 1.2" ) ,
+							new KeyValuePair<SslProtocols,string> ( SslProtocols.Tls13 , "TLS 1.3" ) 
+						} ) ) ;
 			return _sslProtocolsShort ;
 		}
-		public static string getProtocolName ( SslProtocols sslProtocol )
+		/// <summary>
+		/// It returns unique list of all SslProtocols items with short descriptions.
+		/// </summary>
+		public static IReadOnlyDictionary<SslProtocols,string> sslProtocolsShort 
 		{
-			foreach ( EnumItem<SslProtocols> item in getSslProtocolsShort() )
-				if ( item.value == sslProtocol )
-					return item.text ;
-			return "unknow" ;
+			get=> getSslProtocolsShort () ;
 		}
-		public static string getProtocolDescription ( SslProtocols sslProtocol )
+		/// <summary>
+		/// Returns SslProtocls value that coresponds to given short name by searching throught the sslProtocolsShort array of KeyValuePair&lt;SslProtocols,string&gt;
+		/// </summary>
+		/// <param name="shortName">Short name to look for</param>
+		/// <returns>Returns SslProtocls value that coresponds to given short name or SslProtocols.None if nothing found</returns>
+		public static SslProtocols getProtocolByName ( string shortName )
 		{
-			foreach ( EnumItem<SslProtocols> item in getSslProtocols() )
-				if ( item.value == sslProtocol )
-					return item.text ;
-			return "unknow" ;
+			foreach ( KeyValuePair<SslProtocols,string> item in sslProtocols )
+				if ( item.Value == shortName )
+					return item.Key ;
+			return SslProtocols.None ;
+		}
+		/// <summary>
+		/// Returns SslProtocls value that coresponds to given long name by searching throught the sslProtocols array of KeyValuePair&lt;SslProtocols,string&gt;
+		/// </summary>
+		/// <param name="longName">Long name/description to look for</param>
+		/// <returns>Returns SslProtocls value that coresponds to given short name or SslProtocols.None if nothing found</returns>
+		public static SslProtocols getProtocolDescription ( string longName )
+		{
+			foreach ( KeyValuePair<SslProtocols,string> item in getSslProtocols() )
+				if ( item.Value == longName )
+					return item.Key ;
+			return SslProtocols.None ;
 		}
 
 		private void assembliesContextMenu_Opening ( object sender, CancelEventArgs e )
@@ -2208,41 +2280,40 @@ namespace SimpleHttp
 			assembliesShowMenuItem.Visible = resourceAssembly != null ;
 		}
 
-
-		private void assembliesContextMenu_ItemClicked ( object sender , ToolStripItemClickedEventArgs e )
+		
+		private void assembliesCopyMenuItem_Click ( object sender, EventArgs e )
 		{
-			try
-			{
-				if ( e.ClickedItem == assembliesCopyMenuItem )
-				{
-					if ( cbAssemblies.SelectionLength > 0 ) Clipboard.SetText ( cbAssemblies.SelectedText ) ;
-				}
-				else if ( e.ClickedItem == assembliesCutMenuItem )
-				{
-					if ( cbAssemblies.SelectionLength > 0 ) 
-					{
-						Clipboard.SetText ( cbAssemblies.SelectedText ) ;
-						cbAssemblies.SelectedText = "" ;
-					}
-				}
-				else if ( e.ClickedItem == assembliesPasteMenuItem )
-				{
-					cbAssemblies.SelectedText = Clipboard.GetText() ;
-				}
-				else if ( e.ClickedItem == assembliesBrowseMenuItem )
-				{
-					assembliesContextMenu.Hide () ; //!!!
-					cmdLoadAssembly_Click ( cmdLoadAssembly , e ) ;
-				}
-				else if ( e.ClickedItem == assembliesShowMenuItem )
-					_resourceViewNeeded?.Invoke ( this ,  resourceAssembly ) ;
-			}
-			catch { }
-
+			if ( cbAssemblies.SelectionLength > 0 ) Clipboard.SetText ( cbAssemblies.SelectedText ) ;
+		}
+		private void assembliesCutMenuItem_Click ( object sender, EventArgs e )
+		{
+			Clipboard.SetText ( cbAssemblies.SelectedText ) ;
+			cbAssemblies.SelectedText = "" ;
+		}
+		private void assembliesPasteMenuItem_Click ( object sender, EventArgs e )
+		{
+			cbAssemblies.SelectedText = Clipboard.GetText() ;
+		}
+		private void assembliesBrowseMenuItem_Click ( object sender, EventArgs e )
+		{
+			assembliesContextMenu.Hide () ; //!!!
+			cmdLoadAssembly_Click ( cmdLoadAssembly , e ) ;
+		}
+		private void assembliesShowMenuItem_Click ( object sender, EventArgs e )
+		{
+			_resourceViewNeeded?.Invoke ( this ,  resourceAssembly ) ;
 		}
 
-		
-	
+
+		private void siteUriOpenItem_Click ( object sender , EventArgs e )
+		{
+			openSiteUri () ;
+		}
+
+		private void siteUriCopyItem_Click ( object sender , EventArgs e )
+		{
+			Clipboard.SetText ( uriLabel.Text ) ;
+		}
 		private void cbAssemblies_MouseDown ( object sender, MouseEventArgs e )
 		{
 			if ( e.Button == MouseButtons.Right ) 
@@ -2304,13 +2375,6 @@ namespace SimpleHttp
 				_UIErrorRaised?.Invoke ( this , new ErrorEventArgs ( x ) ) ;
 			}
 		}
-		private void siteUriContextMenu_ItemClicked ( object sender , ToolStripItemClickedEventArgs e )
-		{
-			if ( e.ClickedItem == siteUriOpenItem )
-				openSiteUri () ;
-			else if ( e.ClickedItem == siteUriCopyItem )
-				Clipboard.SetText ( uriLabel.Text ) ;
-		}
 		private void cmdStart_Resize ( object sender , EventArgs e )
 		{
 			int w = cmdStart.Height >> 1 ;
@@ -2343,16 +2407,13 @@ namespace SimpleHttp
 		}
 
 
-		private void startContextMenu_ItemClicked ( object sender , ToolStripItemClickedEventArgs e )
-		{
-			if ( e.ClickedItem == startMenuItem )
-				cmdStart_Click ( cmdStart , e ) ;
-			else if ( e.ClickedItem == parametersMenuItem )
-				showStartParametersClick () ;
-		}
 		private void startMenuItem_Click ( object sender , EventArgs e )
 		{
 			cmdStart_Click ( cmdStart , e ) ;
+		}
+		private void parametersMenuItem_Click ( object sender , EventArgs e )
+		{
+			showStartParametersClick () ;
 		}
 		/// <summary>
 		/// Auxiliary variable for then JSONScriptMade event
@@ -2383,10 +2444,6 @@ namespace SimpleHttp
 			createConfigData () ;
 			_JSONScriptMade?.Invoke ( this , _configData.GetJSONString ( ) ) ;
 			_ExportConfig?.Invoke ( this , _configData ) ;
-		}
-		private void parametersMenuItem_Click ( object sender , EventArgs e )
-		{
-			showStartParametersClick () ;
 		}
 
 		private void button_MouseUp ( object sender , MouseEventArgs e )

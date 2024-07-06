@@ -1,6 +1,5 @@
 {
 	"port": 50080,
-	"resourcePrefixName": null,
 	"sitename": "localhost",
 	"sslCertificate": "I:\\Code\\localhost2.pfx",
 	"sslCertificatePassword": "password",
@@ -10,8 +9,8 @@
 			"service": "resourceHttpService",
 			"source": "WebSockets.ResourcesHttpService, WebSockets, Version=4.0.0.0, Culture=neutral, PublicKeyToken=null",
 			"configData": {
-				"resourceNamePrefix" : "PipeMania" ,
-				"resourceAssemblySource": "i:\\code\\nodes\\pipemania\\pipemania\\bin\\release\\netstandard2.0\\pipemania.dll"
+				"resourceAssemblySource": "PipeManiaService.dll",
+				"resourceNamePrefix": "PipeMania.Resources."
 			}
 		}
 	],
