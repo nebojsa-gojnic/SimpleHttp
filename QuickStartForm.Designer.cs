@@ -53,6 +53,11 @@
 			gbCertificate = new CommonGroupBox();
 			tbCertificate = new TextBox();
 			cmdSelectCertificate = new Button();
+			gbDebug = new CommonGroupBox();
+			debugTopPanel = new CommonPanel();
+			tbDebugPathPrefix = new TextBox();
+			debugPathPredixLabel = new CommonLabel();
+			cbUseDebug = new CheckBox();
 			startPanel = new CommonTableLayoutPanel();
 			gbSiteUri = new CommonGroupBox();
 			uriLabel = new CommonLabel();
@@ -95,6 +100,8 @@
 			gbPort.SuspendLayout();
 			gbProtocol.SuspendLayout();
 			gbCertificate.SuspendLayout();
+			gbDebug.SuspendLayout();
+			debugTopPanel.SuspendLayout();
 			startPanel.SuspendLayout();
 			gbSiteUri.SuspendLayout();
 			siteUriContextMenu.SuspendLayout();
@@ -236,13 +243,12 @@
 			// 
 			tbResourceNamePrefix.BackColor = SystemColors.ControlLight;
 			tbResourceNamePrefix.Dock = DockStyle.Fill;
-			tbResourceNamePrefix.Location = new Point(94, 0);
+			tbResourceNamePrefix.Location = new Point(82, 0);
 			tbResourceNamePrefix.Margin = new Padding(0);
 			tbResourceNamePrefix.MaxLength = 0;
 			tbResourceNamePrefix.Name = "tbResourceNamePrefix";
-			tbResourceNamePrefix.Size = new Size(310, 27);
+			tbResourceNamePrefix.Size = new Size(322, 27);
 			tbResourceNamePrefix.TabIndex = 1;
-			tbResourceNamePrefix.Text = "localhost";
 			tbResourceNamePrefix.Enter += tbResourceNamePrefix_Enter;
 			// 
 			// namePrefixLabel
@@ -252,9 +258,10 @@
 			namePrefixLabel.Location = new Point(0, 0);
 			namePrefixLabel.Name = "namePrefixLabel";
 			namePrefixLabel.Padding = new Padding(0, 2, 0, 0);
-			namePrefixLabel.Size = new Size(94, 22);
+			namePrefixLabel.Size = new Size(82, 22);
 			namePrefixLabel.TabIndex = 0;
-			namePrefixLabel.Text = "Name prefix:";
+			namePrefixLabel.Text = "Path prefix:";
+			namePrefixLabel.TextAlign = ContentAlignment.MiddleLeft;
 			// 
 			// assembliesTopPanel
 			// 
@@ -336,13 +343,14 @@
 			mainLayout.Controls.Add(buttonLayout);
 			mainLayout.Controls.Add(gbWebroot);
 			mainLayout.Controls.Add(gbAssemblies);
+			mainLayout.Controls.Add(gbDebug);
 			mainLayout.Controls.Add(startPanel);
 			mainLayout.FlowDirection = FlowDirection.TopDown;
 			mainLayout.Location = new Point(1, 27);
 			mainLayout.Margin = new Padding(0);
 			mainLayout.Name = "mainLayout";
 			mainLayout.Padding = new Padding(8);
-			mainLayout.Size = new Size(448, 505);
+			mainLayout.Size = new Size(448, 592);
 			mainLayout.TabIndex = 7;
 			mainLayout.WrapContents = false;
 			mainLayout.Resize += mainLayout_Resize;
@@ -510,6 +518,74 @@
 			cmdSelectCertificate.UseVisualStyleBackColor = true;
 			cmdSelectCertificate.Click += cmdSelectCertificate_Click;
 			// 
+			// gbDebug
+			// 
+			gbDebug.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+			gbDebug.AutoSize = true;
+			gbDebug.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			gbDebug.Controls.Add(debugTopPanel);
+			gbDebug.Controls.Add(cbUseDebug);
+			gbDebug.Location = new Point(8, 438);
+			gbDebug.Margin = new Padding(0, 4, 0, 8);
+			gbDebug.Name = "gbDebug";
+			gbDebug.Padding = new Padding(14, 12, 14, 14);
+			gbDebug.Size = new Size(432, 75);
+			gbDebug.TabIndex = 6;
+			gbDebug.TabStop = false;
+			// 
+			// debugTopPanel
+			// 
+			debugTopPanel.Controls.Add(tbDebugPathPrefix);
+			debugTopPanel.Controls.Add(debugPathPredixLabel);
+			debugTopPanel.Dock = DockStyle.Top;
+			debugTopPanel.Enabled = false;
+			debugTopPanel.Location = new Point(14, 32);
+			debugTopPanel.Margin = new Padding(0);
+			debugTopPanel.Name = "debugTopPanel";
+			debugTopPanel.Size = new Size(404, 29);
+			debugTopPanel.TabIndex = 6;
+			debugTopPanel.Move += debugTopPanel_Move;
+			// 
+			// tbDebugPathPrefix
+			// 
+			tbDebugPathPrefix.BackColor = SystemColors.ControlLight;
+			tbDebugPathPrefix.Dock = DockStyle.Fill;
+			tbDebugPathPrefix.Location = new Point(82, 0);
+			tbDebugPathPrefix.Margin = new Padding(0);
+			tbDebugPathPrefix.MaxLength = 0;
+			tbDebugPathPrefix.Name = "tbDebugPathPrefix";
+			tbDebugPathPrefix.Size = new Size(322, 27);
+			tbDebugPathPrefix.TabIndex = 1;
+			tbDebugPathPrefix.Enter += tbDebugPathPrefix_Enter;
+			tbDebugPathPrefix.Leave += tbDebugPathPrefix_Leave;
+			tbDebugPathPrefix.Move += tbDebugPathPrefix_Resize;
+			// 
+			// debugPathPredixLabel
+			// 
+			debugPathPredixLabel.AutoSize = true;
+			debugPathPredixLabel.Dock = DockStyle.Left;
+			debugPathPredixLabel.Location = new Point(0, 0);
+			debugPathPredixLabel.Name = "debugPathPredixLabel";
+			debugPathPredixLabel.Padding = new Padding(0, 2, 0, 0);
+			debugPathPredixLabel.Size = new Size(82, 22);
+			debugPathPredixLabel.TabIndex = 0;
+			debugPathPredixLabel.Text = "Path prefix:";
+			// 
+			// cbUseDebug
+			// 
+			cbUseDebug.AutoSize = true;
+			cbUseDebug.CheckAlign = ContentAlignment.MiddleRight;
+			cbUseDebug.Location = new Point(14, -2);
+			cbUseDebug.Margin = new Padding(0);
+			cbUseDebug.Name = "cbUseDebug";
+			cbUseDebug.Size = new Size(154, 24);
+			cbUseDebug.TabIndex = 77;
+			cbUseDebug.TabStop = false;
+			cbUseDebug.Text = "Use debug module";
+			cbUseDebug.UseVisualStyleBackColor = true;
+			cbUseDebug.CheckedChanged += cbUseDebug_CheckedChanged;
+			cbUseDebug.MouseUp += cbUseDebug_MouseUp;
+			// 
 			// startPanel
 			// 
 			startPanel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
@@ -520,7 +596,7 @@
 			startPanel.ColumnStyles.Add(new ColumnStyle());
 			startPanel.Controls.Add(gbSiteUri, 0, 0);
 			startPanel.Controls.Add(cmdStart, 1, 0);
-			startPanel.Location = new Point(8, 434);
+			startPanel.Location = new Point(8, 521);
 			startPanel.Margin = new Padding(0);
 			startPanel.Name = "startPanel";
 			startPanel.RowStyles.Add(new RowStyle());
@@ -614,7 +690,7 @@
 			startContextMenu.AccessibleDescription = "";
 			startContextMenu.Items.AddRange(new ToolStripItem[] { startMenuItem, startLine1, makeJSONMenuItem, startLine2, parametersMenuItem });
 			startContextMenu.Name = "siteUriContextMenu";
-			startContextMenu.Size = new Size(210, 104);
+			startContextMenu.Size = new Size(210, 82);
 			// 
 			// startMenuItem
 			// 
@@ -779,7 +855,7 @@
 			passwordPanel.Dock = DockStyle.Fill;
 			passwordPanel.Location = new Point(1, 27);
 			passwordPanel.Name = "passwordPanel";
-			passwordPanel.Size = new Size(609, 478);
+			passwordPanel.Size = new Size(609, 617);
 			passwordPanel.TabIndex = 9;
 			passwordPanel.Visible = false;
 			passwordPanel.Resize += passwordPanel_Resize;
@@ -806,7 +882,7 @@
 			cmdStartOptions.BackgroundImageLayout = ImageLayout.Stretch;
 			cmdStartOptions.FlatAppearance.BorderSize = 0;
 			cmdStartOptions.FlatAppearance.MouseOverBackColor = SystemColors.Menu;
-			cmdStartOptions.Location = new Point(379, 239);
+			cmdStartOptions.Location = new Point(379, 308);
 			cmdStartOptions.Margin = new Padding(0);
 			cmdStartOptions.Name = "cmdStartOptions";
 			cmdStartOptions.Size = new Size(18, 28);
@@ -822,7 +898,7 @@
 			// 
 			AutoScaleDimensions = new SizeF(8F, 20F);
 			AutoScaleMode = AutoScaleMode.Font;
-			ClientSize = new Size(611, 506);
+			ClientSize = new Size(611, 645);
 			ControlBox = false;
 			Controls.Add(mainLayout);
 			Controls.Add(passwordPanel);
@@ -860,6 +936,10 @@
 			gbProtocol.ResumeLayout(false);
 			gbCertificate.ResumeLayout(false);
 			gbCertificate.PerformLayout();
+			gbDebug.ResumeLayout(false);
+			gbDebug.PerformLayout();
+			debugTopPanel.ResumeLayout(false);
+			debugTopPanel.PerformLayout();
 			startPanel.ResumeLayout(false);
 			gbSiteUri.ResumeLayout(false);
 			gbSiteUri.PerformLayout();
@@ -941,5 +1021,10 @@
 		private CommonPanel assembliesBottomPanel;
 		private TextBox tbResourceNamePrefix;
 		private CommonLabel namePrefixLabel;
+		private CommonGroupBox gbDebug;
+		private CommonPanel debugTopPanel;
+		private TextBox tbDebugPathPrefix;
+		private CommonLabel debugPathPredixLabel;
+		private CheckBox cbUseDebug;
 	}
 }

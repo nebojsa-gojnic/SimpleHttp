@@ -570,7 +570,7 @@ namespace SimpleHttp
 		}
 		protected void startServerFromCurrentJSON ( )
 		{
-			startServerFromCurrentJSON ( false) ;
+			startServerFromCurrentJSON ( false ) ;
 		}
 		protected void startServerFromCurrentJSON ( bool ignoreConfigurationErrors )
 		{
@@ -663,6 +663,10 @@ namespace SimpleHttp
 				{
 					configData.loadFromJSON ( jObject ) ;
 				}
+				catch ( EmptyJSONException )
+				{
+					return null ;
+				}
 				catch ( Exception x1 )
 				{ 
 					if ( showErrorMessage ) showError ( "Bad JSON configuration" , x1 ) ;
@@ -741,7 +745,7 @@ namespace SimpleHttp
 				quickStartForm.openTcpTestFailed += quickStartForm_openTcpTestFailed ;
 				quickStartForm.resourceViewNeeded += quickStartForm_resourceViewNeeded ;
 				quickStartForm.showStartParameters += quickStartForm_showStartParameters ;
-				quickStartForm.ExportConfig += quickStartForm_ExportConfig;
+				quickStartForm.ExportConfig += quickStartForm_ExportConfig ;
 				//quickStartForm.FormClosing += quickStartForm_FormClosing ;
 				quickStartForm.Disposed += quickStartForm_Disposed ;
 			}
@@ -1145,61 +1149,36 @@ namespace SimpleHttp
 			ResourceWebConfigData resourceConfigData = configData as ResourceWebConfigData ;
 
 			if ( isListeningActive ) quickStartForm?.Hide () ;
-			bool singleService = configData.serviceDemandCount == 1 ;
 			resourceLabel.Text = "" ;
 			resourceTypeLabel.Text = "" ;
-			foreach ( HttpServiceActivator activator in configData.services.Values )
-				try
-				{
-					if ( ( activator.serviceType == typeof ( ResourcesHttpService ) ) || 
-						( activator.serviceType.IsSubclassOf ( typeof ( ResourcesHttpService ) ) ) )
-					{
-						canBeResourceServer = true ;
-						if ( resourceTypeLabel.Text == "" )
-						{
-							resourceLabel.Text = activator.configData [ "resourceAssemblySource" ].ToString () ;
-							resourceTypeLabel.Text = uriLabel.Text == "" ? ( notifyIconText + ", assembly:") : "assembly:" ;
-								
-						}
-						if ( singleService )
-						{
-							serverMode = StartServerMode.resourceServer ;
-							notifyIconText = notifyIconText + ", assembly:\r\n" + resourceLabel.Text ;
-							if ( configData.errorList.Count > 0 ) notifyIconText = notifyIconText + "\r\nThere are configuration errors" ;
-							baloonTipText = "Assembly: " + resourceLabel.Text  ;
-							notifyIconText = notifyIconText + ", webroot:\r\n" + resourceLabel.Text ;
-							baloonTipTitle = "Resource based http server is " + serverStatus ;
-							if ( autoQuickStartForm  && !isListeningActive )
-								restoreForm ( new Action<WebServerConfigData> ( showQuickStartForm ) , new object [ 1 ] { configData } ) ;
-						}
-					}
-					else if ( ( activator.serviceType == typeof ( FileHttpService ) ) || 
-						( activator.serviceType.IsSubclassOf ( typeof ( FileHttpService ) ) ) )
-					{
-						canBeFileServer = true ;
-						if ( resourceTypeLabel.Text == "" )
-						{
-							resourceLabel.Text = activator.configData [ "webroot" ].ToString () ;
-							resourceTypeLabel.Text = uriLabel.Text == "" ? ( notifyIconText + ", webroot:" ) : "webroot:" ;
-						}
-						if ( singleService )
-						{
-							serverMode = StartServerMode.fileServer ;
-
-							notifyIconText = notifyIconText + ", webroot:\r\n" + resourceLabel.Text ;
-							baloonTipTitle = "File based http server is " + serverStatus ;
-							baloonTipText = "Web root folder:\r\n" + resourceLabel.Text ;
-							if ( autoQuickStartForm  && !isListeningActive )
-								restoreForm ( new Action<WebServerConfigData> ( showQuickStartForm ) , new object [ 1 ] { configData } ) ;
-						}
-					}
-				}
-				catch { }
-
-			if ( !(canBeResourceServer || canBeFileServer ) || !singleService )
+			string path ;
+			string resourceNamePrefix ;
+			string debugPathPrefix ;
+			bool useDebugService  ;
+			serverMode = QuickStartForm.getMode ( configData , out path , out resourceNamePrefix , out useDebugService , out debugPathPrefix ) ;
+			
+			switch ( serverMode )
 			{
-				baloonTipText = "Config: " + configFileNameLabel.Text ;
-				baloonTipTitle = "Http server is " + serverStatus ;
+				case StartServerMode.fileServer :
+					resourceLabel.Text = path ;
+					notifyIconText = notifyIconText + ", assembly:\r\n" + resourceLabel.Text ;
+					baloonTipText = "Assembly: " + resourceLabel.Text  ;
+					baloonTipTitle = "Resource based http server is " + serverStatus ;
+					if ( autoQuickStartForm  && !isListeningActive )
+						restoreForm ( new Action<WebServerConfigData> ( showQuickStartForm ) , new object [ 1 ] { configData } ) ;
+				break ;
+				case StartServerMode.resourceServer :
+					resourceLabel.Text = path ;
+					notifyIconText = notifyIconText + ", webroot:\r\n" + resourceLabel.Text ;
+					baloonTipTitle = "File based http server is " + serverStatus ;
+					baloonTipText = "Web root folder:\r\n" + resourceLabel.Text ;
+					if ( autoQuickStartForm  && !isListeningActive )
+						restoreForm ( new Action<WebServerConfigData> ( showQuickStartForm ) , new object [ 1 ] { configData } ) ;
+				break ;
+				case StartServerMode.jsonConfig :
+					baloonTipText = "Config: " + configFileNameLabel.Text ;
+					baloonTipTitle = "Http server is " + serverStatus ;
+				break ;
 			}
 			if ( configData.errorList.Count > 0 ) 
 			{
@@ -1464,7 +1443,7 @@ bad:
 			}
 			originLabel.Text = "Origin: " + ( connectionDetails.origin == null ? "?" : connectionDetails.origin.ToString() ) ;
 			int i ;
-			string [] lines = connectionDetails.request.header.headerText.Split ( "\r\n" ) ;
+			string [] lines = connectionDetails.request.headerText.Split ( "\r\n" ) ;
 			methodLabel.Text = "" ;
 			httpLabel.Text = "" ;
 			if ( lines.Length > 0 )

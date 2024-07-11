@@ -16,6 +16,14 @@ namespace SimpleHttp
 		/// </summary>
 		public bool isEmpty { get ; protected set ; }
 		/// <summary>
+		/// Signals to includes a DebugHttpsService instance
+		/// </summary>
+		public bool useDebugService { get ; protected set ; }
+		/// <summary>
+		/// Debugh path prefix
+		/// </summary>
+		public string debugPathPrefix { get ; protected set ; }
+		/// <summary>
 		/// TCP port (0-65535)
 		/// </summary>
 		public int port { get ; protected set ; }
@@ -96,7 +104,8 @@ namespace SimpleHttp
 			fileServerMode ,
 			resourceServerMode ,
 			resourceNamePrefix ,
-			dontStart
+			dontStart ,
+			debug
 		}
 
 		/// <summary>
@@ -168,7 +177,7 @@ namespace SimpleHttp
 			get => _commandLine ;
 		}
 		/// <summary>
-		/// Creates new instance of HttpStartParameters from given program start arguments
+		/// Creates new instance of HttpStartParameters from the given program start arguments
 		/// </summary>
 		/// <param name="args">Program start arguments to parse</param>
 		public HttpStartParameters ( string[] args )
@@ -239,133 +248,143 @@ namespace SimpleHttp
 					break ;
 			}
 			foreach ( string param in args )
-			{
-				switch ( param [ 0 ] )
+				if ( command == commandEnum.debug )
 				{
-					case '/' :
-					case '-' :
-						_commandLine = _commandLine + param + " " ;
-						if ( param.Length > 1 )
-							switch ( param.Substring ( 1 ).Trim().ToLower() )
+					debugPathPrefix = param ;
+					command = commandEnum.none ;
+				}
+				else 
+				{
+					switch ( param [ 0 ] )
+					{
+						case '/' :
+						case '-' :
+							_commandLine = _commandLine + param + " " ;
+							if ( param.Length > 1 )
+								switch ( param.Substring ( 1 ).Trim().ToLower() )
+								{
+									case "webroot" :
+									case "folder" :
+									case "directory" :
+									case "f" :
+										command = commandEnum.fileServerMode ;
+									break ;
+									case "port" :
+									case "p" :
+										command = commandEnum.port ;
+									break ;
+									case "resources" :
+									case "resource" :
+									case "r" :
+										command = commandEnum.resourceServerMode ;
+									break ;
+									case "sitename" :
+									case "s" :
+										command = commandEnum.sitename ;
+									break ;
+									case "certificate" :
+									case "c" :
+										command = commandEnum.certificate ;
+									break ;
+									case "password" :
+									case "pw" :
+										command = commandEnum.password ;
+									break ;
+									case "dialog" :
+									case "dontstart" :
+									case "d" :
+										autoStart = false ;
+									break ;
+									case "debug" :
+										command =commandEnum.debug ;
+										useDebugService = true ;
+									break ;
+									case "tls" :
+										sslProtocol = SslProtocols.Tls ;
+										configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
+										command = commandEnum.none ;
+									break ;
+									case "tls1" :
+										sslProtocol = SslProtocols.Tls ;
+										configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
+										command = commandEnum.none ;
+									break ;
+									case "tls1.1" :
+									case "tls11" :
+										sslProtocol = SslProtocols.Tls11 ;
+										configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
+										command = commandEnum.none ;
+									break ;
+									case "tls1.2" :
+									case "tls12" :
+										sslProtocol = SslProtocols.Tls12 ;
+										configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
+										command = commandEnum.none ;
+									break ;
+									case "tls1.3" :
+									case "tls13" :
+										sslProtocol = SslProtocols.Tls13 ;
+										configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
+										command = commandEnum.none ;
+									break ;
+									case "rnp" :  //
+										command = commandEnum.resourceNamePrefix ;
+									break ;
+									default :
+										badWord = param ;
+										command = commandEnum.none ;
+									break ;
+								}
+							else
 							{
-								case "webroot" :
-								case "folder" :
-								case "directory" :
-								case "f" :
-									command = commandEnum.fileServerMode ;
+								badWord = param ;
+								command = commandEnum.none ;
+							}
+						break ;
+						default:   
+							_commandLine = _commandLine + ( param.IndexOf ( ' ' ) == -1 ? param : ( "\"" + param + "\"" ) ) + " " ;
+							switch ( command )
+							{
+								case commandEnum.fileServerMode :
+									source = fileSource = param ;
+									startFileServer = true ;
+									startResourceServer = false ;
+									mode = StartServerMode.fileServer ;
 								break ;
-								case "port" :
-								case "p" :
-									command = commandEnum.port ;
+								case commandEnum.resourceNamePrefix :
+									resourceNamePrefix = param ;
 								break ;
-								case "resources" :
-								case "resource" :
-								case "r" :
-									command = commandEnum.resourceServerMode ;
+								case commandEnum.resourceServerMode :
+									source = assemblyName = param ;
+									startFileServer = false ;
+									startResourceServer = true ;
+									mode = StartServerMode.resourceServer ;
 								break ;
-								case "sitename" :
-								case "s" :
-									command = commandEnum.sitename ;
+								case commandEnum.port :
+									int p ;
+									if ( int.TryParse ( param , out p ) ) configData [ "port" ] = port = p ;
 								break ;
-								case "certificate" :
-								case "c" :
-									command = commandEnum.certificate ;
+								case commandEnum.certificate :
+									configData [ "sslCertificateSource" ] = sslCertificateSource = param ;
 								break ;
-								case "password" :
-								case "pw" :
-									command = commandEnum.password ;
+								case commandEnum.sitename :
+									configData [ "sitename" ] = sitename = param ;
 								break ;
-								case "dialog" :
-								case "dontstart" :
-								case "d" :
-									autoStart = false ;
+								case commandEnum.password :
+									configData [ "sslCertificatePassword" ] = sslCertificatePassword = param ;
 								break ;
-								case "tls" :
-									sslProtocol = SslProtocols.Tls ;
-									configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
-									command = commandEnum.none ;
-								break ;
-								case "tls1" :
-									sslProtocol = SslProtocols.Tls ;
-									configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
-									command = commandEnum.none ;
-								break ;
-								case "tls1.1" :
-								case "tls11" :
-									sslProtocol = SslProtocols.Tls11 ;
-									configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
-									command = commandEnum.none ;
-								break ;
-								case "tls1.2" :
-								case "tls12" :
-									sslProtocol = SslProtocols.Tls12 ;
-									configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
-									command = commandEnum.none ;
-								break ;
-								case "tls1.3" :
-								case "tls13" :
-									sslProtocol = SslProtocols.Tls13 ;
-									configData.Add ( "sslProtocol" , sslProtocol.ToString() ) ;
-									command = commandEnum.none ;
-								break ;
-								case "rnp" :  //
-									command = commandEnum.resourceNamePrefix ;
+								case commandEnum.dontStart :
+									configData [ "sslCertificatePassword" ] = sslCertificatePassword = param ;
 								break ;
 								default :
 									badWord = param ;
 									command = commandEnum.none ;
 								break ;
 							}
-						else
-						{
-							badWord = param ;
-							command = commandEnum.none ;
-						}
-					break ;
-					default:   
-						_commandLine = _commandLine + ( param.IndexOf ( ' ' ) == -1 ? param : ( "\"" + param + "\"" ) ) + " " ;
-						switch ( command )
-						{
-							case commandEnum.fileServerMode :
-								source = fileSource = param ;
-								startFileServer = true ;
-								startResourceServer = false ;
-								mode = StartServerMode.fileServer ;
-							break ;
-							case commandEnum.resourceNamePrefix :
-								resourceNamePrefix = param ;
-							break ;
-							case commandEnum.resourceServerMode :
-								source = assemblyName = param ;
-								startFileServer = false ;
-								startResourceServer = true ;
-								mode = StartServerMode.resourceServer ;
-							break ;
-							case commandEnum.port :
-								int p ;
-								if ( int.TryParse ( param , out p ) ) configData [ "port" ] = port = p ;
-							break ;
-							case commandEnum.certificate :
-								configData [ "sslCertificateSource" ] = sslCertificateSource = param ;
-							break ;
-							case commandEnum.sitename :
-								configData [ "sitename" ] = sitename = param ;
-							break ;
-							case commandEnum.password :
-								configData [ "sslCertificatePassword" ] = sslCertificatePassword = param ;
-							break ;
-							case commandEnum.dontStart :
-								configData [ "sslCertificatePassword" ] = sslCertificatePassword = param ;
-							break ;
-							default :
-								badWord = param ;
-								command = commandEnum.none ;
-							break ;
-						}
-					break ;
+						break ;
+					}
+					if ( badWord.Length > 0 ) break ; 
 				}
-				if ( badWord.Length > 0 ) break ; 
-			}
 			_commandLine = _commandLine.TrimEnd () ;
 			if ( errorMessage == "" )
 			{
@@ -387,10 +406,14 @@ namespace SimpleHttp
 				switch ( mode )
 				{
 					case StartServerMode.fileServer :
-						configData = new FileWebConfigData ( source , port , sitename , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
+						configData = useDebugService ?
+							new FileWebConfigData ( source , port , sitename , sslCertificateSource , sslCertificatePassword , sslProtocol , debugPathPrefix ) :
+							new FileWebConfigData ( source , port , sitename , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
 					break ;
 					case StartServerMode.resourceServer :
-						configData = new ResourceWebConfigData ( source , resourceNamePrefix , port , sitename , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
+						configData = useDebugService ?
+							new ResourceWebConfigData ( source , resourceNamePrefix , port , sitename , sslCertificateSource , sslCertificatePassword , sslProtocol , debugPathPrefix ) :
+							new ResourceWebConfigData ( source , resourceNamePrefix , port , sitename , sslCertificateSource , sslCertificatePassword , sslProtocol ) ;
 					break ;
 				}
 			}
@@ -412,6 +435,7 @@ namespace SimpleHttp
 		public HttpStartParameters ( StartServerMode mode , int port , string source , string resourceNamePrefix , string sitename , string certificate , string password , SslProtocols protocol , bool autoStart )
 		{
 			errorMessage = "" ;
+			this.useDebugService = false ;
 			this.port = port ;
 			this.mode = mode ;
 			this.source = source ;
@@ -428,6 +452,43 @@ namespace SimpleHttp
 				break ;
 				case StartServerMode.resourceServer :
 					configData = new ResourceWebConfigData ( source , resourceNamePrefix , port , sitename , certificate , password , protocol ) ;
+				break ;
+			}
+		}
+		/// <summary>
+		/// Creates new instance of HttpStartParameters 
+		/// </summary>
+		/// <param name="mode">File or resource based server</param>
+		/// <param name="port"></param>
+		/// <param name="source">Folder path for file based server or
+		/// <br/>assembly file path or assembly name for resource base server
+		/// </param>
+		/// <param name="sitename">Site name(for UI, web server does not need it)</param>
+		/// <param name="certificate">Certificate file path. If empty or null flat HTTP is used.</param>
+		/// <param name="password">Certificate file password</param>
+		/// <param name="protocol">SSL protocol (Tls 1.1, Tls 1.2, Tls 1.3), default is SslProtocols.Tls12</param>
+		/// <param name="autoStart">Auto start or not</param>
+		public HttpStartParameters ( StartServerMode mode , int port , string source , string resourceNamePrefix , string sitename , string certificate , string password , SslProtocols protocol , string debugPathPrefix , bool autoStart ) 
+		{
+			this.useDebugService = true ;
+			this.debugPathPrefix = debugPathPrefix ;
+			errorMessage = "" ;
+			this.port = port ;
+			this.mode = mode ;
+			this.source = source ;
+			this.sitename = sitename ;
+			this.sslCertificateSource = certificate ;
+			this.sslCertificatePassword = password ;
+			this.sslProtocol = protocol ;
+			this.autoStart = autoStart ;
+			this.resourceNamePrefix = resourceNamePrefix  ;
+			switch ( mode )
+			{
+				case StartServerMode.fileServer :
+					configData = new FileWebConfigData ( source , port , sitename , certificate , password , protocol , debugPathPrefix ) ;
+				break ;
+				case StartServerMode.resourceServer :
+					configData = new ResourceWebConfigData ( source , resourceNamePrefix , port , sitename , certificate , password , protocol , debugPathPrefix ) ;
 				break ;
 			}
 		}
@@ -473,18 +534,22 @@ namespace SimpleHttp
 		public override string ToString()
 		{
 			return isEmpty ? "" : 
-				( ( autoStart ? "" : " /d " ) + 
-				( mode == StartServerMode.jsonConfig ? jsonConfigFile :
-					( ( mode == StartServerMode.resourceServer ? 
-					
-						"/r" : "/f" ) + " \"" + source + "\" /p " + port.ToString() + " " + ( string.IsNullOrEmpty ( sslCertificateSource ) ? "" :
-
-						( "/c \"" + sslCertificateSource + "\" " + 
-								( string.IsNullOrWhiteSpace ( sslCertificatePassword ) ? 
-								"" : 
-								( "/pw \"" + sslCertificatePassword + "\" " ) ) + "/" + TlsShort ( sslProtocol ) + " " )  ) + 
+				(	( autoStart ? "" : " /d " ) + 
+					( mode == StartServerMode.jsonConfig ? jsonConfigFile :
+						( ( mode == StartServerMode.resourceServer ?  "/r" : "/f" ) + 
+							" \"" + source + "\" /p " + port.ToString() +  
+							( useDebugService && !string.IsNullOrWhiteSpace ( debugPathPrefix ) ? ( " /debug " + debugPathPrefix + " " ) : " " ) +
+							( string.IsNullOrEmpty ( sslCertificateSource ) ? "" :
+								( "/c \"" + sslCertificateSource + "\" " + 
+										( string.IsNullOrWhiteSpace ( sslCertificatePassword ) ? 
+										"" : 
+										( "/pw \"" + sslCertificatePassword + "\" " ) ) + "/" + TlsShort ( sslProtocol ) + " " 
+								)  
+							) + 
 							( string.IsNullOrWhiteSpace ( sitename ) ? "" : ( "/s \"" + sitename + "\"" ) )
-						).Trim() ) ).Trim()  ;
+						).Trim() 
+					) 
+				).Trim()  ;
 		}
 	}
 

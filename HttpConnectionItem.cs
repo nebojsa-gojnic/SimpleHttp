@@ -236,9 +236,9 @@ namespace SimpleHttp
 				_originPartStart = _datePart.Length ;
 				_requestPart = ( _connectionDetails.request == null ? " !" : 
 					_connectionDetails.request.connectionType == HttpConnectionType.Unknown ?
-					" !" : _connectionDetails.request.header.headerText.Replace ( "\r\n" , " " ) ) + " " ;
+					" !" : _connectionDetails.request.headerText.Replace ( "\r\n" , " " ) ) + " " ;
 				_requestPartStart = _originPartStart + _originPart.Length ; 
-				_requestFirstLineEnd = _requestPartStart + ( _connectionDetails.request == null ? 0 : _connectionDetails.request.header.headerText.IndexOf ( '\r' ) ) ;
+				_requestFirstLineEnd = _requestPartStart + ( _connectionDetails.request == null ? 0 : _connectionDetails.request.headerText.IndexOf ( '\r' ) ) ;
 				_errorPart = ( _connectionDetails.error == null ? "" : _connectionDetails.error.InnerException == null ? ( _connectionDetails.error.Message + " " ) : ( _connectionDetails.error.InnerException.Message + " " ) ) ;
 				_errorPartStart = _requestPartStart + _requestPart.Length ;
 				_responsePartStart = _errorPartStart + _errorPart.Length ; 

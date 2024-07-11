@@ -4,7 +4,7 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>code test.json</ActiveDebugProfile>
+    <ActiveDebugProfile>webconfig.json</ActiveDebugProfile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="AboutForm.cs">

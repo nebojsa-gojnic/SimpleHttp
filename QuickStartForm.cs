@@ -110,13 +110,28 @@ namespace SimpleHttp
 				tbCertificate.Text = value.sslCertificateSource ;
 				sslProtocol = value.sslProtocol ;
 				string path ;
-				string prefix ;
-				mode = getMode ( value , out path , out prefix ) ;
+				string resourceNamePrefix ;
+				string debugPathPrefix ;
+				bool useDebugService  ;
+				//cbUseDebug.Checked = false ;
+				//try
+				//{ 
+				//	cbUseDebug.Checked = ( bool ) value [ "useDebugService" ] ;
+				//}
+				//catch { }
+				//tbDebugPathPrefix.Text = "" ;
+				//try
+				//{ 
+				//	tbDebugPathPrefix.Text = ( string ) value [ "debugPathPrefix" ] ;
+				//}
+				//catch { }
+
+				mode = getMode ( value , out path , out resourceNamePrefix , out useDebugService , out debugPathPrefix ) ;
 				switch ( _mode )
 				{
 					case StartServerMode.resourceServer :
 						insertLoadedAssembly ( AssemblyItem.loadAssemblyItem ( path ) ) ;
-						tbResourceNamePrefix.Text = prefix ;
+						tbResourceNamePrefix.Text = resourceNamePrefix ;
 					break ;
 					case StartServerMode.fileServer :
 						tbWebroot.Text = path == null ? "" : tbWebroot.Text = path ;
@@ -125,7 +140,16 @@ namespace SimpleHttp
 						tbWebroot.Text = "" ;
 					break ;
 				}
-
+				if ( useDebugService )
+				{ 
+					cbUseDebug.Checked = true ;
+					tbDebugPathPrefix.Text = debugPathPrefix ;
+				}
+				else 
+				{ 
+					cbUseDebug.Checked = false ;
+					tbDebugPathPrefix.Text = "" ;
+				}
 				_certificateLoadError = null ;
 				_certificateClientError = null ;
 				_certificateServerError = null ;
@@ -144,55 +168,57 @@ namespace SimpleHttp
 				//validateValues ( true , true ) ;					
 			}
 		}
-		/// <summary>
-		/// Set method for the configData property
-		/// </summary>
-		public static StartServerMode getMode ( WebServerConfigData value , out string path , out string prefix )
+		public static StartServerMode getMode ( WebServerConfigData configData , out string path , out string resourceNamePrefix , out bool useDebugService , out string debugPathPrefix )
 		{
 			StartServerMode mode = StartServerMode.jsonConfig ;
 			path = null ;
-			prefix = null ;
-			if ( value != null )
+			resourceNamePrefix = null ;
+			debugPathPrefix = null ;
+			useDebugService = false ;
+			if ( configData != null )
 			{
-				JObject httpServiceConfigData = null ;
-				int c = value.services.Count ;
-				object obj ;
-				foreach ( HttpServiceActivator activator in value.services.Values )
+				int fileServiceCount = 0 ;
+				int resourceServiceCount = 0 ;
+				int debugServiceCount = 0 ;
+				int otherServiceCount = 0 ;
+				foreach ( HttpServiceActivator activator in configData.services.Values )
 					try
 					{
 						if ( ( activator.serviceType == typeof ( ResourcesHttpService ) ) || 
 							( activator.serviceType.IsSubclassOf ( typeof ( ResourcesHttpService ) ) ) )
 						{
-							httpServiceConfigData = activator.configData ;
-							mode = StartServerMode.resourceServer ;
-							obj = httpServiceConfigData [ "resourceNamePrefix" ] ;
-							if ( obj != null ) 
+							resourceServiceCount++ ;
+							if ( path == null ) 
 							{
-								prefix = obj.ToString () ;
-							}
-							obj = httpServiceConfigData [ "resourceAssemblySource" ] ;
-							if ( obj != null ) 
-							{
-								path = obj.ToString () ;
-								break ;
+								path = ( string ) activator.configData [ "resourceAssemblySource" ] ;
+								resourceNamePrefix = ( string ) activator.configData [ "resourceNamePrefix" ] ;
 							}
 						}
 						else if ( ( activator.serviceType == typeof ( FileHttpService ) ) || 
 							( activator.serviceType.IsSubclassOf ( typeof ( FileHttpService ) ) ) )
 						{
-							httpServiceConfigData = activator.configData ;
-							mode = StartServerMode.fileServer ;
-							obj = httpServiceConfigData [ "webroot" ] ;
-							if ( obj != null ) 
-							{
-								path = obj.ToString () ;
-								break ;
-							}
+							fileServiceCount++ ;
+							if ( path == null ) path = ( string ) activator.configData [ "webroot" ] ;
 						}
+						else if ( ( activator.serviceType == typeof ( DebugHttpService ) ) || 
+							( activator.serviceType.IsSubclassOf ( typeof ( DebugHttpService ) ) ) )
+						{
+							if ( debugServiceCount == 0 )
+							{
+								useDebugService = true ; 
+								debugPathPrefix = ( string ) activator.configData [ "pathPrefix" ] ;
+							}
+							debugServiceCount++ ;
+						}
+						else otherServiceCount++ ;
 					}
 					catch { }
+				if ( ( fileServiceCount == 1 ) && ( resourceServiceCount == 0 ) && ( debugServiceCount <= 1 ) && ( otherServiceCount == 0 ) )
+					mode = StartServerMode.fileServer ;
+				else if ( ( fileServiceCount == 0 ) && ( resourceServiceCount == 1 ) && ( debugServiceCount <= 1 ) && ( otherServiceCount == 0 ) )
+					mode = StartServerMode.resourceServer ;
 			}
-			return mode ;				
+			return mode ;
 		}
 		/// <summary>
 		/// Creates new value for configData property based on current form values
@@ -200,8 +226,10 @@ namespace SimpleHttp
 		protected void createConfigData ()
 		{
 			_configData = mode == StartServerMode.resourceServer ?
-				new ResourceWebConfigData ( resourceAssemblySource , resourceNamePrefix , port , tbSiteName.Text.Trim () , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) :
-				new FileWebConfigData ( tbWebroot.Text.Trim () , port , tbSiteName.Text.Trim () , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) ;
+				cbUseDebug.Checked ? new ResourceWebConfigData ( resourceAssemblySource , resourceNamePrefix , port , tbSiteName.Text.Trim () , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol , debugPathPrefix ) :
+									 new ResourceWebConfigData ( resourceAssemblySource , resourceNamePrefix , port , tbSiteName.Text.Trim () , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) :
+				cbUseDebug.Checked ? new FileWebConfigData ( tbWebroot.Text.Trim () , port , tbSiteName.Text.Trim () , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol , tbDebugPathPrefix.Text.Trim() ) :
+									 new FileWebConfigData ( tbWebroot.Text.Trim () , port , tbSiteName.Text.Trim () , tbCertificate.Text.Trim () , tbPassword.Text , sslProtocol ) ;
 		}
 		/// <summary>
 		/// Auxiliary variable for the configData property
@@ -383,6 +411,14 @@ namespace SimpleHttp
 			set => setSslProtocol ( value ) ;
 		}
 		/// <summary>
+		/// SSL protocol(or flat http)
+		/// </summary>
+		public string debugPathPrefix 
+		{
+			get => tbDebugPathPrefix.Text ;
+			set => tbDebugPathPrefix.Text = value ;
+		}
+		/// <summary>
 		/// Creates new instance of StartServerForm
 		/// </summary>
 		public QuickStartForm()
@@ -406,6 +442,7 @@ namespace SimpleHttp
 			cbAssemblies.BackColor =
 			tbWebroot.BackColor =
 			tbResourceNamePrefix.BackColor = 
+			tbDebugPathPrefix.BackColor =
 			cbProtocol.BackColor = MonitorForm.inactiveEditBackColor ;
 			
 			loadAssemblies () ;
@@ -503,6 +540,21 @@ namespace SimpleHttp
 		{
 			int d = ( titlePanel.Height - closeButton.Height ) >> 1 ;
 			closeButton.Location = new Point ( titlePanel.Width - closeButton.Width - d , d ) ;
+		}
+		private void cbUseDebug_CheckedChanged ( object sender , EventArgs e )
+		{
+			debugTopPanel.Enabled = cbUseDebug.Checked ;
+			lastControl = debugTopPanel.Enabled ? tbDebugPathPrefix : mode == StartServerMode.fileServer ? tbWebroot : lastControl == tbDebugPathPrefix ? tbResourceNamePrefix : lastControl ;
+		}
+
+		private void tbDebugPathPrefix_Resize ( object sender , EventArgs e )
+		{
+			debugTopPanel.MinimumSize = tbDebugPathPrefix.Size ;
+		}
+
+		private void debugTopPanel_Move ( object sender , EventArgs e )
+		{
+			cbUseDebug.Left = debugTopPanel.Left ;
 		}
 		protected override void OnKeyDown ( KeyEventArgs e )
 		{
@@ -953,7 +1005,10 @@ namespace SimpleHttp
 		/// <returns>Returns new HttpStartParameters instance filled with data from this form</returns>
 		public HttpStartParameters getStartParameters ()
 		{ 
-			return 
+			return cbUseDebug.Checked ?
+				new HttpStartParameters ( mode , port , source , resourceNamePrefix , siteUri == null ? "" : siteUri.Host , 
+											cbProtocol.SelectedIndex > 0 ? tbCertificate.Text : "" , 
+											tbPassword.Text , sslProtocol , debugPathPrefix , true ) :
 				new HttpStartParameters ( mode , port , source , resourceNamePrefix , siteUri == null ? "" : siteUri.Host , 
 											cbProtocol.SelectedIndex > 0 ? tbCertificate.Text : "" , 
 											tbPassword.Text , sslProtocol , true ) ;
@@ -2091,6 +2146,12 @@ namespace SimpleHttp
 			lastControl = tbCertificate ;
 			setCertificateBackColor () ;
 		}
+		private void tbDebugPathPrefix_Enter ( object  sender, EventArgs e )
+		{
+			lastControl = tbDebugPathPrefix ;
+			tbDebugPathPrefix.BackColor = SystemColors.Window ;
+		}
+
 		private void tbWebroot_Enter ( object sender, EventArgs e )
 		{
 			lastControl = tbWebroot ;
@@ -2143,6 +2204,10 @@ namespace SimpleHttp
 		private void tbResourceNamePrefix_Leave(object sender, EventArgs e)
 		{
 			tbResourceNamePrefix.BackColor = MonitorForm.inactiveEditBackColor ;
+		}
+		private void tbDebugPathPrefix_Leave ( object  sender, EventArgs e )
+		{
+			tbDebugPathPrefix.BackColor = MonitorForm.inactiveEditBackColor ;
 		}
 		private void tbSiteName_TextChanged ( object sender , EventArgs e )
 		{
@@ -2471,6 +2536,16 @@ namespace SimpleHttp
 					if ( !box.DroppedDown )
 						( ( Control ) sender ).Focus () ;
 				}
+			}
+			catch { }
+		}
+		private void cbUseDebug_MouseUp ( object sender , MouseEventArgs e )
+		{
+			try
+			{ 
+				if ( cbUseDebug.Checked )
+					tbDebugPathPrefix.Focus () ;
+				else lastControl.Focus () ;
 			}
 			catch { }
 		}

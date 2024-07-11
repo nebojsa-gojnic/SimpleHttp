@@ -7,7 +7,7 @@
     },
     "File 50080": {
       "commandName": "Project",
-      "commandLineArgs": "/f I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources /p 50080 /s localhost",
+      "commandLineArgs": "/f I:\\Code\\Nodes\\PipeMania\\PipeManiaService\\Resources /debug /debug/ /p 50080 /s localhost",
       "hotReloadEnabled": false
     },
     "Resource 50080": {
