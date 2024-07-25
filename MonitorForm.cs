@@ -1162,6 +1162,7 @@ namespace SimpleHttp
 				case StartServerMode.fileServer :
 					resourceLabel.Text = path ;
 					notifyIconText = notifyIconText + ", assembly:\r\n" + resourceLabel.Text ;
+					resourceTypeLabel.Text = "webroot:" ;
 					baloonTipText = "Assembly: " + resourceLabel.Text  ;
 					baloonTipTitle = "Resource based http server is " + serverStatus ;
 					if ( autoQuickStartForm  && !isListeningActive )
@@ -1169,6 +1170,7 @@ namespace SimpleHttp
 				break ;
 				case StartServerMode.resourceServer :
 					resourceLabel.Text = path ;
+					resourceTypeLabel.Text = "Assembly:" ;
 					notifyIconText = notifyIconText + ", webroot:\r\n" + resourceLabel.Text ;
 					baloonTipTitle = "File based http server is " + serverStatus ;
 					baloonTipText = "Web root folder:\r\n" + resourceLabel.Text ;
@@ -1222,7 +1224,7 @@ namespace SimpleHttp
 			}
 			toolTip.SetToolTip ( monitorSwitch ,  monitorActive ? "Logging is active" : "Click here to activate logging" ) ;
 		}
-		protected void webServer_serviceErrorRaised ( object sender , HttpConnectionDetails e )
+		protected void webServer_serviceErrorRaised ( object sender , IncomingHttpConnection e )
 		{
 			webServer_connectionErrorRaised ( sender , e  ) ;
 			//WebServerConfigData configData = webServer.configData ;
@@ -1238,7 +1240,7 @@ namespace SimpleHttp
 			//	reflectServerStatus ( configData ) ;
 			//} ) ;
 		}
-		protected void webServer_connectionErrorRaised ( object sender , HttpConnectionDetails e )
+		protected void webServer_connectionErrorRaised ( object sender , IncomingHttpConnection e )
 		{
 			if ( IsDisposed ) return ;
 			if ( webServer == null ) return ;
@@ -1378,11 +1380,11 @@ bad:
 		/// Get method for the selectedConnection property
 		/// </summary>
 		/// <returns>Retruns value for the selectedConnection property</returns>
-		public HttpConnectionDetails getSlectedConnection ()
+		public IncomingHttpConnection getSlectedConnection ()
 		{
 			return logList.SelectedIndex == -1 ? null : ( ( HttpConnectionItem ) logList.Items [ logList.SelectedIndex ] ).connectionDetails  ;
 		}
-		public HttpConnectionDetails selectedConnection
+		public IncomingHttpConnection selectedConnection
 		{
 			get => getSlectedConnection () ;
 		}
@@ -1401,7 +1403,7 @@ bad:
 		}
 		public void showProperties ()
 		{
-			HttpConnectionDetails connectionDetails = selectedConnection ;
+			IncomingHttpConnection connectionDetails = selectedConnection ;
 
 
 
@@ -1417,7 +1419,7 @@ bad:
 			propertiesPanel.Visible = true ;
 			setClosePropertiesButtonBounds () ;
 		}
-		public void loadProperties ( HttpConnectionDetails connectionDetails )
+		public void loadProperties ( IncomingHttpConnection connectionDetails )
 		{
 
 			
@@ -1500,7 +1502,7 @@ bad:
 				grid.Rows.Add ( new object [ 2 ] { "" , line } ) ;
 			else grid.Rows.Add ( new object [ 2 ] { line.Substring ( 0 , i ) , line.Substring ( i + 1 ) } ) ;
 		}
-		private void webServer_clientConnected ( object sender , HttpConnectionDetails connectionDetails )
+		private void webServer_clientConnected ( object sender , IncomingHttpConnection connectionDetails )
 		{
 			if ( !monitorActive ) return ;
 			BeginInvoke ( () =>
@@ -1509,7 +1511,7 @@ bad:
 				AddLogItem ( new HttpConnectionItem ( connectionDetails ) ) ;
 			} ) ;
 		}
-		private void webServer_serverResponded ( object sender , HttpConnectionDetails connectionDetails )
+		private void webServer_serverResponded ( object sender , IncomingHttpConnection connectionDetails )
 		{
 			BeginInvoke ( () =>
 			{
@@ -1852,7 +1854,7 @@ bad:
 								}
 						break ;
 					}
-					//httpConnectionDetails.
+					//IncomingHttpConnection.
 				}
 				logList.SelectedIndexChanged += logList_SelectedIndexChanged ;
 			}
@@ -2659,7 +2661,7 @@ bad:
 			if ( e.Index == -1 ) return ; //??????!!!!!!!!!!??? @#@$@!!
 			IDeviceContext deviceContext = ( IDeviceContext ) e.Graphics ;
 			HttpConnectionItem item = ( HttpConnectionItem ) logList.Items [ e.Index ] ;
-			HttpConnectionDetails connectionDetails = ( ( HttpConnectionItem ) logList.Items [ e.Index ] ).connectionDetails ;
+			IncomingHttpConnection connectionDetails = ( ( HttpConnectionItem ) logList.Items [ e.Index ] ).connectionDetails ;
 			string s = item.ToString() ;
 			bool searchSelected = ( searchItemIndex == e.Index ) && ( searchPosition >= 0 ) && ( searchPosition < s.Length ) && ( searchLength > 0 ) && ( searchPosition + searchLength <= s.Length ) ;
 
@@ -2765,7 +2767,7 @@ bad:
 		{
 			try
 			{
-				HttpConnectionDetails connectionDetails = selectedConnection ;
+				IncomingHttpConnection connectionDetails = selectedConnection ;
 				if ( string.IsNullOrEmpty ( connectionDetails.error.StackTrace ) ) return ;
 				showErrorMessage ( "Stack trace" , connectionDetails.error.StackTrace ) ;
 			}
@@ -2775,7 +2777,7 @@ bad:
 		{
 			try
 			{
-				HttpConnectionDetails connectionDetails = selectedConnection ;
+				IncomingHttpConnection connectionDetails = selectedConnection ;
 				if ( string.IsNullOrEmpty ( connectionDetails.error.StackTrace ) ) 
 					Clipboard.SetText ( connectionDetails.error.Message ) ;
 				else Clipboard.SetText ( connectionDetails.error.Message + "\r\n" + connectionDetails.error.StackTrace ) ;

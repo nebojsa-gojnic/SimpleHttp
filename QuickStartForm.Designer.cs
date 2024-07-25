@@ -57,10 +57,10 @@
 			debugTopPanel = new CommonPanel();
 			tbDebugPathPrefix = new TextBox();
 			debugPathPredixLabel = new CommonLabel();
-			cbUseDebug = new CheckBox();
+			cbUseDebug = new CommonCheckBox();
 			startPanel = new CommonTableLayoutPanel();
 			gbSiteUri = new CommonGroupBox();
-			uriLabel = new CommonLabel();
+			uriLabel = new Label();
 			siteUriContextMenu = new ContextMenuStrip(components);
 			siteUriOpenItem = new ToolStripMenuItem();
 			siteUriLine1 = new ToolStripSeparator();
@@ -1016,7 +1016,7 @@
 		private CommonPanel titlePanel;
 		private Button closeButton;
 		private CommonLabel titleLabel;
-		private CommonLabel uriLabel;
+		private Label uriLabel;
 		private CommonPanel assembliesTopPanel;
 		private CommonPanel assembliesBottomPanel;
 		private TextBox tbResourceNamePrefix;
@@ -1025,6 +1025,6 @@
 		private CommonPanel debugTopPanel;
 		private TextBox tbDebugPathPrefix;
 		private CommonLabel debugPathPredixLabel;
-		private CheckBox cbUseDebug;
+		private CommonCheckBox cbUseDebug;
 	}
 }

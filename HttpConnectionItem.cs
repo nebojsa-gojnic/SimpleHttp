@@ -7,13 +7,13 @@ namespace SimpleHttp
 {
 	public class HttpConnectionItem
 	{
-		public HttpConnectionItem ( HttpConnectionDetails connectionDetails )
+		public HttpConnectionItem ( IncomingHttpConnection connectionDetails )
 		{
 			toStringDirty = true ;
 			_connectionDetails = connectionDetails ;
 		}
-		HttpConnectionDetails _connectionDetails ;
-		public HttpConnectionDetails connectionDetails 
+		IncomingHttpConnection _connectionDetails ;
+		public IncomingHttpConnection connectionDetails 
 		{
 			get =>_connectionDetails ;
 		}

@@ -286,7 +286,7 @@ namespace SimpleHttp
 		/// </summary>
 		/// <param name="sender">WebServer instance</param>
 		/// <param name="e">ErrorEventArgs instance, call GetException() method to get exception</param>
-		private void webServer_serviceErrorRaised ( object sender , HttpConnectionDetails e )
+		private void webServer_serviceErrorRaised ( object sender , IncomingHttpConnection e )
 		{
 			if ( webServer == sender as WebServer ) onOpenTcpTestFailed ( new ErrorEventArgs ( e.error ) ) ;
 		}
@@ -295,8 +295,8 @@ namespace SimpleHttp
 		/// <br/>this event handler calls onCertificateFailedOnServer() method in order to raise certificateFailedOnServer event
 		/// </summary>
 		/// <param name="sender">WebServer instance</param>
-		/// <param name="e">HttpConnectionDetails instance, the exception is in error property</param>
-		private void webServer_connectionErrorRaised ( object? sender , HttpConnectionDetails e )
+		/// <param name="e">IncomingHttpConnection instance, the exception is in error property</param>
+		private void webServer_connectionErrorRaised ( object? sender , IncomingHttpConnection e )
 		{
 			onCertificateFailedOnServer ( new ErrorEventArgs ( certificateServerError = e.error ) ) ;
 		}
